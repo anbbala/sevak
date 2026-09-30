@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Volunteer Management App · Coming soon</title>
+  <meta name="description" content="A simple way for organizations to publish volunteer shifts and for volunteers to sign up in seconds. Coming soon.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1412" media="(prefers-color-scheme: dark)">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Volunteer Management App · Coming soon">
+  <meta property="og:description" content="Publish volunteer shifts in minutes. Sign up in seconds. Say thank you with an official certificate.">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230f766e'/%3E%3Cg fill='%23fff' transform='translate(12 12) scale(.78) translate(-12 -12.4)'%3E%3Crect x='8' y='9' width='8' height='8' transform='rotate(45 12 13)'/%3E%3Ccircle cx='9.17' cy='10.17' r='4'/%3E%3Ccircle cx='14.83' cy='10.17' r='4'/%3E%3C/g%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #faf8f4;
+      --surface: #ffffff;
+      --text: #17201e;
+      --muted: #56625e;
+      --border: #e5e0d6;
+      --primary: #0f766e;
+      --on-primary: #ffffff;
+      --primary-soft: #e3f2ef;
+      --accent: #b45309;
+      --accent-soft: #fcefd9;
+      --glow-1: rgba(15, 118, 110, 0.13);
+      --glow-2: rgba(245, 158, 11, 0.13);
+      --shadow: 0 1px 2px rgba(23, 32, 30, 0.06), 0 18px 40px -18px rgba(23, 32, 30, 0.25);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0e1412;
+        --surface: #151d1b;
+        --text: #e8eeec;
+        --muted: #9fb0ab;
+        --border: #26322f;
+        --primary: #2dd4bf;
+        --on-primary: #04201d;
+        --primary-soft: #12302c;
+        --accent: #fbbf24;
+        --accent-soft: #2c2312;
+        --glow-1: rgba(45, 212, 191, 0.10);
+        --glow-2: rgba(251, 191, 36, 0.07);
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0e1412;
+      --surface: #151d1b;
+      --text: #e8eeec;
+      --muted: #9fb0ab;
+      --border: #26322f;
+      --primary: #2dd4bf;
+      --on-primary: #04201d;
+      --primary-soft: #12302c;
+      --accent: #fbbf24;
+      --accent-soft: #2c2312;
+      --glow-1: rgba(45, 212, 191, 0.10);
+      --glow-2: rgba(251, 191, 36, 0.07);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.55;
+      color: var(--text);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(60rem 30rem at 85% -10%, var(--glow-1), transparent 70%),
+        radial-gradient(40rem 24rem at -10% 10%, var(--glow-2), transparent 70%);
+      background-repeat: no-repeat;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      width: min(1080px, 100% - 32px);
+      margin-inline: auto;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Header */
+    .site-header { padding-block: 20px; }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+    }
+    .brand svg { width: 32px; height: 32px; flex: none; }
+
+    /* Hero */
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: center;
+      gap: 56px;
+      padding-block: 40px 72px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.875rem;
+      font-weight: 650;
+    }
+    .pill .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    h1 {
+      margin: 20px 0 20px;
+      font-size: clamp(2.6rem, 6.4vw, 4.4rem);
+      line-height: 1.02;
+      letter-spacing: -0.035em;
+      font-weight: 800;
+      text-wrap: balance;
+    }
+    h1 .highlight { color: var(--primary); }
+
+    .lead {
+      margin: 0 0 16px;
+      max-width: 34ch;
+      font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+      line-height: 1.45;
+      text-wrap: pretty;
+    }
+
+    .note {
+      margin: 0;
+      max-width: 46ch;
+      color: var(--muted);
+      text-wrap: pretty;
+    }
+
+    /* Product preview (illustration only) */
+    .preview {
+      justify-self: center;
+      width: 100%;
+      max-width: 400px;
+      margin: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transform: rotate(1.25deg);
+    }
+    .preview-cover {
+      height: 72px;
+      background:
+        radial-gradient(circle at 20% 120%, rgba(255, 255, 255, 0.28) 0 30%, transparent 31%),
+        radial-gradient(circle at 90% -20%, rgba(255, 255, 255, 0.22) 0 28%, transparent 29%),
+        linear-gradient(120deg, #0f766e, #10b981 55%, #f59e0b);
+    }
+    .preview-body { padding: 18px 20px 20px; }
+
+    .preview-org {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .verified {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 0.75rem;
+      font-weight: 650;
+    }
+    .verified svg { width: 12px; height: 12px; }
+
+    .preview-title {
+      margin: 8px 0 2px;
+      font-size: 1.25rem;
+      font-weight: 750;
+      letter-spacing: -0.015em;
+    }
+    .preview-meta {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .day {
+      margin: 16px 0 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .shift {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .shift.is-selected {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+    .shift.is-full { opacity: 0.55; }
+
+    .box {
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+    }
+    .is-selected .box {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+    .box svg { width: 14px; height: 14px; }
+
+    .shift-role { display: block; font-weight: 650; font-size: 0.95rem; line-height: 1.3; }
+    .shift-time { display: block; font-size: 0.82rem; color: var(--muted); }
+    .spots { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+    .is-selected .spots { color: var(--primary); font-weight: 600; }
+
+    .preview-cta {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 12px;
+      background: var(--primary);
+      color: var(--on-primary);
+      text-align: center;
+      font-weight: 700;
+    }
+
+    /* Features */
+    .features { padding-bottom: 72px; }
+
+    .features h2 {
+      margin: 0 0 24px;
+      font-size: clamp(1.5rem, 3vw, 1.9rem);
+      letter-spacing: -0.02em;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+    }
+    .card h3 {
+      margin: 0 0 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+
+    .items { margin: 0; padding: 0; list-style: none; display: grid; gap: 20px; }
+    .item { display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start; }
+
+    .icon {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+    .icon svg { width: 22px; height: 22px; }
+
+    .item > div > strong { display: block; font-weight: 650; line-height: 1.35; }
+    .item > div > span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.95rem; }
+
+    /* Footer */
+    .site-footer {
+      padding-block: 24px 40px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 880px) {
+      .hero { grid-template-columns: 1fr; gap: 40px; padding-block: 24px 56px; }
+      .preview { transform: none; }
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 22px 20px; }
+      .preview-body { padding: 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pill .dot { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <!-- Placeholder product name: update here, in <title>, the og:title tag, and the footer. -->
+      <span class="brand">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect width="24" height="24" rx="6" fill="#0f766e"/>
+          <g fill="#fff" transform="translate(12 12) scale(.78) translate(-12 -12.4)">
+            <rect x="8" y="9" width="8" height="8" transform="rotate(45 12 13)"/>
+            <circle cx="9.17" cy="10.17" r="4"/>
+            <circle cx="14.83" cy="10.17" r="4"/>
+          </g>
+        </svg>
+        Volunteer Management App
+      </span>
+    </div>
+  </header>
+
+  <main>
+    <section class="container hero" aria-labelledby="hero-title">
+      <div>
+        <span class="pill"><span class="dot" aria-hidden="true"></span>Coming soon</span>
+        <h1 id="hero-title">Volunteering, <span class="highlight">made simple.</span></h1>
+        <p class="lead">Publish volunteer shifts in minutes. Sign up in seconds. Say thank you with an official certificate.</p>
+        <p class="note">We're building a simple web app for organizations and the people who show up for them. We'll launch soon with a small group of pilot organizations.</p>
+      </div>
+
+      <figure class="preview">
+        <figcaption class="sr-only">Preview of an event page: a two-day food drive where a volunteer has picked two Saturday shifts and is ready to sign up.</figcaption>
+        <div aria-hidden="true">
+          <div class="preview-cover"></div>
+          <div class="preview-body">
+            <div class="preview-org">
+              Your organization
+              <span class="verified">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                Verified
+              </span>
+            </div>
+            <p class="preview-title">Community Food Drive</p>
+            <p class="preview-meta">Sat – Sun · Community Center</p>
+
+            <p class="day">Saturday</p>
+            <div class="shift is-selected">
+              <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+              <span><span class="shift-role">Setup crew</span><span class="shift-time">8:00 – 10:00 AM</span></span>
+              <span class="spots">3 of 6 left</span>
+            </div>
+            <div class="shift is-selected">
+              <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+              <span><span class="shift-role">Sorting &amp; packing</span><span class="shift-time">10:00 AM – 1:00 PM</span></span>
+              <span class="spots">8 of 12 left</span>
+            </div>
+
+            <p class="day">Sunday</p>
+            <div class="shift is-full">
+              <span class="box"></span>
+              <span><span class="shift-role">Distribution</span><span class="shift-time">9:00 AM – 12:00 PM</span></span>
+              <span class="spots">Full</span>
+            </div>
+
+            <div class="preview-cta">Sign up for 2 shifts</div>
+          </div>
+        </div>
+      </figure>
+    </section>
+
+    <section class="container features" aria-labelledby="features-title">
+      <h2 id="features-title">What's coming</h2>
+      <div class="feature-grid">
+        <article class="card">
+          <h3>For event hosts</h3>
+          <ul class="items">
+            <li class="item">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M7.5 13.5h3M13.5 13.5h3M7.5 17h3"/></svg>
+              </span>
+              <div><strong>Events with roles and shifts</strong><span>Single-day or multi-day, set up in minutes.</span></div>
+            </li>
+            <li class="item">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg>
+              </span>
+              <div><strong>Confirmations, updates and certificates</strong><span>Branded emails from your organization, sent after your team confirms who showed up.</span></div>
+            </li>
+            <li class="item">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5v-3a4 4 0 0 1 8 0v3"/></svg>
+              </span>
+              <div><strong>Public or private</strong><span>List events for your city, or keep them private and invite people by email, text or WhatsApp.</span></div>
+            </li>
+            <li class="item">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 19 6v5.5c0 4.2-3 7.6-7 9.5-4-1.9-7-5.3-7-9.5V6z"/><path d="m9 12 2 2 4-4"/></svg>
+              </span>
+              <div><strong>A verified organization page</strong><span>A trusted home for your organization and clean pages for every event.</span></div>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>For volunteers</h3>
+          <ul class="items">
+            <li class="item">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              </span>
+              <div><strong>Find events near you</strong><span>Browse a calendar by city, or see everything an organization has coming up.</span></div>
+            </li>
+            <li class="item">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="m8 12 3 3 5-6"/></svg>
+              </span>
+              <div><strong>Sign up for one shift or several</strong><span>One quick form. No account, no password.</span></div>
+            </li>
+            <li class="item">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+              </span>
+              <div><strong>Your own volunteering log</strong><span>Hours and certificates in one place, including private events. Only you can see it.</span></div>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">© 2026 Volunteer Management App · Coming soon</div>
+  </footer>
+</body>
+</html>
