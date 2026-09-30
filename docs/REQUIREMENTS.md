@@ -1,6 +1,6 @@
-# Volunteer Management App: MVP Requirements
+# Sevak: MVP Requirements
 
-**Version:** 2.0 (MVP refresh) · **Updated:** 2026-09-30 · **Status:** Draft for review
+**Version:** 2.1 (decisions recorded) · **Updated:** 2026-09-30 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -13,13 +13,13 @@ it favours the simplest interface that will work.
 
 ### 1.1 Purpose
 
-This document defines what the first version (MVP) of the app must do and how well it must do it.
+This document defines what the first version (MVP) of **Sevak** must do and how well it must do it.
 It is written for the founding team, designers, engineers, QA and pilot organizations.
 
 ### 1.2 Product vision
 
-> The simplest way for an organization to fill volunteer shifts, and for a volunteer to find one,
-> sign up in under a minute, and get recognized for showing up.
+> Sevak is the simplest way for an organization to fill volunteer shifts, and for a volunteer to
+> find one, sign up in under a minute, and get recognized for showing up.
 
 ### 1.3 MVP scope
 
@@ -73,6 +73,7 @@ It is written for the founding team, designers, engineers, QA and pilot organiza
 | **Host (Coordinator)** | Event team members | Manage rosters, mark attendance and send updates, but no organization settings | Email sign-in link |
 | **Volunteer (guest)** | Anyone signing up, often a first-time visitor arriving from a shared link | Find a shift and sign up in under a minute | **None.** They manage sign-ups through a secure link in their email. |
 | **Volunteer (signed in)** | A returning volunteer | Pre-filled sign-up and a private log of their history, hours and certificates | Email sign-in link, no password |
+| **Parent / guardian** | An adult signing up their child, which is the only way a child under 13 can take part | Sign up and manage shifts for the child. All emails go to the parent. | Same as a volunteer. The child never has a login. |
 | **Platform admin** | Us | Verify organizations and remove abusive content | Email sign-in link plus 2FA |
 
 **Assumptions about users:** Hosts are busy and often not technical. Many are volunteers
@@ -128,6 +129,7 @@ allows, or right after launch. **Later** means post-MVP.
 | 7 | As a volunteer, I want to see all available events on a calendar, filtered by city and/or by organization. | DSC-1 to DSC-4 |
 | 8 | As an event host, I want to restrict visibility for private events or organizations while still inviting volunteers by email, text or WhatsApp. | ORG-6, PRV-1 to PRV-5 |
 | 9 | As a volunteer, I want to join private events and keep my own log of them that isn't public, like private Venmo transactions. | VOL-1, VOL-3, VOL-4, §5 |
+| 10 | *(Decision, 2026-09-30)* The minimum age is 13. A parent can take part on behalf of a child under 13, and events can set a higher minimum age. | EVT-2, SGN-12, SGN-13, VOL-9, VOL-10 |
 
 ### 4.1 Organization profile and trust
 
@@ -135,10 +137,10 @@ allows, or right after launch. **Later** means post-MVP.
 |---|---|---|
 | ORG-1 | A host can create an organization with a name, type, logo, short description, website, contact email and home city. | Must |
 | ORG-2 | The organization type is picked from a list: *Nonprofit / charity, School or university, Community group, Faith-based, Government / public agency, Business (CSR), Other*. | Must |
-| ORG-3 | A host can request verification by providing evidence (for example an EIN or charity registration number, an official website, or an email on the organization's own domain). A platform admin approves or rejects the request. Verified organizations show a **Verified** badge everywhere they appear. | Must |
+| ORG-3 | A host can request verification by providing evidence (for example an EIN or charity registration number, an official website, or an email on the organization's own domain). A platform admin approves or rejects the request. Verified organizations show a **Verified** badge everywhere they appear. **Only verified organizations can list events publicly.** Unverified organizations can still create and run private events. | Must |
 | ORG-4 | Each public organization has a clean page at `/o/{slug}` showing its description, type, badge and upcoming public events (as a calendar or list). | Must |
 | ORG-5 | An owner can invite team members by email as **Owner** or **Coordinator**. | Must |
-| ORG-6 | Organization visibility is either **Public** (listed and indexed by search engines) or **Private** (no public page, and every event is private). | Must |
+| ORG-6 | Organization visibility is either **Public** (listed and indexed by search engines) or **Private** (no public page, and every event is private). An organization can only become public once it is verified (ORG-3). Until then it works as private. | Must |
 | ORG-7 | Automated verification checks, such as a charity registry lookup or an email-domain match. | Later |
 
 ### 4.2 Events, roles and shifts
@@ -146,7 +148,7 @@ allows, or right after launch. **Later** means post-MVP.
 | ID | Requirement | Priority |
 |---|---|---|
 | EVT-1 | A host can create an event with a title, description, cover image, location (address and city, or online), time zone, and a start and end date. The event can be single-day or multi-day. | Must |
-| EVT-2 | A host can define roles with a name, a description, what to bring or requirements, and an optional minimum age. | Must |
+| EVT-2 | A host can define roles with a name, a description, and what to bring or requirements. A host can set a **minimum age** (for example 16+ or 18+) for the whole event or for a single role. With no minimum set, children under 13 can take part through a parent (SGN-13). | Must |
 | EVT-3 | A host can define shifts for each role on each day, with a start time, end time and capacity. The shift builder has a **"copy to other days"** shortcut so multi-day events are fast to set up. | Must |
 | EVT-4 | An event moves through *Draft → Published → Completed*, or *Cancelled*. Only published events accept sign-ups. | Must |
 | EVT-5 | A host can edit a published event. If a time or location changes, the host is prompted to notify the affected volunteers and sees a preview of the email. | Must |
@@ -172,7 +174,9 @@ allows, or right after launch. **Later** means post-MVP.
 | SGN-8 | The sign-up form has bot and spam protection (an invisible challenge plus rate limits). | Must |
 | SGN-9 | The confirmation screen and email include **Add to calendar** (an .ics file and a Google Calendar link). | Should |
 | SGN-10 | The form has an opt-in checkbox: *"Keep me posted about future opportunities from {Organization}."* | Should |
-| SGN-11 | Waitlists for full shifts, and a host-approval sign-up mode. | Later |
+| SGN-11 | Waitlists for full shifts, and a host-approval sign-up mode. In the MVP every sign-up is **confirmed automatically** (decision Q3). | Later |
+| SGN-12 | A person signing up for themselves confirms they are **at least 13**, or older if the event or role requires it (EVT-2). If they are too young, the form explains why and offers the parent option where it is allowed. | Must |
+| SGN-13 | A **parent or guardian can sign up a child** by choosing "I'm signing up my child" and entering the child's name and age. They confirm they are the child's parent or guardian and give consent. **This is the only way a child under 13 can take part.** The parent's email and phone are used for every message. The child's name appears on the roster and the certificate. The child's age is checked against the event's minimum age. | Must |
 
 ### 4.4 Volunteer profile and private log
 
@@ -186,6 +190,8 @@ allows, or right after launch. **Later** means post-MVP.
 | VOL-6 | A volunteer can export or delete their account and data (see open question Q9 on what the organization keeps). | Must |
 | VOL-7 | An optional public volunteer profile or shareable badge. Entries from private events would never be shown on it. | Later |
 | VOL-8 | Skills, interests and availability preferences used for matching. | Later |
+| VOL-9 | A parent's "My volunteering" log also shows the shifts, hours and certificates of children they signed up, grouped by child. Children under 13 never have their own login. | Must |
+| VOL-10 | A signed-in parent can save their children's details so they can sign a child up in one click. | Should |
 
 ### 4.5 Discovery
 
@@ -203,7 +209,7 @@ allows, or right after launch. **Later** means post-MVP.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| PRV-1 | Event visibility is either **Public** (listed and indexed) or **Private** (unlisted, not indexed, and reachable only through its private link). Every event in a private organization is private. | Must |
+| PRV-1 | Event visibility is either **Public** (listed and indexed) or **Private** (unlisted, not indexed, and reachable only through its private link). Every event in a private or unverified organization is private. | Must |
 | PRV-2 | A host can copy the private link, or share it directly to **WhatsApp, text message or email** through the phone's own share options, with a pre-written message. The platform does not pay for messaging. | Must |
 | PRV-3 | A host can paste a list of email addresses to send **email invitations** from the app, and can see who was invited and who signed up. | Must |
 | PRV-4 | A host can regenerate the private link, which stops the old link working. | Should |
@@ -220,7 +226,7 @@ allows, or right after launch. **Later** means post-MVP.
 | COM-4 | The app keeps a **message history** for each event and each volunteer: what was sent, to whom, and when. | Must |
 | COM-5 | A host can send **organization-wide messages** to past volunteers who opted in (SGN-10). Each message has an unsubscribe link. | Should |
 | COM-6 | An automatic **reminder email** goes out before each shift (24 hours before by default). This is strongly recommended because it cuts no-shows. | Should |
-| COM-7 | Every email carries the organization's branding (name, logo, colour). It is sent as *"{Organization} via {App}"*, and replies go to the organization's contact email. | Must |
+| COM-7 | Every email carries the organization's branding (name, logo, colour). It is sent as *"{Organization} via Sevak"*, and replies go to the organization's contact email. | Must |
 | COM-8 | Emails meet deliverability and legal basics: SPF, DKIM and DMARC; a plain-text version; the organization's contact details; and an unsubscribe link on anything that isn't transactional. | Must |
 | COM-9 | Scheduled sends, SMS or WhatsApp delivery, and a custom sending domain for each organization. | Later |
 
@@ -258,7 +264,8 @@ allows, or right after launch. **Later** means post-MVP.
 | Private organization and private events | Only people with the private link (or on the invite list, if invite-only) and the organization's team. Never listed or indexed. |
 | Who has signed up for a shift | The organization's team only. Public pages show counts (*"4 of 6 spots left"*), never names. |
 | A volunteer's contact details | The volunteer, and the team of any organization whose event they signed up for, for that organization's events only. |
-| "My volunteering" log | The volunteer only. |
+| "My volunteering" log | The volunteer only. For children, the parent or guardian who signed them up. |
+| A child's details | The parent or guardian who entered them, and the team of the organization running the event. Never shown on public pages. Collected only from the parent, with the parent's consent. |
 | Certificate | The volunteer and the issuing organization. Anyone with the verification link sees only the name, event, organization and hours. |
 
 ---
@@ -320,7 +327,7 @@ This is the list of screens to build in Phase 1 with mock data.
 | NFR-5 | Data protection | TLS everywhere, encryption at rest, and no secrets in the repository. An organization's data is only visible to that organization's team. |
 | NFR-6 | Abuse prevention | Rate limits and bot protection on public forms. Private and manage links use long tokens that can't be guessed. |
 | NFR-7 | Privacy | Collect as little data as possible. Meet GDPR and CCPA basics: a privacy policy, consent for non-transactional email, and data export and deletion. Volunteer data is never sold or shared. |
-| NFR-8 | Minors | See open question Q4. |
+| NFR-8 | Minors | Self sign-up requires age 13 or older. Children under 13 take part only through a parent or guardian (SGN-13). For a child, we collect only a name and age, entered by the parent with the parent's consent, in line with COPPA. The child never has a login or receives email. Events and roles can set a higher minimum age. |
 | NFR-9 | Accessibility | WCAG 2.1 AA: fully usable by keyboard, with labelled controls and enough colour contrast. |
 | NFR-10 | SEO | Public pages are rendered on the server or pre-rendered, with meta tags, Open Graph tags, schema.org `Event` data and a sitemap. Private content is marked `noindex`. |
 | NFR-11 | Time zones | Each event has its own time zone, and times are shown in the event's local time. Multi-day events handle daylight saving changes correctly. |
@@ -335,14 +342,15 @@ This is the list of screens to build in Phase 1 with mock data.
 
 | Entity | Key fields | Relationships |
 |---|---|---|
-| **User** | id, email (unique), name, phone, home_city, is_platform_admin, created_at | One user can be a volunteer, a host team member, or both |
+| **User** | id, email (unique), name, phone, home_city, age_confirmed_at, is_platform_admin, created_at | One user can be a volunteer, a parent, a host team member, or any mix |
+| **Child** | id, guardian_user_id, name, date_of_birth, created_at | Belongs to a parent or guardian User. Never has a login. |
 | **Organization** | id, name, slug, type, description, logo_url, website, contact_email, city, visibility (`public`/`private`), verification_status (`unverified`/`pending`/`verified`/`rejected`) | Has many OrgMembers and Events |
 | **OrgMember** | org_id, user_id, role (`owner`/`coordinator`) | Links a User to an Organization |
 | **VerificationRequest** | id, org_id, evidence, status, reviewed_by, reviewed_at | Belongs to an Organization |
-| **Event** | id, org_id, title, slug, description, cover_url, venue, address, city, is_online, timezone, start_date, end_date, visibility (`public`/`private`), invite_only, private_token, status (`draft`/`published`/`completed`/`cancelled`) | Belongs to an Organization. Has many Roles, Shifts, Messages and Invites |
+| **Event** | id, org_id, title, slug, description, cover_url, venue, address, city, is_online, timezone, start_date, end_date, min_age, visibility (`public`/`private`), invite_only, private_token, status (`draft`/`published`/`completed`/`cancelled`) | Belongs to an Organization. Has many Roles, Shifts, Messages and Invites |
 | **Role** | id, event_id, name, description, requirements, min_age | Belongs to an Event. Has many Shifts |
 | **Shift** | id, event_id, role_id, starts_at, ends_at (stored in UTC), capacity | Belongs to a Role. Has many Signups |
-| **Registration** | id, event_id, user_id, manage_token, opted_in_updates, answers (JSON), created_at | One form submission. Has many Signups |
+| **Registration** | id, event_id, user_id, child_id (set when a parent signs up a child), guardian_consent_at, manage_token, opted_in_updates, answers (JSON), created_at | One form submission for one participant. Has many Signups |
 | **Signup** | id, registration_id, shift_id, status (`confirmed`/`cancelled`), attendance (`unmarked`/`attended`/`no_show`), hours_credited | One volunteer on one Shift |
 | **Invite** | id, event_id, email, sent_at, registration_id (set once they sign up) | Belongs to an Event |
 | **Message** | id, org_id, event_id (optional), audience_filter, subject, body, sent_by, sent_at | Has many MessageDeliveries (recipient, status) |
@@ -397,20 +405,28 @@ This is the list of screens to build in Phase 1 with mock data.
 
 ---
 
-## 12. Open questions
+## 12. Decisions and open questions
+
+### 12.1 Decisions (2026-09-30)
+
+| # | Question | Decision |
+|---|---|---|
+| Q1 | What is the product name? | **Sevak.** The domain is still to be chosen. |
+| Q2 | Does an organization have to be verified before it can list **public** events? | **Yes.** Unverified organizations can still run **private** events (ORG-3, ORG-6, PRV-1). The MVP uses manual review of an EIN or charity number, a website, or an email on the organization's domain. |
+| Q3 | Should sign-ups be confirmed automatically, or should hosts approve each one? | **Automatic.** COM-2 lets hosts send a "you're confirmed" email. Host approval stays in Later (SGN-11). |
+| Q4 | What is the policy for minors? | **The minimum age is 13.** A parent or guardian can take part on behalf of a child under 13 (SGN-13, VOL-9). Events and roles can require an older age, such as 16+ or 18+ (EVT-2). |
+| Q10 | Hosting | **Front end only for now, hosted on GitHub Pages.** Server rendering for SEO (NFR-10) gets revisited when we design the Phase 2 back end and deployment. |
+
+### 12.2 Still open
 
 | # | Question | Recommendation |
 |---|---|---|
-| Q1 | What is the product name and domain? | The landing page uses the placeholder *"Volunteer Management App"* until this is decided. |
-| Q2 | Does an organization have to be verified before it can list **public** events? What evidence is enough? | Yes. Unverified organizations can still run private events. The MVP uses manual review of an EIN or charity number, a website, or an email on the organization's domain. |
-| Q3 | Should sign-ups be confirmed automatically, or should hosts approve each one? | Confirm automatically in the MVP (COM-2 lets hosts send a "you're confirmed" email). Host approval comes later. |
-| Q4 | What is the policy for minors? | A platform minimum age of 13, with each event able to require 16+ or 18+. A parent or guardian consent flow comes later. |
 | Q5 | Should public pages show the first names of people who signed up? | No. Show counts only. |
-| Q6 | What goes on the certificate (hours, signer, logo)? Does "official" require sending from the organization's own email domain? | Include hours, the signer's name and title, and a verification link. Send as *"{Organization} via {App}"* in the MVP, with custom domains later. |
+| Q6 | What goes on the certificate (hours, signer, logo)? Does "official" require sending from the organization's own email domain? | Include hours, the signer's name and title, and a verification link. Send as *"{Organization} via Sevak"* in the MVP, with custom domains later. |
 | Q7 | Where do we launch first? | One country (US) and one or two pilot cities. |
 | Q8 | What does it cost? | Free during the pilot. Decide on pricing afterwards. |
 | Q9 | How long do organizations keep a volunteer's records after the volunteer deletes their account? | Keep the attendance records and certificates the organization issued. Remove the volunteer's profile and login. |
-| Q10 | What hosting approach will work, given GitHub Pages only serves static files but public event pages need server-rendered or pre-rendered HTML for SEO (NFR-10)? | Use GitHub Pages for Phases 0–1. Choose a framework that supports server rendering or pre-rendering when we design the Phase 2 deployment. |
+| Q11 | Should a parent be able to sign up a teenager aged 13–17 as well, or must teens sign up for themselves? | Allow both. A parent can sign up any child, but children under 13 can *only* be signed up by a parent. |
 
 ---
 
@@ -418,6 +434,7 @@ This is the list of screens to build in Phase 1 with mock data.
 
 | Term | Meaning |
 |---|---|
+| **Sevak** | The product name |
 | **MVP** | Minimum viable product: the smallest version that proves the core loop |
 | **Host** | An organization, and its team, that publishes events |
 | **Volunteer** | A person who signs up for shifts |
@@ -432,7 +449,8 @@ This is the list of screens to build in Phase 1 with mock data.
 | **Public / Private** | Visibility levels. Private content is reachable only by link or invitation and is never indexed. |
 | **Invite-only** | A private event where only invited email addresses can sign up |
 | **One-time sign-in link** | Passwordless sign-in: a single-use link sent by email |
-| **Verified** | An organization whose identity a platform admin has reviewed |
+| **Verified** | An organization whose identity a platform admin has reviewed. Required before it can list public events. |
+| **Parent / guardian** | An adult who signs up and manages shifts on behalf of a child |
 | **SEO** | Search engine optimization |
 | **2FA** | Two-factor authentication |
 | **BGC** | Background check (post-MVP) |
