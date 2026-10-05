@@ -32,7 +32,7 @@
     <p class="banner"><strong>Prototype.</strong> Nothing is sent anywhere. What you enter is saved only in this browser.</p>
 
     <h1 class="page-title">My profile</h1>
-    <p class="page-intro">Save your details once, and signing up for a shift takes one click.</p>
+    <p class="page-intro">Your details in one place, whether you volunteer, help run events, or both.</p>
 
     <form id="profile-form" novalidate>
       <!-- About you -->
@@ -59,14 +59,34 @@
           <div class="field">
             <label for="phone">Mobile phone</label>
             <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="20">
-            <p class="hint">Only for last-minute updates about shifts you sign up for.</p>
+            <p class="hint">Only for last-minute updates about events.</p>
             <p class="error" id="phone-error"></p>
           </div>
         </div>
       </fieldset>
 
+      <!-- How you use Sevak -->
+      <fieldset class="section">
+        <legend>How you use Sevak</legend>
+        <p class="section-help">Choose one or both. You can be a volunteer and also help run events for one or more organizations.</p>
+        <div class="choices">
+          <label class="choice"><input type="checkbox" name="roles" value="volunteer" id="role-volunteer"><span><strong>Volunteer</strong><small>I sign up for shifts</small></span></label>
+          <label class="choice"><input type="checkbox" name="roles" value="host" id="role-host"><span><strong>Host team member</strong><small>I help run events for an organization</small></span></label>
+        </div>
+        <p class="error" id="roles-error"></p>
+      </fieldset>
 
-      <div>
+      <!-- Host organizations -->
+      <fieldset class="section" id="host-fields" hidden>
+        <legend>My organizations</legend>
+        <p class="section-help">The organizations you help run and your role in each. <strong>Coordinators</strong> manage rosters, mark attendance and send updates. <strong>Admins</strong> can also edit the organization's profile and manage its team.</p>
+        <p class="hint" style="margin:-8px 0 16px">In the live app, an organization appears here when one of its admins invites you.</p>
+        <div class="rows" id="org-rows"></div>
+        <button type="button" class="btn btn-secondary" id="add-org">+ Add an organization</button>
+        <datalist id="known-orgs"></datalist>
+      </fieldset>
+
+      <div id="volunteer-fields" hidden>
 
         <!-- Address -->
         <fieldset class="section" id="address-section">
@@ -129,6 +149,24 @@
         </div>
       </div>
     </form>
+
+    <template id="org-template">
+      <div class="row row-org">
+        <div class="field">
+          <label>Organization</label>
+          <input data-key="name" type="text" required maxlength="120" list="known-orgs">
+          <p class="error"></p>
+        </div>
+        <div class="field">
+          <label>Your role</label>
+          <select data-key="role">
+            <option value="coordinator">Coordinator</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-secondary remove">Remove</button>
+      </div>
+    </template>
 
     <template id="affiliation-template">
       <div class="row">

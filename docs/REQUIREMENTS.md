@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.3 (host organization profile) · **Updated:** 2026-10-05 · **Status:** Draft for review
+**Version:** 2.4 (user types and multiple organizations) · **Updated:** 2026-10-05 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -75,6 +75,8 @@ It is written for the founding team, designers, engineers, QA and pilot organiza
 | **Volunteer (guest)** | Anyone signing up, often a first-time visitor arriving from a shared link | Find a shift and sign up in under a minute | **None.** They manage sign-ups through a secure link in their email. |
 | **Volunteer (signed in)** | A returning volunteer | Pre-filled sign-up and a private log of their history, hours and certificates | Email sign-in link, no password |
 | **Platform admin** | Us | Verify organizations and remove abusive content | Email sign-in link plus 2FA |
+
+**One person, several roles:** a person can be a volunteer and a host team member at the same time, and can be a host team member for several organizations with a different role in each (VOL-13).
 
 **Assumptions about users:** Hosts are busy and often not technical. Many are volunteers
 themselves. Volunteers are mostly on phones and may arrive cold from a WhatsApp or text message.
@@ -188,6 +190,7 @@ allows, or right after launch. **Later** means post-MVP.
 | VOL-5 | A volunteer can download a summary of their hours as a PDF or CSV, for example for school or employer service-hour requirements. | Should |
 | VOL-6 | A volunteer can export or delete their account and data (see open question Q9 on what the organization keeps). | Must |
 | VOL-7 | An optional public volunteer profile or shareable badge. Entries from private events would never be shown on it. | Later |
+| VOL-13 | In their profile, a person chooses **how they use Sevak**: **Volunteer**, **Host team member**, or both, with at least one required. Host team members list the **organizations** they help run (up to 10) and their **role in each**, Admin or Coordinator, so the same person can be an Admin for one organization and a Coordinator for another. Volunteer-only fields (address, affiliations, availability) appear only for volunteers. In the live app, organization memberships come from invitations (ORG-5) rather than being typed in. *(Prototype: `app/profile.html`.)* | Must |
 | VOL-8 | Skills and interests, and **matching** shifts to a volunteer's availability (VOL-2 collects availability now). | Later |
 
 ### 4.5 Discovery
@@ -355,10 +358,10 @@ This is the list of screens to build in Phase 1 with mock data.
 
 | Entity | Key fields | Relationships |
 |---|---|---|
-| **User** | id, email (unique), first_name, last_name, phone, address (line1, line2, city, state, zip; optional), availability (`weekends`/`weekdays`/`evenings`/`anytime`), is_platform_admin, created_at | One user can be a volunteer, a host team member, or both |
+| **User** | id, email (unique), first_name, last_name, phone, is_volunteer, is_host, address (line1, line2, city, state, zip; optional, volunteers only), availability (`weekends`/`weekdays`/`evenings`/`anytime`), is_platform_admin, created_at | One user can be a volunteer, a host team member, or both. A host team member can belong to several Organizations with a different role in each (through OrgMember). |
 | **Affiliation** | id, user_id, type (`school`/`scouting`/`faith`/`workplace`/`club`/`other`), name | Up to 5 per User |
 | **Organization** | id, name, slug, type, description, logo_url, website, address (line1, line2, city, state, zip), tax_status (`501c3`/`501c-other`/`pending`/`none`), ein (private), primary_contact_user_id, contact_title, visibility (`public`/`private`), verification_status (`unverified`/`pending`/`verified`/`rejected`) | Has many OrgMembers and Events |
-| **OrgMember** | org_id, user_id, role (`owner`/`admin`/`coordinator`), invited_at, accepted_at | Links a User to an Organization |
+| **OrgMember** | org_id, user_id, role (`owner`/`admin`/`coordinator`), invited_at, accepted_at. Unique per (org_id, user_id). | Links a User to an Organization |
 | **VerificationRequest** | id, org_id, evidence, status, reviewed_by, reviewed_at | Belongs to an Organization |
 | **Event** | id, org_id, title, slug, description, cover_url, venue, address, city, is_online, timezone, start_date, end_date, visibility (`public`/`private`), invite_only, private_token, status (`draft`/`published`/`completed`/`cancelled`) | Belongs to an Organization. Has many Roles, Shifts, Messages and Invites |
 | **Role** | id, event_id, name, description, requirements | Belongs to an Event. Has many Shifts |

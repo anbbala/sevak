@@ -182,6 +182,7 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.5; }
 }
 .choice strong { display: block; font-size: 0.95rem; }
 .choice small { display: block; color: var(--muted); font-size: 0.82rem; }
+.choice input:focus-visible + span { box-shadow: 0 0 0 3px var(--focus); }
 .choice input:checked + span { border-color: var(--primary); background: var(--primary-soft); box-shadow: inset 0 0 0 1px var(--primary); }
 
 /* Buttons */
@@ -210,6 +211,7 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.5; }
 .rows { display: grid; gap: 12px; margin-bottom: 12px; }
 .row { display: grid; grid-template-columns: 220px 1fr auto; gap: 10px; align-items: end; }
 .row .remove { min-height: 44px; }
+.row-org { grid-template-columns: 1fr 200px auto; }
 
 /* Team member cards */
 .member {
