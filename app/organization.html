@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="app.css">
   <script src="countries.js" defer></script>
   <script src="forms.js" defer></script>
+  <script src="website-import.js" defer></script>
   <script src="organization.js" defer></script>
 </head>
 <body>
@@ -49,6 +50,10 @@
           <div class="field">
             <label for="website">Website <span class="optional">(optional)</span></label>
             <input id="website" type="url" inputmode="url" autocomplete="url" maxlength="200" placeholder="example.org">
+            <div class="fill-row">
+              <button type="button" class="btn btn-secondary btn-small" id="fill-from-website" disabled>Fill in from website</button>
+              <p class="hint" id="fill-status" role="status" aria-live="polite">Add your website and we'll try to fill in your description and address.</p>
+            </div>
             <p class="error" id="website-error"></p>
           </div>
           <div class="field">
@@ -58,8 +63,8 @@
             <p class="error" id="whatsappLink-error"></p>
           </div>
           <div class="field">
-            <label for="description">Description</label>
-            <textarea id="description" required minlength="40" maxlength="1000" aria-describedby="description-hint"></textarea>
+            <label for="description">Description <span class="optional">(optional)</span></label>
+            <textarea id="description" maxlength="1000" aria-describedby="description-hint"></textarea>
             <div class="field-footer">
               <p class="hint" id="description-hint">Your mission, who you serve and what volunteers will help with.</p>
               <p class="counter" id="description-counter" aria-live="polite">0 / 1000</p>
@@ -118,9 +123,9 @@
         <p class="error" id="taxStatus-error"></p>
 
         <div class="field" id="registration-field" style="margin-top:16px" hidden>
-          <label for="registrationNumber">Registration number</label>
+          <label for="registrationNumber">Registration number <span class="optional">(optional)</span></label>
           <input id="registrationNumber" type="text" maxlength="30" autocomplete="off">
-          <p class="hint">The number from your charity regulator or tax authority, for example an EIN in the US, a charity number in the UK or a business number in Canada. It's used only for verification and is never shown publicly.</p>
+          <p class="hint">The number from your charity regulator or tax authority, for example an EIN in the US, a charity number in the UK or a business number in Canada. Adding it helps us verify you faster. It's used only for verification and is never shown publicly.</p>
           <p class="error" id="registrationNumber-error"></p>
         </div>
       </fieldset>

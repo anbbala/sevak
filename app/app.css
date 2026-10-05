@@ -188,6 +188,12 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.5; }
 .whatsapp input { width: 18px; height: 18px; margin: 0; accent-color: var(--primary); }
 .whatsapp a { font-weight: 600; word-break: break-all; }
 
+/* Fill-from-website row */
+.fill-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.btn-small { min-height: 36px; padding: 6px 14px; font-size: 0.9rem; }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--input-border); }
+.filled { box-shadow: 0 0 0 2px var(--accent-soft); border-color: var(--accent) !important; }
+
 /* Radio cards */
 .choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .choices-wide { grid-template-columns: 1fr; }

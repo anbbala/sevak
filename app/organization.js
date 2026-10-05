@@ -4,9 +4,8 @@
 
   var STORAGE_KEY = "sevak.organization.v1";
   var MAX_MEMBERS = 20;
-  var DESCRIPTION_MIN = 40;
-  // Statuses where we ask for a registration number, and whether it's required.
-  var REGISTRATION_FOR_STATUS = { "charity": true, "nonprofit-other": false, "pending": false };
+  // Statuses where we ask for a registration number (always optional).
+  var REGISTRATION_STATUSES = { "charity": true, "nonprofit-other": true, "pending": true };
   // Status values saved before the form became country-neutral.
   var LEGACY_STATUS = { "501c3": "charity", "501c-other": "nonprofit-other" };
 
@@ -61,9 +60,6 @@
 
   function messageFor(input) {
     var v = input.value.trim();
-    if (input.id === "registrationNumber" && input.required && !v) {
-      return "Enter your registration number.";
-    }
     var basic = F.basicMessage(input);
     if (basic) return basic;
 
@@ -72,9 +68,6 @@
     }
     if (input.id === "whatsappLink" && v && !isValidWhatsappLink(v)) {
       return "Enter a WhatsApp invite link (chat.whatsapp.com/…), channel link (whatsapp.com/channel/…) or wa.me link.";
-    }
-    if (input.id === "description" && v.length < DESCRIPTION_MIN) {
-      return "Write at least " + DESCRIPTION_MIN + " characters so volunteers know who you are.";
     }
     if (input.id === "registrationNumber" && v && !/^[A-Za-z0-9][A-Za-z0-9 \-\/.]{2,29}$/.test(v)) {
       return "Use letters, numbers, spaces, hyphens or slashes.";
@@ -99,16 +92,120 @@
   // ---------- Charity or nonprofit status ----------
 
   function applyTaxStatus() {
-    var status = selectedTaxStatus();
-    var asks = Object.prototype.hasOwnProperty.call(REGISTRATION_FOR_STATUS, status);
-    $("registration-field").hidden = !asks;
-    $("registrationNumber").required = asks && REGISTRATION_FOR_STATUS[status];
-    var label = form.querySelector('label[for="registrationNumber"]');
-    label.innerHTML = "Registration number" +
-      ($("registrationNumber").required ? "" : ' <span class="optional">(optional)</span>');
+    $("registration-field").hidden = !REGISTRATION_STATUSES[selectedTaxStatus()];
   }
   form.querySelectorAll('input[name="taxStatus"]').forEach(function (r) {
     r.addEventListener("change", applyTaxStatus);
+  });
+
+  // ---------- Fill in from website ----------
+
+  var COUNTRY_ALIASES = {
+    "usa": "US", "u.s.": "US", "u.s.a.": "US", "united states of america": "US",
+    "uk": "GB", "great britain": "GB", "england": "GB", "scotland": "GB", "wales": "GB", "northern ireland": "GB",
+    "uae": "AE"
+  };
+
+  // Matches a country code or name (English or the visitor's language) to an ISO code.
+  function countryCode(value) {
+    var v = (value || "").trim();
+    if (!v) return "";
+    var lower = v.toLowerCase();
+    if (COUNTRY_ALIASES[lower]) return COUNTRY_ALIASES[lower];
+    var english = {};
+    (window.SevakCountryData || []).forEach(function (row) {
+      var parts = row.split("|");
+      english[parts[1].toLowerCase()] = parts[0];
+    });
+    if (english[lower]) return english[lower];
+    var match = F.countries.filter(function (c) {
+      return c.code.toLowerCase() === lower || c.name.toLowerCase() === lower;
+    })[0];
+    return match ? match.code : "";
+  }
+
+  function markFilled(el) {
+    el.classList.add("filled");
+    el.addEventListener("input", function () { el.classList.remove("filled"); }, { once: true });
+    el.addEventListener("change", function () { el.classList.remove("filled"); }, { once: true });
+  }
+
+  // Fills only empty fields, so nothing the host typed is overwritten.
+  // Returns the names of the fields it filled.
+  function applyWebsiteDetails(details) {
+    var filled = [];
+    var fillText = function (id, value, label) {
+      if (value && !$(id).value.trim()) {
+        $(id).value = value;
+        markFilled($(id));
+        if (label && filled.indexOf(label) === -1) filled.push(label);
+      }
+    };
+    fillText("description", details.description, "description");
+    updateCounter();
+
+    var a = details.address;
+    var addressEmpty = ["addressLine1", "city", "state", "postalCode"].every(function (id) { return !$(id).value.trim(); });
+    if (a && addressEmpty) {
+      var code = countryCode(a.country);
+      if (code && code !== $("country").value) {
+        $("country").value = code;
+        markFilled($("country"));
+      }
+      fillText("addressLine1", a.line1, "address");
+      fillText("city", a.city, "address");
+      fillText("state", a.state, "address");
+      fillText("postalCode", a.postalCode, "address");
+    }
+    return filled;
+  }
+
+  function websiteUrl() {
+    var v = $("website").value.trim();
+    return v && isValidWebsite(v) ? normalizeUrl(v) : "";
+  }
+
+  function needsWebsiteDetails() {
+    var addressEmpty = ["addressLine1", "city", "postalCode"].every(function (id) { return !$(id).value.trim(); });
+    return !$("description").value.trim() || addressEmpty;
+  }
+
+  var lastFetched = "";
+
+  function fillFromWebsite() {
+    var url = websiteUrl();
+    var status = $("fill-status");
+    if (!url) return;
+    lastFetched = url;
+    $("fill-from-website").disabled = true;
+    status.textContent = "Looking up " + new URL(url).hostname + "…";
+    window.SevakWebsite.fetchDetails(url).then(function (details) {
+      var filled = applyWebsiteDetails(details);
+      if (filled.length) {
+        status.textContent = "Filled in your " + filled.join(" and ") + " from your website. Please check them.";
+      } else if (details.description || details.address) {
+        status.textContent = "Your website's details match what's already here, so nothing changed.";
+      } else {
+        status.textContent = "We couldn't find a description or address on that page. Please fill them in.";
+      }
+    }).catch(function (e) {
+      status.textContent = e.reason === "timeout"
+        ? "That website took too long to respond. Please fill in the details yourself."
+        : "We couldn't read that website from your browser. Many sites block this, so please fill in the details yourself.";
+    }).finally(function () {
+      $("fill-from-website").disabled = !websiteUrl();
+    });
+  }
+
+  $("website").addEventListener("input", function () {
+    $("fill-from-website").disabled = !websiteUrl();
+  });
+  $("fill-from-website").addEventListener("click", fillFromWebsite);
+  // Look the website up automatically once, when it's first entered and
+  // there are still details to fill.
+  $("website").addEventListener("change", function () {
+    var url = websiteUrl();
+    if (url && url !== lastFetched && needsWebsiteDetails()) fillFromWebsite();
   });
 
   // ---------- Team members ----------
@@ -184,7 +281,7 @@
   function readForm() {
     var v = function (id) { return $(id).value.trim(); };
     var status = selectedTaxStatus();
-    var asks = Object.prototype.hasOwnProperty.call(REGISTRATION_FOR_STATUS, status);
+    var asks = !!REGISTRATION_STATUSES[status];
     return {
       name: v("orgName"),
       website: v("website") ? normalizeUrl(v("website")) : "",
@@ -290,4 +387,6 @@
   renumberMembers();
   applyTaxStatus();
   updateCounter();
+  $("fill-from-website").disabled = !websiteUrl();
+  lastFetched = websiteUrl();
 })();
