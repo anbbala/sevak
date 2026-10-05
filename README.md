@@ -1,5 +1,7 @@
 # Sevak
 
+*A Service of The ANB Group.*
+
 A simple web app for organizations to publish volunteer events and shifts, and for volunteers to
 sign up in seconds.
 

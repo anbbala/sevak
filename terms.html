@@ -56,6 +56,9 @@
       text-decoration: none;
     }
     .brand svg { width: 32px; height: 32px; flex: none; }
+    .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+    .brand-name { font-weight: 700; font-size: 1.05rem; }
+    .brand-tagline { font-weight: 500; font-size: 0.75rem; color: var(--muted); letter-spacing: 0.01em; }
 
     main { padding-block: 24px 64px; }
     h1 { margin: 0 0 4px; font-size: clamp(2rem, 5vw, 2.6rem); letter-spacing: -0.03em; line-height: 1.1; }
@@ -88,7 +91,7 @@
             <circle cx="14.83" cy="10.17" r="4"/>
           </g>
         </svg>
-        Sevak
+        <span class="brand-text"><span class="brand-name">Sevak</span><span class="brand-tagline">A Service of The ANB Group</span></span>
       </a>
     </div>
   </header>
@@ -97,7 +100,7 @@
     <h1>Terms of Service</h1>
     <p class="updated">Last updated: September 30, 2026</p>
 
-    <p>Welcome to Sevak. These terms apply when you visit this website. By using the site, you agree to them.</p>
+    <p>Welcome to Sevak, a service of The ANB Group ("we", "us"). These terms apply when you visit this website. By using the site, you agree to them.</p>
 
     <h2>1. What Sevak is</h2>
     <p>Sevak is a volunteer management service that we are still building. Right now this website only shares information about what's coming. We'll update these terms before we start offering accounts, event listings or sign-ups.</p>
@@ -111,7 +114,7 @@
     </ul>
 
     <h2>3. Our content</h2>
-    <p>The Sevak name, logo and site content belong to us. You may link to this site and share it with others.</p>
+    <p>The Sevak name, logo and site content belong to The ANB Group. You may link to this site and share it with others.</p>
 
     <h2>4. Privacy</h2>
     <p>Our <a href="privacy.html">Privacy Policy</a> explains how we handle information. In short, we never sell your data, and data collected through an organization's events belongs to that organization.</p>
@@ -131,7 +134,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <span>© 2026 Sevak</span>
+      <span>© 2026 The ANB Group. All rights reserved.</span>
       <span><a href="./">Home</a> · <a href="privacy.html">Privacy Policy</a></span>
     </div>
   </footer>

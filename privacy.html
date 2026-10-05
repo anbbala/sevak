@@ -56,6 +56,9 @@
       text-decoration: none;
     }
     .brand svg { width: 32px; height: 32px; flex: none; }
+    .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+    .brand-name { font-weight: 700; font-size: 1.05rem; }
+    .brand-tagline { font-weight: 500; font-size: 0.75rem; color: var(--muted); letter-spacing: 0.01em; }
 
     main { padding-block: 24px 64px; }
     h1 { margin: 0 0 4px; font-size: clamp(2rem, 5vw, 2.6rem); letter-spacing: -0.03em; line-height: 1.1; }
@@ -88,7 +91,7 @@
             <circle cx="14.83" cy="10.17" r="4"/>
           </g>
         </svg>
-        Sevak
+        <span class="brand-text"><span class="brand-name">Sevak</span><span class="brand-tagline">A Service of The ANB Group</span></span>
       </a>
     </div>
   </header>
@@ -97,7 +100,7 @@
     <h1>Privacy Policy</h1>
     <p class="updated">Last updated: October 5, 2026</p>
 
-    <p>Sevak helps organizations run volunteer events. This policy explains how we handle information. Two commitments come first:</p>
+    <p>Sevak, a service of The ANB Group ("we", "us"), helps organizations run volunteer events. This policy explains how we handle information. Two commitments come first:</p>
     <ul>
       <li><strong>We never sell your data.</strong> We don't sell, rent or trade personal information to anyone, and we don't use it for advertising.</li>
       <li><strong>Data belongs to the host organization.</strong> Information collected through an organization's events, such as sign-ups, rosters, attendance, hours and messages, belongs to that organization. Sevak stores and processes it only to provide the service to them.</li>
@@ -139,7 +142,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <span>© 2026 Sevak</span>
+      <span>© 2026 The ANB Group. All rights reserved.</span>
       <span><a href="./">Home</a> · <a href="terms.html">Terms of Service</a></span>
     </div>
   </footer>
