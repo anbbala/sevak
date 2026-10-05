@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.2 (under-age rules deferred) · **Updated:** 2026-10-05 · **Status:** Draft for review
+**Version:** 2.3 (host organization profile) · **Updated:** 2026-10-05 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -70,6 +70,7 @@ It is written for the founding team, designers, engineers, QA and pilot organiza
 | Role | Who they are | What they need | Account |
 |---|---|---|---|
 | **Host (Owner)** | The person who creates and runs the organization's presence | Full control of the organization profile, events, team and certificates | Email sign-in link |
+| **Host (Admin)** | Senior team members | Everything an Owner can do: edit the organization profile and manage the team | Email sign-in link |
 | **Host (Coordinator)** | Event team members | Manage rosters, mark attendance and send updates, but no organization settings | Email sign-in link |
 | **Volunteer (guest)** | Anyone signing up, often a first-time visitor arriving from a shared link | Find a shift and sign up in under a minute | **None.** They manage sign-ups through a secure link in their email. |
 | **Volunteer (signed in)** | A returning volunteer | Pre-filled sign-up and a private log of their history, hours and certificates | Email sign-in link, no password |
@@ -134,11 +135,12 @@ allows, or right after launch. **Later** means post-MVP.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| ORG-1 | A host can create an organization with a name, type, logo, short description, website, contact email and home city. | Must |
+| ORG-1 | A host can create an **organization profile**, grouped as: **About** (name, an optional website, and a description of 40–1,000 characters), **Primary address** (street, optional suite, city, state, ZIP), **Tax-exempt status** (ORG-8), **Primary contact** (name, optional title, email, phone; this person is the organization's Owner and receives volunteers' replies), and **Team members** (ORG-5). The type (ORG-2) and a logo are also part of the profile but aren't in the prototype yet. *(Prototype: `app/organization.html`.)* | Must |
 | ORG-2 | The organization type is picked from a list: *Nonprofit / charity, School or university, Community group, Faith-based, Government / public agency, Business (CSR), Other*. | Must |
 | ORG-3 | A host can request verification by providing evidence (for example an EIN or charity registration number, an official website, or an email on the organization's own domain). A platform admin approves or rejects the request. Verified organizations show a **Verified** badge everywhere they appear. **Only verified organizations can list events publicly.** Unverified organizations can still create and run private events. | Must |
 | ORG-4 | Each public organization has a clean page at `/o/{slug}` showing its description, type, badge and upcoming public events (as a calendar or list). | Must |
-| ORG-5 | An owner can invite team members by email as **Owner** or **Coordinator**. | Must |
+| ORG-5 | The profile lists up to 20 **team members**, each with a name, email, optional phone and a role. **Coordinators** manage rosters, mark attendance and send updates. **Admins** can also edit the organization profile and manage the team. Each person needs their own email address, because it becomes their login. Team members are invited by email. | Must |
+| ORG-8 | **Tax-exempt status** is one of: 501(c)(3), another tax-exempt status (such as 501(c)(4) or a church), application pending, or not tax-exempt. An **EIN** is required for the first two, optional when pending, and not asked for otherwise. It's used only for verification (ORG-3) and is never shown publicly. Organizations that aren't tax-exempt can still use Sevak. | Must |
 | ORG-6 | Organization visibility is either **Public** (listed and indexed by search engines) or **Private** (no public page, and every event is private). An organization can only become public once it is verified (ORG-3). Until then it works as private. | Must |
 | ORG-7 | Automated verification checks, such as a charity registry lookup or an email-domain match. | Later |
 
@@ -355,8 +357,8 @@ This is the list of screens to build in Phase 1 with mock data.
 |---|---|---|
 | **User** | id, email (unique), first_name, last_name, phone, address (line1, line2, city, state, zip; optional), availability (`weekends`/`weekdays`/`evenings`/`anytime`), is_platform_admin, created_at | One user can be a volunteer, a host team member, or both |
 | **Affiliation** | id, user_id, type (`school`/`scouting`/`faith`/`workplace`/`club`/`other`), name | Up to 5 per User |
-| **Organization** | id, name, slug, type, description, logo_url, website, contact_email, city, visibility (`public`/`private`), verification_status (`unverified`/`pending`/`verified`/`rejected`) | Has many OrgMembers and Events |
-| **OrgMember** | org_id, user_id, role (`owner`/`coordinator`) | Links a User to an Organization |
+| **Organization** | id, name, slug, type, description, logo_url, website, address (line1, line2, city, state, zip), tax_status (`501c3`/`501c-other`/`pending`/`none`), ein (private), primary_contact_user_id, contact_title, visibility (`public`/`private`), verification_status (`unverified`/`pending`/`verified`/`rejected`) | Has many OrgMembers and Events |
+| **OrgMember** | org_id, user_id, role (`owner`/`admin`/`coordinator`), invited_at, accepted_at | Links a User to an Organization |
 | **VerificationRequest** | id, org_id, evidence, status, reviewed_by, reviewed_at | Belongs to an Organization |
 | **Event** | id, org_id, title, slug, description, cover_url, venue, address, city, is_online, timezone, start_date, end_date, visibility (`public`/`private`), invite_only, private_token, status (`draft`/`published`/`completed`/`cancelled`) | Belongs to an Organization. Has many Roles, Shifts, Messages and Invites |
 | **Role** | id, event_id, name, description, requirements | Belongs to an Event. Has many Shifts |

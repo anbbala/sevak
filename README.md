@@ -9,6 +9,7 @@ sign up in seconds.
 - Landing page: [`index.html`](index.html) (static, no build step)
 - Front-end prototype: [`app/`](app/). It uses mock data stored in your browser, with no backend yet.
   - [`app/profile.html`](app/profile.html): volunteer profile
+  - [`app/organization.html`](app/organization.html): host organization profile
 
 ## Preview locally
 

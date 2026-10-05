@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Organization profile · Sevak</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230f766e'/%3E%3Cg fill='%23fff' transform='translate(12 12) scale(.78) translate(-12 -12.4)'%3E%3Crect x='8' y='9' width='8' height='8' transform='rotate(45 12 13)'/%3E%3Ccircle cx='9.17' cy='10.17' r='4'/%3E%3Ccircle cx='14.83' cy='10.17' r='4'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="app.css">
+  <script src="forms.js" defer></script>
+  <script src="organization.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="../">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect width="24" height="24" rx="6" fill="#0f766e"/>
+          <g fill="#fff" transform="translate(12 12) scale(.78) translate(-12 -12.4)">
+            <rect x="8" y="9" width="8" height="8" transform="rotate(45 12 13)"/>
+            <circle cx="9.17" cy="10.17" r="4"/>
+            <circle cx="14.83" cy="10.17" r="4"/>
+          </g>
+        </svg>
+        Sevak
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="banner"><strong>Prototype.</strong> Nothing is sent anywhere. What you enter is saved only in this browser.</p>
+
+    <h1 class="page-title">Organization profile</h1>
+    <p class="page-intro">Tell volunteers who you are. A complete profile also lets us verify your organization so you can list public events.</p>
+
+    <form id="org-form" novalidate>
+      <!-- About the organization -->
+      <fieldset class="section">
+        <legend>About your organization</legend>
+        <p class="section-help">This appears on your public organization page.</p>
+        <div class="stack">
+          <div class="field">
+            <label for="orgName">Organization name</label>
+            <input id="orgName" type="text" autocomplete="organization" required maxlength="120">
+            <p class="error" id="orgName-error"></p>
+          </div>
+          <div class="field">
+            <label for="website">Website <span class="optional">(optional)</span></label>
+            <input id="website" type="url" inputmode="url" autocomplete="url" maxlength="200" placeholder="example.org">
+            <p class="error" id="website-error"></p>
+          </div>
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" required minlength="40" maxlength="1000" aria-describedby="description-hint"></textarea>
+            <div class="field-footer">
+              <p class="hint" id="description-hint">Your mission, who you serve and what volunteers will help with.</p>
+              <p class="counter" id="description-counter" aria-live="polite">0 / 1000</p>
+            </div>
+            <p class="error" id="description-error"></p>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Primary address -->
+      <fieldset class="section">
+        <legend>Primary address</legend>
+        <p class="section-help">Your main office or mailing address. Events can be held anywhere.</p>
+        <div class="grid">
+          <div class="field span-2">
+            <label for="addressLine1">Street address</label>
+            <input id="addressLine1" type="text" autocomplete="address-line1" required maxlength="120">
+            <p class="error" id="addressLine1-error"></p>
+          </div>
+          <div class="field span-2">
+            <label for="addressLine2">Suite, floor, etc. <span class="optional">(optional)</span></label>
+            <input id="addressLine2" type="text" autocomplete="address-line2" maxlength="120">
+          </div>
+          <div class="field">
+            <label for="city">City</label>
+            <input id="city" type="text" autocomplete="address-level2" required maxlength="80">
+            <p class="error" id="city-error"></p>
+          </div>
+          <div class="field">
+            <label for="state">State</label>
+            <input id="state" type="text" autocomplete="address-level1" required maxlength="40">
+            <p class="error" id="state-error"></p>
+          </div>
+          <div class="field">
+            <label for="zip">ZIP code</label>
+            <input id="zip" type="text" autocomplete="postal-code" inputmode="numeric" required maxlength="10" data-zip>
+            <p class="error" id="zip-error"></p>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Tax-exempt status -->
+      <fieldset class="section">
+        <legend>Tax-exempt status</legend>
+        <p class="section-help">We use this to verify your organization. Organizations of every kind are welcome, whether or not they're tax-exempt.</p>
+        <div class="choices choices-wide">
+          <label class="choice"><input type="radio" name="taxStatus" value="501c3" required><span><strong>501(c)(3) public charity or private foundation</strong><small>Donations are tax-deductible</small></span></label>
+          <label class="choice"><input type="radio" name="taxStatus" value="501c-other"><span><strong>Other tax-exempt organization</strong><small>For example 501(c)(4), 501(c)(7), or a church or school</small></span></label>
+          <label class="choice"><input type="radio" name="taxStatus" value="pending"><span><strong>Application pending</strong><small>You've applied to the IRS and are waiting</small></span></label>
+          <label class="choice"><input type="radio" name="taxStatus" value="none"><span><strong>Not tax-exempt</strong><small>For example a community group, business or government agency</small></span></label>
+        </div>
+        <p class="error" id="taxStatus-error"></p>
+
+        <div class="field" id="ein-field" style="margin-top:16px" hidden>
+          <label for="ein">Employer Identification Number (EIN)</label>
+          <input id="ein" type="text" inputmode="numeric" maxlength="10" placeholder="12-3456789">
+          <p class="hint">The 9-digit number on your IRS determination letter. It's used only for verification and isn't shown publicly.</p>
+          <p class="error" id="ein-error"></p>
+        </div>
+      </fieldset>
+
+      <!-- Primary contact -->
+      <fieldset class="section">
+        <legend>Primary contact</legend>
+        <p class="section-help">The main person we and your volunteers can reach. They manage the organization's account.</p>
+        <div class="grid">
+          <div class="field">
+            <label for="contactName">Full name</label>
+            <input id="contactName" type="text" autocomplete="name" required maxlength="120">
+            <p class="error" id="contactName-error"></p>
+          </div>
+          <div class="field">
+            <label for="contactTitle">Title or role <span class="optional">(optional)</span></label>
+            <input id="contactTitle" type="text" autocomplete="organization-title" maxlength="80" placeholder="e.g. Volunteer Coordinator">
+          </div>
+          <div class="field">
+            <label for="contactEmail">Email</label>
+            <input id="contactEmail" type="email" autocomplete="email" required maxlength="254">
+            <p class="hint">Volunteers' replies to your emails go here.</p>
+            <p class="error" id="contactEmail-error"></p>
+          </div>
+          <div class="field">
+            <label for="contactPhone">Phone</label>
+            <input id="contactPhone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="20">
+            <p class="error" id="contactPhone-error"></p>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Team members -->
+      <fieldset class="section">
+        <legend>Team members <span class="optional">(optional)</span></legend>
+        <p class="section-help">People who help run your events. <strong>Coordinators</strong> can manage rosters, mark attendance and send updates. <strong>Admins</strong> can also edit this profile and manage the team.</p>
+        <div class="rows" id="member-rows"></div>
+        <button type="button" class="btn btn-secondary" id="add-member">+ Add a team member</button>
+      </fieldset>
+
+      <div class="save-bar">
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+        <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap">
+          <button type="button" class="btn btn-danger-link" id="delete-org">Delete organization</button>
+          <button type="submit" class="btn btn-primary">Save profile</button>
+        </div>
+      </div>
+    </form>
+
+    <template id="member-template">
+      <div class="member">
+        <div class="member-head">
+          <h3>Team member</h3>
+          <button type="button" class="btn btn-danger-link remove">Remove</button>
+        </div>
+        <div class="grid">
+          <div class="field">
+            <label>Full name</label>
+            <input data-key="name" type="text" required maxlength="120">
+            <p class="error"></p>
+          </div>
+          <div class="field">
+            <label>Role</label>
+            <select data-key="role">
+              <option value="coordinator">Coordinator</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input data-key="email" type="email" required maxlength="254">
+            <p class="error"></p>
+          </div>
+          <div class="field">
+            <label>Phone <span class="optional">(optional)</span></label>
+            <input data-key="phone" type="tel" inputmode="tel" maxlength="20">
+            <p class="error"></p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© 2026 Sevak</span>
+      <span><a href="../terms.html">Terms of Service</a> · <a href="../privacy.html">Privacy Policy</a></span>
+    </div>
+  </footer>
+</body>
+</html>

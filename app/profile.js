@@ -8,90 +8,14 @@
   var form = document.getElementById("profile-form");
   var $ = function (id) { return document.getElementById(id); };
 
-  // ---------- Storage ----------
-
-  function load() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function store(data) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function clearStore() {
-    try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
-  }
-
-  // ---------- Validation ----------
-
-  function digitCount(value) {
-    return (value.match(/\d/g) || []).length;
-  }
-
-  function setError(input, message) {
-    var errorEl = $(input.id + "-error") || $(input.name + "-error");
-    if (message) {
-      input.setAttribute("aria-invalid", "true");
-      if (errorEl) {
-        errorEl.textContent = message;
-        input.setAttribute("aria-describedby", errorEl.id);
-      }
-    } else {
-      input.removeAttribute("aria-invalid");
-      if (errorEl) errorEl.textContent = "";
-    }
-  }
+  var F = window.SevakForms;
 
   function messageFor(input) {
-    var v = input.value.trim();
-
-    if (input.type === "radio") {
-      var group = form.querySelectorAll('input[name="' + input.name + '"]');
-      var picked = Array.prototype.some.call(group, function (r) { return r.checked; });
-      return picked ? "" : "Choose one option.";
-    }
-    if (input.required && !v) return "This field is required.";
-    if (!v) return "";
-    if (input.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
-      return "Enter an email address like name@example.com.";
-    }
-    if (input.type === "tel") {
-      var digits = digitCount(v);
-      if (!/^[0-9+().\-\s]+$/.test(v) || digits < 7 || digits > 15) {
-        return "Enter a phone number with 7 to 15 digits.";
-      }
-    }
-    if (input.id === "zip" && !/^\d{5}(-\d{4})?$/.test(v)) {
-      return "Enter a 5-digit ZIP code.";
-    }
-    return "";
+    return F.basicMessage(input);
   }
 
   function validateForm() {
-    var firstInvalid = null;
-    var seenRadio = {};
-    var inputs = form.querySelectorAll("input[required], input[type=tel], input[type=email], #zip");
-
-    Array.prototype.forEach.call(inputs, function (input) {
-      if (input.type === "radio") {
-        if (seenRadio[input.name]) return;
-        seenRadio[input.name] = true;
-      }
-      var msg = messageFor(input);
-      setError(input, msg);
-      if (msg && !firstInvalid) firstInvalid = input;
-    });
-    return firstInvalid;
+    return F.validate(form.querySelectorAll("input[required], input[type=tel], input[type=email], [data-zip]"), messageFor);
   }
 
   // ---------- Affiliations ----------
@@ -188,18 +112,7 @@
 
   // ---------- Events ----------
 
-  // Clear an error as soon as the field is fixed.
-  form.addEventListener("input", function (e) {
-    var t = e.target;
-    if (t.getAttribute("aria-invalid") === "true" && !messageFor(t)) setError(t, "");
-  });
-  form.addEventListener("change", function (e) {
-    var t = e.target;
-    if (t.type === "radio") {
-      var errorEl = $(t.name + "-error");
-      if (errorEl) errorEl.textContent = "";
-    }
-  });
+  F.clearErrorsAsYouType(form, messageFor);
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -209,14 +122,14 @@
       firstInvalid.focus();
       return;
     }
-    $("status").textContent = store(readForm())
+    $("status").textContent = F.store(STORAGE_KEY, readForm())
       ? "Profile saved on this device."
       : "Couldn't save in this browser. Check that site storage is allowed.";
   });
 
   $("delete-profile").addEventListener("click", function () {
     if (!window.confirm("Delete your profile from this device? This can't be undone.")) return;
-    clearStore();
+    F.clear(STORAGE_KEY);
     form.reset();
     affiliationRows.innerHTML = "";
     updateAffiliationButton();
@@ -225,7 +138,7 @@
 
   // ---------- Start ----------
 
-  var existing = load();
+  var existing = F.load(STORAGE_KEY);
   if (existing) fill(existing);
   updateAffiliationButton();
 })();
