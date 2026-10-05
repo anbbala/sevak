@@ -134,6 +134,65 @@
     container.appendChild(wrap);
   }
 
+  // ---------- Organization header ----------
+
+  var CHARITY_LABELS = {
+    "charity": "Registered charity or nonprofit",
+    "nonprofit-other": "Nonprofit or tax-exempt",
+    "pending": "Registration pending",
+    "none": "Not registered"
+  };
+
+  function initials(name) {
+    var words = name.replace(/[^\p{L}\p{N}\s]/gu, "").split(/\s+/).filter(Boolean);
+    return ((words[0] || "")[0] || "").concat((words[1] || "")[0] || "").toUpperCase() || "?";
+  }
+
+  function countryName(code) {
+    var c = F.countries.filter(function (x) { return x.code === code; })[0];
+    return c ? c.name : "";
+  }
+
+  // Fills a <section class="org-context"> with the organization's header
+  // card: initials, name, place, charity status, verification and links.
+  function renderHeader(box, org) {
+    box.hidden = !org;
+    if (!org) return;
+    box.innerHTML =
+      '<span class="org-avatar" id="org-avatar" aria-hidden="true"></span>' +
+      '<div class="org-context-text">' +
+      '<p class="org-eyebrow">Organization</p>' +
+      '<p class="org-name" id="org-context-name"></p>' +
+      '<p class="org-details" id="org-context-details"></p>' +
+      '</div>' +
+      '<div class="org-context-side">' +
+      '<div class="badges" id="org-context-badges"></div>' +
+      '<div class="org-links">' +
+      '<a id="org-context-website" target="_blank" rel="noopener noreferrer" hidden>Website ↗</a>' +
+      '<a href="organization.html">Edit profile</a>' +
+      '</div>' +
+      '</div>';
+    var $ = function (id) { return box.querySelector("#" + id); };
+    var name = org.name || "Your organization";
+    $("org-avatar").textContent = initials(name);
+    $("org-context-name").textContent = name;
+    var a = org.address || {};
+    var place = [a.city, countryName(a.country)].filter(Boolean).join(", ");
+    $("org-context-details").textContent = [place, CHARITY_LABELS[org.taxStatus] || ""].filter(Boolean).join(" · ");
+    $("org-context-details").hidden = !$("org-context-details").textContent;
+
+    var verified = org.verificationStatus === "verified";
+    var badge = document.createElement("span");
+    badge.className = "badge " + (verified ? "badge-published" : "badge-draft");
+    badge.textContent = verified ? "Verified" : "Not verified yet";
+    if (!verified) badge.title = "Public events stay private until your organization is verified.";
+    $("org-context-badges").appendChild(badge);
+
+    var site = $("org-context-website");
+    site.hidden = !org.website;
+    if (org.website) site.href = org.website;
+  }
+
   migrate();
 
   window.SevakOrgs = {
@@ -144,6 +203,7 @@
     setCurrent: setCurrent,
     save: save,
     remove: remove,
-    renderSwitcher: renderSwitcher
+    renderSwitcher: renderSwitcher,
+    renderHeader: renderHeader
   };
 })();

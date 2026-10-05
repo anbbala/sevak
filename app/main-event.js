@@ -107,6 +107,7 @@
     return;
   }
   $("org-name-crumb").textContent = "Events";
+  window.SevakOrgs.renderHeader($("org-context"), org);
 
   if (mainId && !existing) {
     $("status").textContent = "We couldn't find that main event, so this is a new one.";

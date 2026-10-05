@@ -497,6 +497,7 @@
   }
 
   $("org-name-crumb").textContent = org.name;
+  window.SevakOrgs.renderHeader($("org-context"), org);
   $("use-org-address").hidden = !(org.address && org.address.line1);
   F.fillCountrySelect($("country"));
   if (org.address && org.address.country) $("country").value = org.address.country;
