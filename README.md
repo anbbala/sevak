@@ -9,7 +9,8 @@ sign up in seconds.
 - Landing page: [`index.html`](index.html) (static, no build step)
 - Front-end prototype: [`app/`](app/). It uses mock data stored in your browser, with no backend yet.
   - [`app/profile.html`](app/profile.html): user profile for volunteers and host team members
-  - [`app/organization.html`](app/organization.html): host organization profile
+  - [`app/organization.html`](app/organization.html): host organization profile, with its events list
+  - [`app/event.html`](app/event.html): create and edit an event, with its roles and shifts
 
 ## Preview locally
 

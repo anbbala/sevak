@@ -366,6 +366,59 @@
     (data.team || []).forEach(addMember);
   }
 
+  // ---------- Event list ----------
+
+  function renderEvents() {
+    var E = window.SevakEvents;
+    var saved = !!F.load(STORAGE_KEY);
+    var create = $("create-event");
+    create.hidden = !saved;
+    $("events-hint").hidden = saved;
+
+    var list = $("event-list");
+    list.innerHTML = "";
+    var events = E.all().slice().sort(function (a, b) {
+      return (a.startDate || "9999").localeCompare(b.startDate || "9999");
+    });
+    $("events-empty").hidden = !saved || events.length > 0;
+
+    events.forEach(function (event) {
+      var t = E.totals(event);
+      var li = document.createElement("li");
+      li.className = "event-item";
+
+      var info = document.createElement("div");
+      var h3 = document.createElement("h3");
+      var link = document.createElement("a");
+      link.href = "event.html?id=" + encodeURIComponent(event.id);
+      link.textContent = event.title || "Untitled event";
+      h3.appendChild(link);
+      var meta = document.createElement("p");
+      meta.className = "event-meta";
+      var where = event.location && event.location.type === "online" ? "Online"
+        : (event.location && (event.location.venue || event.location.city)) || "";
+      meta.textContent = [E.rangeLabel(event.startDate, event.endDate), where,
+        E.plural(t.shifts, "shift") + ", " + E.plural(t.volunteers, "volunteer spot")].filter(Boolean).join(" · ");
+      info.appendChild(h3);
+      info.appendChild(meta);
+
+      var badges = document.createElement("div");
+      badges.className = "badges";
+      var statusBadge = document.createElement("span");
+      statusBadge.className = "badge badge-" + (event.status === "published" ? "published" : "draft");
+      statusBadge.textContent = event.status === "published" ? "Published" : "Draft";
+      var visBadge = document.createElement("span");
+      visBadge.className = "badge";
+      visBadge.textContent = event.visibility === "private" ? "Private" : "Public";
+      badges.appendChild(statusBadge);
+      badges.appendChild(visBadge);
+
+      li.appendChild(info);
+      li.appendChild(badges);
+      list.appendChild(li);
+    });
+  }
+
   // ---------- Events ----------
 
   F.clearErrorsAsYouType(form, messageFor);
@@ -390,11 +443,13 @@
     $("status").textContent = F.store(STORAGE_KEY, readForm())
       ? "Organization profile saved on this device."
       : "Couldn't save in this browser. Check that site storage is allowed.";
+    renderEvents();
   });
 
   $("delete-org").addEventListener("click", function () {
-    if (!window.confirm("Delete this organization profile from this device? This can't be undone.")) return;
+    if (!window.confirm("Delete this organization profile and its events from this device? This can't be undone.")) return;
     F.clear(STORAGE_KEY);
+    window.SevakEvents.all().forEach(function (ev) { window.SevakEvents.remove(ev.id); });
     form.reset();
     $("country").value = F.defaultCountry();
     F.resetPhone($("contactPhone"));
@@ -404,6 +459,7 @@
     updateCounter();
     updateOpenLinks();
     $("status").textContent = "Organization profile deleted.";
+    renderEvents();
   });
 
   // ---------- Start ----------
@@ -419,4 +475,5 @@
   $("fill-from-website").disabled = !websiteUrl();
   lastFetched = websiteUrl();
   updateOpenLinks();
+  renderEvents();
 })();

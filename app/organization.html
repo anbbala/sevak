@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="app.css">
   <script src="countries.js" defer></script>
   <script src="forms.js" defer></script>
+  <script src="events-store.js" defer></script>
   <script src="website-import.js" defer></script>
   <script src="organization.js" defer></script>
 </head>
@@ -35,6 +36,16 @@
 
     <h1 class="page-title">Organization profile</h1>
     <p class="page-intro">Tell volunteers who you are. A complete profile also lets us verify your organization so you can list public events.</p>
+
+    <section class="section" id="events" aria-labelledby="events-title">
+      <div class="section-head">
+        <h2 class="section-title" id="events-title">Events</h2>
+        <a class="btn btn-primary btn-small" id="create-event" href="event.html">+ Create event</a>
+      </div>
+      <p class="hint" id="events-hint" style="margin-top:8px" hidden>Save your organization profile below to start creating events.</p>
+      <ul class="event-list" id="event-list"></ul>
+      <p class="empty" id="events-empty" hidden>No events yet. Create one to start recruiting volunteers.</p>
+    </section>
 
     <form id="org-form" novalidate>
       <!-- About the organization -->
