@@ -56,68 +56,18 @@
             <p class="error" id="email-error"></p>
           </div>
           <div class="field">
-            <label for="phone">Mobile phone <span class="optional" id="phone-optional" hidden>(optional)</span></label>
+            <label for="phone">Mobile phone</label>
             <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="20">
             <p class="hint">Only for last-minute updates about shifts you sign up for.</p>
             <p class="error" id="phone-error"></p>
           </div>
-          <div class="field span-2">
-            <label for="dob">Date of birth</label>
-            <input id="dob" name="dob" type="date" required autocomplete="bday">
-            <p class="hint">We use this to check event age limits. It's never shown to anyone.</p>
-            <p class="error" id="dob-error"></p>
-          </div>
         </div>
       </fieldset>
 
-      <!-- Under 13 -->
-      <div class="section notice notice-warn" id="under13" hidden role="status">
-        <p><strong>Volunteers under 13 take part through a parent or guardian.</strong></p>
-        <p>Ask your parent or guardian to create their own Sevak profile and add you under <em>My children</em>. They can then sign you up for shifts.</p>
-      </div>
 
-      <div id="profile-rest">
-        <!-- Parent or guardian (13–17) -->
-        <fieldset class="section" id="guardian-section" hidden>
-          <legend>Parent or guardian</legend>
-          <p class="section-help">Because you're under 18, we need a parent or guardian's contact details. They'll get a copy of your confirmations and can be reached in an emergency.</p>
-          <div class="grid">
-            <div class="field">
-              <label for="guardianName">Full name</label>
-              <input id="guardianName" name="guardianName" type="text" required maxlength="120">
-              <p class="error" id="guardianName-error"></p>
-            </div>
-            <div class="field">
-              <label for="guardianRelationship">Relationship to you</label>
-              <select id="guardianRelationship" name="guardianRelationship" required>
-                <option value="">Choose…</option>
-                <option>Parent</option>
-                <option>Legal guardian</option>
-                <option>Other family member with legal authority</option>
-              </select>
-              <p class="error" id="guardianRelationship-error"></p>
-            </div>
-            <div class="field">
-              <label for="guardianEmail">Email</label>
-              <input id="guardianEmail" name="guardianEmail" type="email" required maxlength="254">
-              <p class="error" id="guardianEmail-error"></p>
-            </div>
-            <div class="field">
-              <label for="guardianPhone">Mobile phone</label>
-              <input id="guardianPhone" name="guardianPhone" type="tel" inputmode="tel" required maxlength="20">
-              <p class="error" id="guardianPhone-error"></p>
-            </div>
-            <div class="field span-2">
-              <label class="check">
-                <input id="guardianAware" name="guardianAware" type="checkbox" required>
-                <span>My parent or guardian knows I'm volunteering with Sevak. I understand they'll be emailed to confirm before I can sign up for shifts.</span>
-              </label>
-              <p class="error" id="guardianAware-error"></p>
-            </div>
-          </div>
-        </fieldset>
+      <div>
 
-        <!-- Address (adults only) -->
+        <!-- Address -->
         <fieldset class="section" id="address-section">
           <legend>Address <span class="optional">(optional)</span></legend>
           <p class="section-help">Helps us show events near you. Organizations never see your street address.</p>
@@ -146,15 +96,6 @@
           </div>
         </fieldset>
 
-        <!-- City only (13–17) -->
-        <fieldset class="section" id="teen-city-section" hidden>
-          <legend>Your city <span class="optional">(optional)</span></legend>
-          <p class="section-help">Helps us show events near you. We don't ask volunteers under 18 for a home address.</p>
-          <div class="field">
-            <label for="teenCity">City</label>
-            <input id="teenCity" name="teenCity" type="text" autocomplete="address-level2" maxlength="80">
-          </div>
-        </fieldset>
 
         <!-- Affiliations -->
         <fieldset class="section">
@@ -177,43 +118,6 @@
           <p class="error" id="availability-error"></p>
         </fieldset>
 
-        <!-- Children (adults only) -->
-        <section class="section" id="children-section" aria-labelledby="children-title">
-          <h2 class="section-title" id="children-title">My children <span class="optional">(optional)</span></h2>
-          <p class="section-help">Add children under 18 so you can sign them up for shifts. This is the only way children under 13 can volunteer. Children don't get their own login, and every email about them comes to you.</p>
-          <ul class="child-list" id="child-list"></ul>
-          <button type="button" class="btn btn-secondary" id="show-child-form">+ Add a child</button>
-
-          <div class="child-form" id="child-form" hidden>
-            <div class="grid">
-              <div class="field">
-                <label for="childName">Child's full name</label>
-                <input id="childName" type="text" maxlength="120">
-                <p class="error" id="childName-error"></p>
-              </div>
-              <div class="field">
-                <label for="childDob">Date of birth</label>
-                <input id="childDob" type="date">
-                <p class="error" id="childDob-error"></p>
-              </div>
-              <div class="field span-2">
-                <label for="childAffiliation">School or group <span class="optional">(optional)</span></label>
-                <input id="childAffiliation" type="text" maxlength="120" placeholder="e.g. Lincoln Elementary, Cub Scout Pack 12">
-              </div>
-              <div class="field span-2">
-                <label class="check">
-                  <input id="childConsent" type="checkbox">
-                  <span>I'm this child's parent or legal guardian, and I agree to Sevak storing their name, date of birth and school or group so I can sign them up for volunteer shifts.</span>
-                </label>
-                <p class="error" id="childConsent-error"></p>
-              </div>
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px">
-              <button type="button" class="btn btn-primary" id="add-child">Add child</button>
-              <button type="button" class="btn btn-secondary" id="cancel-child">Cancel</button>
-            </div>
-          </div>
-        </section>
       </div>
 
       <div class="save-bar">

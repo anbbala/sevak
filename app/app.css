@@ -179,11 +179,6 @@ input:focus-visible, select:focus-visible, button:focus-visible, .choice input:f
 .choice small { display: block; color: var(--muted); font-size: 0.82rem; }
 .choice input:checked + span { border-color: var(--primary); background: var(--primary-soft); box-shadow: inset 0 0 0 1px var(--primary); }
 
-/* Checkbox rows */
-.field label.check, .check { font-weight: 400; }
-.check { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; font-size: 0.92rem; }
-.check input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--primary); }
-
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -208,23 +203,8 @@ input:focus-visible, select:focus-visible, button:focus-visible, .choice input:f
 
 /* Repeating rows (affiliations) */
 .rows { display: grid; gap: 12px; margin-bottom: 12px; }
-.row { display: grid; grid-template-columns: 180px 1fr auto; gap: 10px; align-items: end; }
+.row { display: grid; grid-template-columns: 220px 1fr auto; gap: 10px; align-items: end; }
 .row .remove { min-height: 44px; }
-
-/* Child cards */
-.child-list { display: grid; gap: 10px; margin: 0 0 12px; padding: 0; list-style: none; }
-.child-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-.child-card strong { display: block; }
-.child-card small { color: var(--muted); }
-.child-form { margin-top: 4px; padding: 16px; border: 1px dashed var(--input-border); border-radius: 12px; }
 
 /* Save bar */
 .save-bar {

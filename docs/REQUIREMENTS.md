@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.1 (decisions recorded) · **Updated:** 2026-09-30 · **Status:** Draft for review
+**Version:** 2.2 (under-age rules deferred) · **Updated:** 2026-10-05 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -73,7 +73,6 @@ It is written for the founding team, designers, engineers, QA and pilot organiza
 | **Host (Coordinator)** | Event team members | Manage rosters, mark attendance and send updates, but no organization settings | Email sign-in link |
 | **Volunteer (guest)** | Anyone signing up, often a first-time visitor arriving from a shared link | Find a shift and sign up in under a minute | **None.** They manage sign-ups through a secure link in their email. |
 | **Volunteer (signed in)** | A returning volunteer | Pre-filled sign-up and a private log of their history, hours and certificates | Email sign-in link, no password |
-| **Parent / guardian** | An adult signing up their child, which is the only way a child under 13 can take part | Sign up and manage shifts for the child. All emails go to the parent. | Same as a volunteer. The child never has a login. |
 | **Platform admin** | Us | Verify organizations and remove abusive content | Email sign-in link plus 2FA |
 
 **Assumptions about users:** Hosts are busy and often not technical. Many are volunteers
@@ -124,12 +123,12 @@ allows, or right after launch. **Later** means post-MVP.
 | 2 | As a prospective volunteer, I want to very easily sign up for one or more time shifts. | SGN-1 to SGN-8 |
 | 3 | As an event host, I want to send confirmation emails to those who signed up, and after my team has checked that they volunteered, send an official certificate or branded email confirming their participation. | COM-1, COM-2, ATT-1 to ATT-6 |
 | 4 | As an event host, I want to send regular communications and event updates to volunteers. | COM-3 to COM-6 |
-| 5 | As a volunteer, I'd like a profile so future sign-ups are one click (not a must). | VOL-2, VOL-11, VOL-12 (Should) |
+| 5 | As a volunteer, I'd like a profile so future sign-ups are one click (not a must). | VOL-2 (Should) |
 | 6 | As an event host, I want a trusted, vetted profile for my organization that shows what type of organization it is, plus clean event pages. | ORG-1 to ORG-5, EVT-7, EVT-8 |
 | 7 | As a volunteer, I want to see all available events on a calendar, filtered by city and/or by organization. | DSC-1 to DSC-4 |
 | 8 | As an event host, I want to restrict visibility for private events or organizations while still inviting volunteers by email, text or WhatsApp. | ORG-6, PRV-1 to PRV-5 |
 | 9 | As a volunteer, I want to join private events and keep my own log of them that isn't public, like private Venmo transactions. | VOL-1, VOL-3, VOL-4, §5 |
-| 10 | *(Decision, 2026-09-30)* The minimum age is 13. A parent can take part on behalf of a child under 13, and events can set a higher minimum age. | EVT-2, SGN-12, SGN-13, VOL-9, VOL-10 |
+| 10 | *(Deferred, 2026-10-05)* Rules for under-age volunteers, such as a minimum age and parents signing up children. | §4.10 (Later) |
 
 ### 4.1 Organization profile and trust
 
@@ -148,7 +147,7 @@ allows, or right after launch. **Later** means post-MVP.
 | ID | Requirement | Priority |
 |---|---|---|
 | EVT-1 | A host can create an event with a title, description, cover image, location (address and city, or online), time zone, and a start and end date. The event can be single-day or multi-day. | Must |
-| EVT-2 | A host can define roles with a name, a description, and what to bring or requirements. A host can set a **minimum age** (for example 16+ or 18+) for the whole event or for a single role. With no minimum set, children under 13 can take part through a parent (SGN-13). | Must |
+| EVT-2 | A host can define roles with a name, a description, and what to bring or requirements. | Must |
 | EVT-3 | A host can define shifts for each role on each day, with a start time, end time and capacity. The shift builder has a **"copy to other days"** shortcut so multi-day events are fast to set up. | Must |
 | EVT-4 | An event moves through *Draft → Published → Completed*, or *Cancelled*. Only published events accept sign-ups. | Must |
 | EVT-5 | A host can edit a published event. If a time or location changes, the host is prompted to notify the affected volunteers and sees a preview of the email. | Must |
@@ -175,25 +174,19 @@ allows, or right after launch. **Later** means post-MVP.
 | SGN-9 | The confirmation screen and email include **Add to calendar** (an .ics file and a Google Calendar link). | Should |
 | SGN-10 | The form has an opt-in checkbox: *"Keep me posted about future opportunities from {Organization}."* | Should |
 | SGN-11 | Waitlists for full shifts, and a host-approval sign-up mode. In the MVP every sign-up is **confirmed automatically** (decision Q3). | Later |
-| SGN-12 | A person signing up for themselves confirms they are **at least 13**, or older if the event or role requires it (EVT-2). If they are too young, the form explains why and offers the parent option where it is allowed. | Must |
-| SGN-13 | A **parent or guardian can sign up a child** by choosing "I'm signing up my child" and entering the child's name and age. They confirm they are the child's parent or guardian and give consent. **This is the only way a child under 13 can take part.** The parent's email and phone are used for every message. The child's name appears on the roster and the certificate. The child's age is checked against the event's minimum age. | Must |
 
 ### 4.4 Volunteer profile and private log
 
 | ID | Requirement | Priority |
 |---|---|---|
 | VOL-1 | Any volunteer who has signed up can **sign in with their email** using a one-time link, with no password. The email address is their identity. | Must |
-| VOL-2 | A signed-in volunteer can keep a **profile** so future sign-ups are pre-filled and take one click. The profile holds: first and last name, email, mobile phone, date of birth (used only for age checks and never shown), an optional address, optional **affiliations** (up to 5, each with a type such as school, Scouting, faith community, workplace or club, plus a name), and **usual availability** (weekends only, weekdays, evenings only, or anytime). Organizations never see the street address. *(Prototype: `app/profile.html`.)* | Should |
-| VOL-11 | **Profiles for volunteers aged 13–17** also need a parent or guardian's name, relationship, email and phone. The guardian's email must be different from the teen's. The teen confirms their guardian knows they're volunteering. The guardian is then emailed to confirm before the teen can sign up for shifts, and gets copies of the teen's confirmations. Teens give only a city, never a home address, and their own phone is optional. | Should |
-| VOL-12 | **Anyone under 13 cannot create a profile.** The form explains that a parent or guardian must create a profile and add the child under *My children* (VOL-10). | Should |
+| VOL-2 | A signed-in volunteer can keep a **profile** so future sign-ups are pre-filled and take one click. The profile holds: first and last name, email, mobile phone, an optional address, optional **affiliations** (up to 5, each with a type such as school, Scouting, faith community, workplace or club, plus a name), and **usual availability** (weekends only, weekdays, evenings only, or anytime). Organizations never see the street address. *(Prototype: `app/profile.html`.)* | Should |
 | VOL-3 | A signed-in volunteer has a **"My volunteering"** page showing upcoming and past shifts across all organizations, **including private events**, with hours credited and certificates. | Must |
 | VOL-4 | The log is **private to the volunteer.** Hosts only ever see records for their own organization's events. Nothing about a private event appears on any public page, in search, or to other volunteers. | Must |
 | VOL-5 | A volunteer can download a summary of their hours as a PDF or CSV, for example for school or employer service-hour requirements. | Should |
 | VOL-6 | A volunteer can export or delete their account and data (see open question Q9 on what the organization keeps). | Must |
 | VOL-7 | An optional public volunteer profile or shareable badge. Entries from private events would never be shown on it. | Later |
 | VOL-8 | Skills and interests, and **matching** shifts to a volunteer's availability (VOL-2 collects availability now). | Later |
-| VOL-9 | A parent's "My volunteering" log also shows the shifts, hours and certificates of children they signed up, grouped by child. Children under 13 never have their own login. | Must |
-| VOL-10 | A signed-in adult can add children under 18 to their profile (name, date of birth, and an optional school or group) after confirming they are the parent or legal guardian and consenting to storage. They can then sign a child up in one click. | Should |
 
 ### 4.5 Discovery
 
@@ -258,6 +251,23 @@ allows, or right after launch. **Later** means post-MVP.
 
 ---
 
+### 4.10 Future: under-age volunteers
+
+*Deferred on 2026-10-05.* The MVP does not collect date of birth and does not have age-based rules.
+The requirements below are kept here for a future release.
+
+| ID | Requirement | Priority |
+|---|---|---|
+| EVT-13 | A host can set a **minimum age** (for example 16+ or 18+) for the whole event or for a single role. | Later |
+| SGN-12 | A person signing up for themselves confirms they are **at least 13**, or older if the event or role requires it (EVT-13). If they are too young, the form explains why and offers the parent option where it is allowed. | Later |
+| SGN-13 | A **parent or guardian can sign up a child** by choosing "I'm signing up my child" and entering the child's name and age. They confirm they are the child's parent or guardian and give consent. **This is the only way a child under 13 can take part.** The parent's email and phone are used for every message. The child's name appears on the roster and the certificate. The child's age is checked against the event's minimum age. | Later |
+| VOL-11 | **Profiles for volunteers aged 13–17** also need a parent or guardian's name, relationship, email and phone. The guardian's email must be different from the teen's. The teen confirms their guardian knows they're volunteering. The guardian is then emailed to confirm before the teen can sign up for shifts, and gets copies of the teen's confirmations. Teens give only a city, never a home address, and their own phone is optional. | Later |
+| VOL-12 | **Anyone under 13 cannot create a profile.** The form explains that a parent or guardian must create a profile and add the child under *My children* (VOL-10). | Later |
+| VOL-9 | A parent's "My volunteering" log also shows the shifts, hours and certificates of children they signed up, grouped by child. Children under 13 never have their own login. | Later |
+| VOL-10 | A signed-in adult can add children under 18 to their profile (name, date of birth, and an optional school or group) after confirming they are the parent or legal guardian and consenting to storage. They can then sign a child up in one click. | Later |
+| FUT-1 | Collect **date of birth** (or an age confirmation) to support EVT-13 and the rules above. Under-age data handling must follow COPPA. | Later |
+| FUT-2 | A **parent / guardian** user role: an adult who signs up and manages shifts on behalf of a child. All emails go to the parent, and the child never has a login. | Later |
+
 ## 5. Visibility and privacy model
 
 | Data | Who can see it |
@@ -266,8 +276,7 @@ allows, or right after launch. **Later** means post-MVP.
 | Private organization and private events | Only people with the private link (or on the invite list, if invite-only) and the organization's team. Never listed or indexed. |
 | Who has signed up for a shift | The organization's team only. Public pages show counts (*"4 of 6 spots left"*), never names. |
 | A volunteer's contact details | The volunteer, and the team of any organization whose event they signed up for, for that organization's events only. |
-| "My volunteering" log | The volunteer only. For children, the parent or guardian who signed them up. |
-| A child's details | The parent or guardian who entered them, and the team of the organization running the event. Never shown on public pages. Collected only from the parent, with the parent's consent. |
+| "My volunteering" log | The volunteer only. |
 | Certificate | The volunteer and the issuing organization. Anyone with the verification link sees only the name, event, organization and hours. |
 
 ---
@@ -329,7 +338,7 @@ This is the list of screens to build in Phase 1 with mock data.
 | NFR-5 | Data protection | TLS everywhere, encryption at rest, and no secrets in the repository. An organization's data is only visible to that organization's team. |
 | NFR-6 | Abuse prevention | Rate limits and bot protection on public forms. Private and manage links use long tokens that can't be guessed. |
 | NFR-7 | Privacy | Collect as little data as possible. Meet GDPR and CCPA basics: a privacy policy, consent for non-transactional email, and data export and deletion. Volunteer data is never sold or shared. |
-| NFR-8 | Minors | Self sign-up requires age 13 or older. Children under 13 take part only through a parent or guardian (SGN-13). For a child, we collect only a name and age, entered by the parent with the parent's consent, in line with COPPA. The child never has a login or receives email. Events and roles can set a higher minimum age. |
+| NFR-8 | Minors | Deferred (see §4.10). The MVP collects no date of birth or age information. Under-age support must comply with COPPA when it is built. |
 | NFR-9 | Accessibility | WCAG 2.1 AA: fully usable by keyboard, with labelled controls and enough colour contrast. |
 | NFR-10 | SEO | Public pages are rendered on the server or pre-rendered, with meta tags, Open Graph tags, schema.org `Event` data and a sitemap. Private content is marked `noindex`. |
 | NFR-11 | Time zones | Each event has its own time zone, and times are shown in the event's local time. Multi-day events handle daylight saving changes correctly. |
@@ -344,17 +353,15 @@ This is the list of screens to build in Phase 1 with mock data.
 
 | Entity | Key fields | Relationships |
 |---|---|---|
-| **User** | id, email (unique), first_name, last_name, phone, date_of_birth, address (line1, line2, city, state, zip; adults only), city (teens), availability (`weekends`/`weekdays`/`evenings`/`anytime`), is_platform_admin, created_at | One user can be a volunteer, a parent, a host team member, or any mix |
-| **Child** | id, guardian_user_id, name, date_of_birth, affiliation, consent_at, created_at | Belongs to a parent or guardian User. Never has a login. |
+| **User** | id, email (unique), first_name, last_name, phone, address (line1, line2, city, state, zip; optional), availability (`weekends`/`weekdays`/`evenings`/`anytime`), is_platform_admin, created_at | One user can be a volunteer, a host team member, or both |
 | **Affiliation** | id, user_id, type (`school`/`scouting`/`faith`/`workplace`/`club`/`other`), name | Up to 5 per User |
-| **Guardian** | id, user_id (the teen), name, relationship, email, phone, acknowledged_at, confirmed_at | One per User aged 13–17. Confirmed by email. |
 | **Organization** | id, name, slug, type, description, logo_url, website, contact_email, city, visibility (`public`/`private`), verification_status (`unverified`/`pending`/`verified`/`rejected`) | Has many OrgMembers and Events |
 | **OrgMember** | org_id, user_id, role (`owner`/`coordinator`) | Links a User to an Organization |
 | **VerificationRequest** | id, org_id, evidence, status, reviewed_by, reviewed_at | Belongs to an Organization |
-| **Event** | id, org_id, title, slug, description, cover_url, venue, address, city, is_online, timezone, start_date, end_date, min_age, visibility (`public`/`private`), invite_only, private_token, status (`draft`/`published`/`completed`/`cancelled`) | Belongs to an Organization. Has many Roles, Shifts, Messages and Invites |
-| **Role** | id, event_id, name, description, requirements, min_age | Belongs to an Event. Has many Shifts |
+| **Event** | id, org_id, title, slug, description, cover_url, venue, address, city, is_online, timezone, start_date, end_date, visibility (`public`/`private`), invite_only, private_token, status (`draft`/`published`/`completed`/`cancelled`) | Belongs to an Organization. Has many Roles, Shifts, Messages and Invites |
+| **Role** | id, event_id, name, description, requirements | Belongs to an Event. Has many Shifts |
 | **Shift** | id, event_id, role_id, starts_at, ends_at (stored in UTC), capacity | Belongs to a Role. Has many Signups |
-| **Registration** | id, event_id, user_id, child_id (set when a parent signs up a child), guardian_consent_at, manage_token, opted_in_updates, answers (JSON), created_at | One form submission for one participant. Has many Signups |
+| **Registration** | id, event_id, user_id, manage_token, opted_in_updates, answers (JSON), created_at | One form submission. Has many Signups |
 | **Signup** | id, registration_id, shift_id, status (`confirmed`/`cancelled`), attendance (`unmarked`/`attended`/`no_show`), hours_credited | One volunteer on one Shift |
 | **Invite** | id, event_id, email, sent_at, registration_id (set once they sign up) | Belongs to an Event |
 | **Message** | id, org_id, event_id (optional), audience_filter, subject, body, sent_by, sent_at | Has many MessageDeliveries (recipient, status) |
@@ -418,7 +425,7 @@ This is the list of screens to build in Phase 1 with mock data.
 | Q1 | What is the product name? | **Sevak.** The domain is still to be chosen. |
 | Q2 | Does an organization have to be verified before it can list **public** events? | **Yes.** Unverified organizations can still run **private** events (ORG-3, ORG-6, PRV-1). The MVP uses manual review of an EIN or charity number, a website, or an email on the organization's domain. |
 | Q3 | Should sign-ups be confirmed automatically, or should hosts approve each one? | **Automatic.** COM-2 lets hosts send a "you're confirmed" email. Host approval stays in Later (SGN-11). |
-| Q4 | What is the policy for minors? | **The minimum age is 13.** A parent or guardian can take part on behalf of a child under 13 (SGN-13, VOL-9). Events and roles can require an older age, such as 16+ or 18+ (EVT-2). |
+| Q4 | What is the policy for minors? | **Deferred (2026-10-05).** The MVP doesn't collect date of birth and has no age rules. The earlier proposal (a minimum age of 13, parents signing up younger children, and event minimum ages) is kept as future requirements in §4.10. |
 | Q10 | Hosting | **Front end only for now, hosted on GitHub Pages.** Server rendering for SEO (NFR-10) gets revisited when we design the Phase 2 back end and deployment. |
 
 ### 12.2 Still open
@@ -430,7 +437,6 @@ This is the list of screens to build in Phase 1 with mock data.
 | Q7 | Where do we launch first? | One country (US) and one or two pilot cities. |
 | Q8 | What does it cost? | Free during the pilot. Decide on pricing afterwards. |
 | Q9 | How long do organizations keep a volunteer's records after the volunteer deletes their account? | Keep the attendance records and certificates the organization issued. Remove the volunteer's profile and login. |
-| Q11 | Should a parent be able to sign up a teenager aged 13–17 as well, or must teens sign up for themselves? | Allow both. A parent can sign up any child, but children under 13 can *only* be signed up by a parent. |
 
 ---
 
@@ -454,7 +460,7 @@ This is the list of screens to build in Phase 1 with mock data.
 | **Invite-only** | A private event where only invited email addresses can sign up |
 | **One-time sign-in link** | Passwordless sign-in: a single-use link sent by email |
 | **Verified** | An organization whose identity a platform admin has reviewed. Required before it can list public events. |
-| **Parent / guardian** | An adult who signs up and manages shifts on behalf of a child |
+| **Parent / guardian** | *(Future, §4.10)* An adult who signs up and manages shifts on behalf of a child |
 | **SEO** | Search engine optimization |
 | **2FA** | Two-factor authentication |
 | **BGC** | Background check (post-MVP) |
