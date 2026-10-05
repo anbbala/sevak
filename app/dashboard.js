@@ -13,6 +13,12 @@
   var NEEDS_FILL_BELOW = 0.5;
   var NEEDS_WITHIN_DAYS = 14;
 
+  // dashboard.html?demo=1 loads the demo organization and shows it.
+  if (new URLSearchParams(location.search).get("demo") === "1" && window.SevakDemo) {
+    window.SevakDemo.load();
+    history.replaceState(null, "", location.pathname);
+  }
+
   var org = O.current();
   var view = "chart";
 
@@ -299,6 +305,20 @@
   }
 
   // ---------- Start ----------
+
+  // Demo data buttons work with or without an organization.
+  var D = window.SevakDemo;
+  $("load-demo").textContent = D.isLoaded() ? "Reload demo data" : "Load demo data";
+  $("remove-demo").hidden = !D.isLoaded();
+  $("load-demo").addEventListener("click", function () {
+    D.load();
+    location.href = location.pathname;
+  });
+  $("remove-demo").addEventListener("click", function () {
+    if (!window.confirm("Remove the demo organization and all its events and sign-ups?")) return;
+    D.remove();
+    location.href = location.pathname;
+  });
 
   O.renderSwitcher($("org-switcher"), { switchTo: "dashboard.html" });
   O.renderHeader($("org-context"), org);

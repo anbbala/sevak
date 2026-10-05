@@ -13,6 +13,7 @@
   <script src="orgs-store.js" defer></script>
   <script src="events-store.js" defer></script>
   <script src="signups-store.js" defer></script>
+  <script src="demo-data.js" defer></script>
   <script src="dashboard.js" defer></script>
 </head>
 <body>
@@ -49,7 +50,7 @@
 
     <div class="section notice notice-warn" id="no-org" hidden>
       <p><strong>Create your organization profile first.</strong></p>
-      <p>The dashboard shows an organization's events. <a href="organization.html">Set up your organization profile</a>, then create events.</p>
+      <p>The dashboard shows an organization's events. <a href="organization.html">Set up your organization profile</a>, then create events. Or <a href="dashboard.html?demo=1">load demo data</a> to try it out.</p>
     </div>
 
     <div id="dashboard" hidden>
@@ -122,8 +123,13 @@
       </section>
 
       <section class="section sample-card" aria-labelledby="sample-title">
-        <h2 class="section-title" id="sample-title">Sample sign-ups</h2>
-        <p class="section-help">Volunteers can't sign up in the prototype yet. To see the dashboard with numbers, add made-up sign-ups to this organization's upcoming events. They're marked as samples and can be removed at any time.</p>
+        <h2 class="section-title" id="sample-title">Test data</h2>
+        <p class="section-help"><strong>Demo data</strong> adds a separate organization, <em>Riverside Community Arts (demo)</em>, with two main events and their sub-events, standalone events, several roles and shifts, and sign-ups at different levels. Your own organizations and events aren't changed. You can also open <a href="dashboard.html?demo=1">dashboard.html?demo=1</a> to load it.</p>
+        <div class="fill-row">
+          <button type="button" class="btn btn-secondary btn-small" id="load-demo">Load demo data</button>
+          <button type="button" class="btn btn-danger-link" id="remove-demo" hidden>Remove demo data</button>
+        </div>
+        <p class="section-help" style="margin-top:16px"><strong>Sample sign-ups</strong> add made-up volunteers to this organization's upcoming events. They're marked as samples and can be removed at any time.</p>
         <div class="fill-row">
           <button type="button" class="btn btn-secondary btn-small" id="add-samples">Add sample sign-ups</button>
           <button type="button" class="btn btn-danger-link" id="remove-samples" hidden>Remove sample sign-ups</button>
