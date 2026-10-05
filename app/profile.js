@@ -50,7 +50,7 @@
   }
 
   function validateForm() {
-    var fields = form.querySelectorAll("#role-volunteer, input[required], input[type=tel], input[type=email], [data-zip]");
+    var fields = form.querySelectorAll("#role-volunteer, input[required], input[type=tel], input[type=email], [data-postal]");
     return F.validate(fields, messageFor);
   }
 
@@ -153,7 +153,7 @@
       firstName: v("firstName"),
       lastName: v("lastName"),
       email: v("email"),
-      phone: v("phone"),
+      phone: F.phoneValue($("phone")),
       roles: { volunteer: isVolunteer(), host: isHost() },
       updatedAt: new Date().toISOString()
     };
@@ -163,11 +163,12 @@
     if (isVolunteer()) {
       var availability = form.querySelector('input[name="availability"]:checked');
       data.address = {
+        country: $("country").value,
         line1: v("addressLine1"),
         line2: v("addressLine2"),
         city: v("city"),
         state: v("state"),
-        zip: v("zip")
+        postalCode: v("postalCode")
       };
       data.affiliations = readRows(affiliationRows);
       data.availability = availability ? availability.value : "";
@@ -180,7 +181,7 @@
     set("firstName", data.firstName);
     set("lastName", data.lastName);
     set("email", data.email);
-    set("phone", data.phone);
+    F.setPhone($("phone"), data.phone);
     // Profiles saved before user types existed were volunteer profiles.
     var roles = data.roles || { volunteer: true, host: false };
     $("role-volunteer").checked = !!roles.volunteer;
@@ -191,7 +192,8 @@
       set("addressLine2", data.address.line2);
       set("city", data.address.city);
       set("state", data.address.state);
-      set("zip", data.address.zip);
+      set("postalCode", data.address.postalCode || data.address.zip);
+      if (data.address.country) $("country").value = data.address.country;
     }
     (data.affiliations || []).forEach(addAffiliation);
     if (data.availability) {
@@ -221,6 +223,8 @@
     if (!window.confirm("Delete your profile from this device? This can't be undone.")) return;
     F.clear(STORAGE_KEY);
     form.reset();
+    $("country").value = F.defaultCountry();
+    F.resetPhone($("phone"));
     affiliationRows.innerHTML = "";
     orgRows.innerHTML = "";
     updateAffiliationButton();
@@ -230,6 +234,9 @@
   });
 
   // ---------- Start ----------
+
+  F.fillCountrySelect($("country"));
+  F.enhancePhone($("phone"));
 
   var existing = F.load(STORAGE_KEY);
   if (existing) fill(existing);

@@ -8,6 +8,7 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230f766e'/%3E%3Cg fill='%23fff' transform='translate(12 12) scale(.78) translate(-12 -12.4)'%3E%3Crect x='8' y='9' width='8' height='8' transform='rotate(45 12 13)'/%3E%3Ccircle cx='9.17' cy='10.17' r='4'/%3E%3Ccircle cx='14.83' cy='10.17' r='4'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="stylesheet" href="app.css">
+  <script src="countries.js" defer></script>
   <script src="forms.js" defer></script>
   <script src="profile.js" defer></script>
 </head>
@@ -59,7 +60,7 @@
           <div class="field">
             <label for="phone">Mobile phone</label>
             <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="20">
-            <p class="hint">Only for last-minute updates about events.</p>
+            <p class="hint">Only used for last-minute updates about events.</p>
             <p class="error" id="phone-error"></p>
           </div>
         </div>
@@ -94,6 +95,10 @@
           <p class="section-help">Helps us show events near you. Organizations never see your street address.</p>
           <div class="grid">
             <div class="field span-2">
+              <label for="country">Country or region</label>
+              <select id="country" name="country" autocomplete="country"></select>
+            </div>
+            <div class="field span-2">
               <label for="addressLine1">Street address</label>
               <input id="addressLine1" name="addressLine1" type="text" autocomplete="address-line1" maxlength="120">
             </div>
@@ -102,17 +107,17 @@
               <input id="addressLine2" name="addressLine2" type="text" autocomplete="address-line2" maxlength="120">
             </div>
             <div class="field">
-              <label for="city">City</label>
+              <label for="city">City or town</label>
               <input id="city" name="city" type="text" autocomplete="address-level2" maxlength="80">
             </div>
             <div class="field">
-              <label for="state">State</label>
-              <input id="state" name="state" type="text" autocomplete="address-level1" maxlength="40">
+              <label for="state">State, province or region</label>
+              <input id="state" name="state" type="text" autocomplete="address-level1" maxlength="60">
             </div>
             <div class="field">
-              <label for="zip">ZIP code</label>
-              <input id="zip" name="zip" type="text" autocomplete="postal-code" inputmode="numeric" maxlength="10" data-zip>
-              <p class="error" id="zip-error"></p>
+              <label for="postalCode">Postal code</label>
+              <input id="postalCode" name="postalCode" type="text" autocomplete="postal-code" maxlength="12" data-postal data-country="country">
+              <p class="error" id="postalCode-error"></p>
             </div>
           </div>
         </fieldset>

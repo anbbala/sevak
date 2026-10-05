@@ -8,6 +8,7 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230f766e'/%3E%3Cg fill='%23fff' transform='translate(12 12) scale(.78) translate(-12 -12.4)'%3E%3Crect x='8' y='9' width='8' height='8' transform='rotate(45 12 13)'/%3E%3Ccircle cx='9.17' cy='10.17' r='4'/%3E%3Ccircle cx='14.83' cy='10.17' r='4'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="stylesheet" href="app.css">
+  <script src="countries.js" defer></script>
   <script src="forms.js" defer></script>
   <script src="organization.js" defer></script>
 </head>
@@ -51,6 +52,12 @@
             <p class="error" id="website-error"></p>
           </div>
           <div class="field">
+            <label for="whatsappLink">WhatsApp group, community or channel <span class="optional">(optional)</span></label>
+            <input id="whatsappLink" type="url" inputmode="url" maxlength="200" placeholder="https://chat.whatsapp.com/…">
+            <p class="hint">Volunteers can tap this link to join. Use an invite link from WhatsApp, or a wa.me link to a number.</p>
+            <p class="error" id="whatsappLink-error"></p>
+          </div>
+          <div class="field">
             <label for="description">Description</label>
             <textarea id="description" required minlength="40" maxlength="1000" aria-describedby="description-hint"></textarea>
             <div class="field-footer">
@@ -68,6 +75,11 @@
         <p class="section-help">Your main office or mailing address. Events can be held anywhere.</p>
         <div class="grid">
           <div class="field span-2">
+            <label for="country">Country or region</label>
+            <select id="country" autocomplete="country" required></select>
+            <p class="error" id="country-error"></p>
+          </div>
+          <div class="field span-2">
             <label for="addressLine1">Street address</label>
             <input id="addressLine1" type="text" autocomplete="address-line1" required maxlength="120">
             <p class="error" id="addressLine1-error"></p>
@@ -77,40 +89,39 @@
             <input id="addressLine2" type="text" autocomplete="address-line2" maxlength="120">
           </div>
           <div class="field">
-            <label for="city">City</label>
+            <label for="city">City or town</label>
             <input id="city" type="text" autocomplete="address-level2" required maxlength="80">
             <p class="error" id="city-error"></p>
           </div>
           <div class="field">
-            <label for="state">State</label>
-            <input id="state" type="text" autocomplete="address-level1" required maxlength="40">
-            <p class="error" id="state-error"></p>
+            <label for="state">State, province or region <span class="optional">(if used)</span></label>
+            <input id="state" type="text" autocomplete="address-level1" maxlength="60">
           </div>
           <div class="field">
-            <label for="zip">ZIP code</label>
-            <input id="zip" type="text" autocomplete="postal-code" inputmode="numeric" required maxlength="10" data-zip>
-            <p class="error" id="zip-error"></p>
+            <label for="postalCode">Postal code <span class="optional">(if used)</span></label>
+            <input id="postalCode" type="text" autocomplete="postal-code" maxlength="12" data-postal data-country="country">
+            <p class="error" id="postalCode-error"></p>
           </div>
         </div>
       </fieldset>
 
-      <!-- Tax-exempt status -->
+      <!-- Charity or nonprofit status -->
       <fieldset class="section">
-        <legend>Tax-exempt status</legend>
-        <p class="section-help">We use this to verify your organization. Organizations of every kind are welcome, whether or not they're tax-exempt.</p>
+        <legend>Charity or nonprofit status</legend>
+        <p class="section-help">We use this to verify your organization. Organizations of every kind are welcome, whether or not they're registered.</p>
         <div class="choices choices-wide">
-          <label class="choice"><input type="radio" name="taxStatus" value="501c3" required><span><strong>501(c)(3) public charity or private foundation</strong><small>Donations are tax-deductible</small></span></label>
-          <label class="choice"><input type="radio" name="taxStatus" value="501c-other"><span><strong>Other tax-exempt organization</strong><small>For example 501(c)(4), 501(c)(7), or a church or school</small></span></label>
-          <label class="choice"><input type="radio" name="taxStatus" value="pending"><span><strong>Application pending</strong><small>You've applied to the IRS and are waiting</small></span></label>
-          <label class="choice"><input type="radio" name="taxStatus" value="none"><span><strong>Not tax-exempt</strong><small>For example a community group, business or government agency</small></span></label>
+          <label class="choice"><input type="radio" name="taxStatus" value="charity" required><span><strong>Registered charity or nonprofit</strong><small>Registered with a charity regulator or tax authority, such as a US 501(c)(3), a UK registered charity or a Canadian registered charity</small></span></label>
+          <label class="choice"><input type="radio" name="taxStatus" value="nonprofit-other"><span><strong>Other nonprofit or tax-exempt organization</strong><small>For example a place of worship, a school or a nonprofit association</small></span></label>
+          <label class="choice"><input type="radio" name="taxStatus" value="pending"><span><strong>Registration pending</strong><small>You've applied and are waiting</small></span></label>
+          <label class="choice"><input type="radio" name="taxStatus" value="none"><span><strong>Not registered</strong><small>For example a community group, business or government agency</small></span></label>
         </div>
         <p class="error" id="taxStatus-error"></p>
 
-        <div class="field" id="ein-field" style="margin-top:16px" hidden>
-          <label for="ein">Employer Identification Number (EIN)</label>
-          <input id="ein" type="text" inputmode="numeric" maxlength="10" placeholder="12-3456789">
-          <p class="hint">The 9-digit number on your IRS determination letter. It's used only for verification and isn't shown publicly.</p>
-          <p class="error" id="ein-error"></p>
+        <div class="field" id="registration-field" style="margin-top:16px" hidden>
+          <label for="registrationNumber">Registration number</label>
+          <input id="registrationNumber" type="text" maxlength="30" autocomplete="off">
+          <p class="hint">The number from your charity regulator or tax authority, for example an EIN in the US, a charity number in the UK or a business number in Canada. It's used only for verification and is never shown publicly.</p>
+          <p class="error" id="registrationNumber-error"></p>
         </div>
       </fieldset>
 

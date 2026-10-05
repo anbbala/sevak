@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.4 (user types and multiple organizations) · **Updated:** 2026-10-05 · **Status:** Draft for review
+**Version:** 2.5 (global use, international phone numbers, WhatsApp) · **Updated:** 2026-10-05 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -137,12 +137,13 @@ allows, or right after launch. **Later** means post-MVP.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| ORG-1 | A host can create an **organization profile**, grouped as: **About** (name, an optional website, and a description of 40–1,000 characters), **Primary address** (street, optional suite, city, state, ZIP), **Tax-exempt status** (ORG-8), **Primary contact** (name, optional title, email, phone; this person is the organization's Owner and receives volunteers' replies), and **Team members** (ORG-5). The type (ORG-2) and a logo are also part of the profile but aren't in the prototype yet. *(Prototype: `app/organization.html`.)* | Must |
+| ORG-1 | A host can create an **organization profile**, grouped as: **About** (name, an optional website, an optional WhatsApp group, community or channel link (ORG-9), and a description of 40–1,000 characters), **Primary address** (country, street, optional suite, city or town, and a state or region and postal code where the country uses them), **Charity or nonprofit status** (ORG-8), **Primary contact** (name, optional title, email, phone; this person is the organization's Owner and receives volunteers' replies), and **Team members** (ORG-5). The type (ORG-2) and a logo are also part of the profile but aren't in the prototype yet. *(Prototype: `app/organization.html`.)* | Must |
 | ORG-2 | The organization type is picked from a list: *Nonprofit / charity, School or university, Community group, Faith-based, Government / public agency, Business (CSR), Other*. | Must |
-| ORG-3 | A host can request verification by providing evidence (for example an EIN or charity registration number, an official website, or an email on the organization's own domain). A platform admin approves or rejects the request. Verified organizations show a **Verified** badge everywhere they appear. **Only verified organizations can list events publicly.** Unverified organizations can still create and run private events. | Must |
+| ORG-3 | A host can request verification by providing evidence (for example a charity or tax registration number such as a US EIN or a UK charity number, an official website, or an email on the organization's own domain). A platform admin approves or rejects the request. Verified organizations show a **Verified** badge everywhere they appear. **Only verified organizations can list events publicly.** Unverified organizations can still create and run private events. | Must |
 | ORG-4 | Each public organization has a clean page at `/o/{slug}` showing its description, type, badge and upcoming public events (as a calendar or list). | Must |
 | ORG-5 | The profile lists up to 20 **team members**, each with a name, email, optional phone and a role. **Coordinators** manage rosters, mark attendance and send updates. **Admins** can also edit the organization profile and manage the team. Each person needs their own email address, because it becomes their login. Team members are invited by email. | Must |
-| ORG-8 | **Tax-exempt status** is one of: 501(c)(3), another tax-exempt status (such as 501(c)(4) or a church), application pending, or not tax-exempt. An **EIN** is required for the first two, optional when pending, and not asked for otherwise. It's used only for verification (ORG-3) and is never shown publicly. Organizations that aren't tax-exempt can still use Sevak. | Must |
+| ORG-8 | **Charity or nonprofit status** works in any country. It is one of: registered charity or nonprofit (for example a US 501(c)(3), a UK registered charity or a Canadian registered charity), another nonprofit or tax-exempt organization, registration pending, or not registered. A **registration number** from the charity regulator or tax authority is required for a registered charity and optional for the others. It's used only for verification (ORG-3) and is never shown publicly. Organizations that aren't registered can still use Sevak. | Must |
+| ORG-9 | An organization can add a **WhatsApp link** to its profile: a group or community invite (`chat.whatsapp.com/…`), a channel (`whatsapp.com/channel/…`) or a click-to-chat number (`wa.me/…`). Other links are rejected. Volunteers can tap it from the organization page to join. | Should |
 | ORG-6 | Organization visibility is either **Public** (listed and indexed by search engines) or **Private** (no public page, and every event is private). An organization can only become public once it is verified (ORG-3). Until then it works as private. | Must |
 | ORG-7 | Automated verification checks, such as a charity registry lookup or an email-domain match. | Later |
 
@@ -184,7 +185,7 @@ allows, or right after launch. **Later** means post-MVP.
 | ID | Requirement | Priority |
 |---|---|---|
 | VOL-1 | Any volunteer who has signed up can **sign in with their email** using a one-time link, with no password. The email address is their identity. | Must |
-| VOL-2 | A signed-in volunteer can keep a **profile** so future sign-ups are pre-filled and take one click. The profile holds: first and last name, email, mobile phone, an optional address, optional **affiliations** (up to 5, each with a type such as school, Scouting, faith community, workplace or club, plus a name), and **usual availability** (weekends only, weekdays, evenings only, or anytime). Organizations never see the street address. *(Prototype: `app/profile.html`.)* | Should |
+| VOL-2 | A signed-in volunteer can keep a **profile** so future sign-ups are pre-filled and take one click. The profile holds: first and last name, email, mobile phone (NFR-16), an optional address (country, street, city or town, and a state or region and postal code where used), optional **affiliations** (up to 5, each with a type such as school, Scouting, faith community, workplace or club, plus a name), and **usual availability** (weekends only, weekdays, evenings only, or anytime). Organizations never see the street address. *(Prototype: `app/profile.html`.)* | Should |
 | VOL-3 | A signed-in volunteer has a **"My volunteering"** page showing upcoming and past shifts across all organizations, **including private events**, with hours credited and certificates. | Must |
 | VOL-4 | The log is **private to the volunteer.** Hosts only ever see records for their own organization's events. Nothing about a private event appears on any public page, in search, or to other volunteers. | Must |
 | VOL-5 | A volunteer can download a summary of their hours as a PDF or CSV, for example for school or employer service-hour requirements. | Should |
@@ -349,7 +350,8 @@ This is the list of screens to build in Phase 1 with mock data.
 | NFR-11 | Time zones | Each event has its own time zone, and times are shown in the event's local time. Multi-day events handle daylight saving changes correctly. |
 | NFR-12 | Browsers | The latest two versions of Chrome, Safari (including iOS), Firefox and Edge. |
 | NFR-13 | Maintainability | The front end and back end are separated by an API. The code is typed. Automated tests cover the core flows (sign-up, capacity, attendance, certificates), and local setup is one command. |
-| NFR-14 | Localization | English only, with dates and times formatted for the user's locale. |
+| NFR-14 | Global use | Sevak is built for use **in any country**, and nothing assumes the US. Addresses have a country and use country-neutral fields ("State, province or region", "Postal code"), with postal-code formats checked for some countries and a lenient check elsewhere. Country names show in the visitor's language, and the country defaults from their browser settings. The interface is English-only for the MVP, with dates and times formatted for the user's locale. |
+| NFR-16 | Phone numbers and WhatsApp | Every phone number is entered with a **country code** (a country picker plus the number, or a number typed with a leading +). It is stored in international **E.164** form (for example +14155550100 or +447911123456), dropping a national leading 0 or a US/Canada leading 1. Each number can be marked **"on WhatsApp"**, which gives it a `wa.me` link so hosts and volunteers can message it directly. |
 | NFR-15 | Email deliverability | Sending from an authenticated domain, with bounce and complaint handling and suppression of bounced addresses. |
 
 ---
@@ -358,9 +360,9 @@ This is the list of screens to build in Phase 1 with mock data.
 
 | Entity | Key fields | Relationships |
 |---|---|---|
-| **User** | id, email (unique), first_name, last_name, phone, is_volunteer, is_host, address (line1, line2, city, state, zip; optional, volunteers only), availability (`weekends`/`weekdays`/`evenings`/`anytime`), is_platform_admin, created_at | One user can be a volunteer, a host team member, or both. A host team member can belong to several Organizations with a different role in each (through OrgMember). |
+| **User** | id, email (unique), first_name, last_name, phone (E.164), phone_country, phone_whatsapp, is_volunteer, is_host, address (country, line1, line2, city, state, postal_code; optional, volunteers only), availability (`weekends`/`weekdays`/`evenings`/`anytime`), is_platform_admin, created_at | One user can be a volunteer, a host team member, or both. A host team member can belong to several Organizations with a different role in each (through OrgMember). |
 | **Affiliation** | id, user_id, type (`school`/`scouting`/`faith`/`workplace`/`club`/`other`), name | Up to 5 per User |
-| **Organization** | id, name, slug, type, description, logo_url, website, address (line1, line2, city, state, zip), tax_status (`501c3`/`501c-other`/`pending`/`none`), ein (private), primary_contact_user_id, contact_title, visibility (`public`/`private`), verification_status (`unverified`/`pending`/`verified`/`rejected`) | Has many OrgMembers and Events |
+| **Organization** | id, name, slug, type, description, logo_url, website, whatsapp_link, address (country, line1, line2, city, state, postal_code), charity_status (`charity`/`nonprofit-other`/`pending`/`none`), registration_number (private), primary_contact_user_id, contact_title, visibility (`public`/`private`), verification_status (`unverified`/`pending`/`verified`/`rejected`) | Has many OrgMembers and Events |
 | **OrgMember** | org_id, user_id, role (`owner`/`admin`/`coordinator`), invited_at, accepted_at. Unique per (org_id, user_id). | Links a User to an Organization |
 | **VerificationRequest** | id, org_id, evidence, status, reviewed_by, reviewed_at | Belongs to an Organization |
 | **Event** | id, org_id, title, slug, description, cover_url, venue, address, city, is_online, timezone, start_date, end_date, visibility (`public`/`private`), invite_only, private_token, status (`draft`/`published`/`completed`/`cancelled`) | Belongs to an Organization. Has many Roles, Shifts, Messages and Invites |
@@ -428,7 +430,7 @@ This is the list of screens to build in Phase 1 with mock data.
 | # | Question | Decision |
 |---|---|---|
 | Q1 | What is the product name? | **Sevak.** The domain is still to be chosen. |
-| Q2 | Does an organization have to be verified before it can list **public** events? | **Yes.** Unverified organizations can still run **private** events (ORG-3, ORG-6, PRV-1). The MVP uses manual review of an EIN or charity number, a website, or an email on the organization's domain. |
+| Q2 | Does an organization have to be verified before it can list **public** events? | **Yes.** Unverified organizations can still run **private** events (ORG-3, ORG-6, PRV-1). The MVP uses manual review of a charity or tax registration number (such as a US EIN or a UK charity number), a website, or an email on the organization's domain. |
 | Q3 | Should sign-ups be confirmed automatically, or should hosts approve each one? | **Automatic.** COM-2 lets hosts send a "you're confirmed" email. Host approval stays in Later (SGN-11). |
 | Q4 | What is the policy for minors? | **Deferred (2026-10-05).** The MVP doesn't collect date of birth and has no age rules. The earlier proposal (a minimum age of 13, parents signing up younger children, and event minimum ages) is kept as future requirements in §4.10. |
 | Q10 | Hosting | **Front end only for now, hosted on GitHub Pages.** Server rendering for SEO (NFR-10) gets revisited when we design the Phase 2 back end and deployment. |
@@ -439,7 +441,7 @@ This is the list of screens to build in Phase 1 with mock data.
 |---|---|---|
 | Q5 | Should public pages show the first names of people who signed up? | No. Show counts only. |
 | Q6 | What goes on the certificate (hours, signer, logo)? Does "official" require sending from the organization's own email domain? | Include hours, the signer's name and title, and a verification link. Send as *"{Organization} via Sevak"* in the MVP, with custom domains later. |
-| Q7 | Where do we launch first? | One country (US) and one or two pilot cities. |
+| Q7 | Where do we launch first? | Sevak is built for any country (NFR-14). Choose one or two pilot cities, which don't have to be in the US. |
 | Q8 | What does it cost? | Free during the pilot. Decide on pricing afterwards. |
 | Q9 | How long do organizations keep a volunteer's records after the volunteer deletes their account? | Keep the attendance records and certificates the organization issued. Remove the volunteer's profile and login. |
 
