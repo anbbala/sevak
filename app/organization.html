@@ -43,8 +43,16 @@
     <p class="page-intro">Tell volunteers who you are. A complete profile also lets us verify your organization so you can list public events.</p>
 
     <form id="org-form" novalidate>
+      <div class="tabs" role="tablist" aria-label="Organization profile sections">
+        <button type="button" class="tab" role="tab" id="tab-about" aria-controls="panel-about" aria-selected="false" tabindex="-1">About<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
+        <button type="button" class="tab" role="tab" id="tab-address" aria-controls="panel-address" aria-selected="false" tabindex="-1">Address<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
+        <button type="button" class="tab" role="tab" id="tab-status" aria-controls="panel-status" aria-selected="false" tabindex="-1">Status<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
+        <button type="button" class="tab" role="tab" id="tab-contact" aria-controls="panel-contact" aria-selected="false" tabindex="-1">Contact<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
+        <button type="button" class="tab" role="tab" id="tab-team" aria-controls="panel-team" aria-selected="false" tabindex="-1">Team<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
+      </div>
+
       <!-- About the organization -->
-      <fieldset class="section">
+      <fieldset class="section tab-panel" role="tabpanel" id="panel-about" aria-labelledby="tab-about">
         <legend>About your organization</legend>
         <p class="section-help">This appears on your public organization page.</p>
         <div class="stack">
@@ -80,10 +88,11 @@
             <p class="error" id="description-error"></p>
           </div>
         </div>
+        <div class="panel-next"><button type="button" class="btn btn-secondary btn-small next-tab" data-next="address">Next: Address →</button></div>
       </fieldset>
 
       <!-- Primary address -->
-      <fieldset class="section">
+      <fieldset class="section tab-panel" role="tabpanel" id="panel-address" aria-labelledby="tab-address">
         <legend>Primary address</legend>
         <p class="section-help">Your main office or mailing address. Events can be held anywhere.</p>
         <div class="grid">
@@ -116,10 +125,11 @@
             <p class="error" id="postalCode-error"></p>
           </div>
         </div>
+        <div class="panel-next"><button type="button" class="btn btn-secondary btn-small next-tab" data-next="status">Next: Status →</button></div>
       </fieldset>
 
       <!-- Charity or nonprofit status -->
-      <fieldset class="section">
+      <fieldset class="section tab-panel" role="tabpanel" id="panel-status" aria-labelledby="tab-status">
         <legend>Charity or nonprofit status</legend>
         <p class="section-help">We use this to verify your organization. Organizations of every kind are welcome, whether or not they're registered.</p>
         <div class="choices choices-wide">
@@ -136,10 +146,11 @@
           <p class="hint">The number from your charity regulator or tax authority, for example an EIN in the US, a charity number in the UK or a business number in Canada. Adding it helps us verify you faster. It's used only for verification and is never shown publicly.</p>
           <p class="error" id="registrationNumber-error"></p>
         </div>
+        <div class="panel-next"><button type="button" class="btn btn-secondary btn-small next-tab" data-next="contact">Next: Contact →</button></div>
       </fieldset>
 
       <!-- Primary contact -->
-      <fieldset class="section">
+      <fieldset class="section tab-panel" role="tabpanel" id="panel-contact" aria-labelledby="tab-contact">
         <legend>Primary contact</legend>
         <p class="section-help">The main person we and your volunteers can reach. They manage the organization's account.</p>
         <div class="grid">
@@ -164,10 +175,11 @@
             <p class="error" id="contactPhone-error"></p>
           </div>
         </div>
+        <div class="panel-next"><button type="button" class="btn btn-secondary btn-small next-tab" data-next="team">Next: Team →</button></div>
       </fieldset>
 
       <!-- Team members -->
-      <fieldset class="section">
+      <fieldset class="section tab-panel" role="tabpanel" id="panel-team" aria-labelledby="tab-team">
         <legend>Team members <span class="optional">(optional)</span></legend>
         <p class="section-help">People who help run your events. <strong>Coordinators</strong> can manage rosters, mark attendance and send updates. <strong>Admins</strong> can also edit this profile and manage the team.</p>
         <div class="rows" id="member-rows"></div>

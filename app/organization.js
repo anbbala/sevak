@@ -210,7 +210,8 @@
     window.SevakWebsite.fetchDetails(url).then(function (details) {
       var filled = applyWebsiteDetails(details);
       if (filled.length) {
-        status.textContent = "Filled in your " + filled.join(" and ") + " from your website. Please check them.";
+        status.textContent = "Filled in your " + filled.join(" and ") + " from your website. Please check them" +
+          (filled.indexOf("address") !== -1 ? " (your address is on the Address tab)." : ".");
       } else if (details.description || details.address) {
         status.textContent = "Your website's details match what's already here, so nothing changed.";
       } else {
@@ -366,6 +367,71 @@
     (data.team || []).forEach(addMember);
   }
 
+  // ---------- Tabs ----------
+  // The profile is one form split into tabs. Hidden panels keep their
+  // fields, so Save checks and saves every tab.
+
+  var tabs = Array.prototype.slice.call(form.querySelectorAll('[role="tab"]'));
+
+  function tabKey(tab) { return tab.id.replace(/^tab-/, ""); }
+
+  function showTab(key, opts) {
+    opts = opts || {};
+    var found = tabs.some(function (t) { return tabKey(t) === key; });
+    if (!found) key = tabKey(tabs[0]);
+    tabs.forEach(function (t) {
+      var selected = tabKey(t) === key;
+      t.setAttribute("aria-selected", selected ? "true" : "false");
+      t.tabIndex = selected ? 0 : -1;
+      $("panel-" + tabKey(t)).classList.toggle("is-hidden", !selected);
+      if (selected && opts.focusTab) t.focus();
+      // Keep the selected tab visible when the tab bar scrolls on small screens.
+      if (selected) t.parentNode.scrollLeft = Math.max(0, t.offsetLeft - (t.parentNode.clientWidth - t.offsetWidth) / 2);
+    });
+    if (opts.updateUrl !== false) history.replaceState(null, "", "#" + key);
+  }
+
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener("click", function () { showTab(tabKey(tab)); });
+    tab.addEventListener("keydown", function (e) {
+      var next = null;
+      if (e.key === "ArrowRight") next = tabs[(i + 1) % tabs.length];
+      else if (e.key === "ArrowLeft") next = tabs[(i - 1 + tabs.length) % tabs.length];
+      else if (e.key === "Home") next = tabs[0];
+      else if (e.key === "End") next = tabs[tabs.length - 1];
+      if (!next) return;
+      e.preventDefault();
+      showTab(tabKey(next), { focusTab: true });
+    });
+  });
+
+  form.querySelectorAll(".next-tab").forEach(function (button) {
+    button.addEventListener("click", function () {
+      showTab(button.dataset.next);
+      var panel = $("panel-" + button.dataset.next);
+      var first = panel.querySelector("input:not([type=hidden]), select, textarea, button");
+      if (first) first.focus();
+      $("tab-" + button.dataset.next).scrollIntoView({ block: "nearest" });
+    });
+  });
+
+  // Marks the tabs that contain errors. Returns them in tab order.
+  function markTabErrors() {
+    var withErrors = [];
+    tabs.forEach(function (t) {
+      var panel = $("panel-" + tabKey(t));
+      var bad = !!panel.querySelector('[aria-invalid="true"]');
+      t.classList.toggle("has-error", bad);
+      t.querySelector(".tab-alert").textContent = bad ? " (needs attention)" : "";
+      if (bad) withErrors.push(tabKey(t));
+    });
+    return withErrors;
+  }
+
+  // Clear a tab's dot once its last error is fixed.
+  form.addEventListener("input", function () { setTimeout(markTabErrors, 0); });
+  form.addEventListener("change", function () { setTimeout(markTabErrors, 0); });
+
   // ---------- Events ----------
 
   F.clearErrorsAsYouType(form, messageFor);
@@ -382,8 +448,14 @@
     applyTaxStatus();
     var fields = form.querySelectorAll("input:not([type=radio]):not([type=checkbox]), select#country, textarea, input[name=taxStatus]");
     var firstInvalid = F.validate(fields, messageFor);
+    var badTabs = markTabErrors();
     if (firstInvalid) {
-      $("status").textContent = "";
+      var panel = firstInvalid.closest('[role="tabpanel"]');
+      if (panel) showTab(panel.id.replace(/^panel-/, ""));
+      var names = badTabs.map(function (k) { return $("tab-" + k).firstChild.textContent; });
+      $("status").textContent = "Please check " + (names.length > 1
+        ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1]
+        : names[0] || "the highlighted fields") + ".";
       firstInvalid.focus();
       return;
     }
@@ -420,4 +492,6 @@
   $("fill-from-website").disabled = !websiteUrl();
   lastFetched = websiteUrl();
   updateOpenLinks();
+  showTab(location.hash.replace("#", ""), { updateUrl: false });
+  window.addEventListener("hashchange", function () { showTab(location.hash.replace("#", ""), { updateUrl: false }); });
 })();

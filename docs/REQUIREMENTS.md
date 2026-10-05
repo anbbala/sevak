@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.9 (separate Organization and Events tabs) · **Updated:** 2026-10-05 · **Status:** Draft for review
+**Version:** 2.10 (organization profile tabs) · **Updated:** 2026-10-05 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -137,7 +137,7 @@ allows, or right after launch. **Later** means post-MVP.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| ORG-1 | A host can create an **organization profile**, grouped as: **About** (name, an optional website, an optional WhatsApp group, community or channel link (ORG-9), and an optional description of up to 1,000 characters), **Primary address** (country, street, optional suite, city or town, and a state or region and postal code where the country uses them), **Charity or nonprofit status** (ORG-8), **Primary contact** (name, optional title, email, phone; this person is the organization's Owner and receives volunteers' replies), and **Team members** (ORG-5). The type (ORG-2) and a logo are also part of the profile but aren't in the prototype yet. *(Prototype: `app/organization.html`.)* | Must |
+| ORG-1 | A host can create an **organization profile**, shown as **tabs** (About · Address · Status · Contact · Team) that share one Save. If something is missing, Save opens the first tab with a problem and marks every tab that needs attention. Each tab ends with a "Next" button, and a link can open a specific tab (for example `#team`). The profile is grouped as: **About** (name, an optional website, an optional WhatsApp group, community or channel link (ORG-9), and an optional description of up to 1,000 characters), **Primary address** (country, street, optional suite, city or town, and a state or region and postal code where the country uses them), **Charity or nonprofit status** (ORG-8), **Primary contact** (name, optional title, email, phone; this person is the organization's Owner and receives volunteers' replies), and **Team members** (ORG-5). The type (ORG-2) and a logo are also part of the profile but aren't in the prototype yet. *(Prototype: `app/organization.html`.)* | Must |
 | ORG-2 | The organization type is picked from a list: *Nonprofit / charity, School or university, Community group, Faith-based, Government / public agency, Business (CSR), Other*. | Must |
 | ORG-3 | A host can request verification by providing evidence (for example a charity or tax registration number such as a US EIN or a UK charity number, an official website, or an email on the organization's own domain). A platform admin approves or rejects the request. Verified organizations show a **Verified** badge everywhere they appear. **Only verified organizations can list events publicly.** Unverified organizations can still create and run private events. | Must |
 | ORG-4 | Each public organization has a clean page at `/o/{slug}` showing its description, type, badge and upcoming public events (as a calendar or list). | Must |
