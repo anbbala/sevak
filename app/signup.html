@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Volunteer · Sevak</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230f766e'/%3E%3Cg fill='%23fff' transform='translate(12 12) scale(.78) translate(-12 -12.4)'%3E%3Crect x='8' y='9' width='8' height='8' transform='rotate(45 12 13)'/%3E%3Ccircle cx='9.17' cy='10.17' r='4'/%3E%3Ccircle cx='14.83' cy='10.17' r='4'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="app.css">
+  <script src="countries.js" defer></script>
+  <script src="forms.js" defer></script>
+  <script src="orgs-store.js" defer></script>
+  <script src="events-store.js" defer></script>
+  <script src="signups-store.js" defer></script>
+  <script src="signup.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="brand" href="../">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect width="24" height="24" rx="6" fill="#0f766e"/>
+          <g fill="#fff" transform="translate(12 12) scale(.78) translate(-12 -12.4)">
+            <rect x="8" y="9" width="8" height="8" transform="rotate(45 12 13)"/>
+            <circle cx="9.17" cy="10.17" r="4"/>
+            <circle cx="14.83" cy="10.17" r="4"/>
+          </g>
+        </svg>
+        <span class="brand-text"><span class="brand-name">Sevak</span><span class="brand-tagline">A Service of The ANB Group</span></span>
+      </a>
+      <nav class="app-nav" aria-label="Prototype pages">
+        <a href="profile.html">My profile</a>
+        <a href="organization.html">Organization</a>
+        <a href="events.html">Events</a>
+        <a href="dashboard.html">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="banner"><strong>Prototype.</strong> Nothing is sent anywhere. Sign-ups are saved only in this browser, and no emails go out.</p>
+
+    <!-- Find events: published, upcoming events from every organization -->
+    <section id="discover-view" hidden>
+      <h1 class="page-title">Volunteer opportunities</h1>
+      <p class="page-intro">Upcoming events looking for volunteers. Pick one to see its shifts and sign up.</p>
+      <ul class="event-list" id="discover-list"></ul>
+      <p class="empty" id="discover-empty" hidden>There are no published upcoming events yet. Hosts can create one on the <a href="events.html">Events</a> tab.</p>
+    </section>
+
+    <!-- Message when the event can't be signed up for -->
+    <div class="section notice notice-warn" id="notice" hidden></div>
+
+    <!-- One event: details, shifts and the sign-up form -->
+    <section id="event-view" hidden>
+      <p class="breadcrumb"><a href="signup.html">← All opportunities</a></p>
+      <p class="host-line" id="host-line"></p>
+      <p class="bar-parent" id="main-line" hidden></p>
+      <h1 class="page-title" id="event-title"></h1>
+      <ul class="event-facts" id="event-facts"></ul>
+      <p class="event-description" id="event-description" hidden></p>
+
+      <form id="signup-form" novalidate>
+        <section class="section" aria-labelledby="shifts-title">
+          <h2 class="section-title" id="shifts-title">Choose your shifts</h2>
+          <p class="section-help" id="shifts-help">Tick one or more. You can sign up for several at once.</p>
+          <div id="shift-groups"></div>
+          <p class="error" id="shifts-error"></p>
+          <p class="notice notice-warn" id="overlap-warning" hidden></p>
+        </section>
+
+        <fieldset class="section" id="details-section">
+          <legend>Your details</legend>
+          <p class="section-help" id="profile-note"></p>
+          <div class="grid">
+            <div class="field span-2">
+              <label for="name">Full name</label>
+              <input id="name" type="text" autocomplete="name" required maxlength="120">
+              <p class="error" id="name-error"></p>
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" type="email" autocomplete="email" required maxlength="254">
+              <p class="hint">Your confirmation goes here.</p>
+              <p class="error" id="email-error"></p>
+            </div>
+            <div class="field">
+              <label for="phone">Mobile phone <span class="optional">(optional)</span></label>
+              <input id="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20">
+              <p class="hint">Only for last-minute changes to your shifts.</p>
+              <p class="error" id="phone-error"></p>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="save-bar">
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+          <button type="submit" class="btn btn-primary" id="submit">Sign up</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- After signing up, and the "manage my sign-up" page -->
+    <section id="confirm-view" hidden>
+      <div class="confirm-head">
+        <span class="confirm-icon" aria-hidden="true">✓</span>
+        <div>
+          <h1 class="page-title" id="confirm-title">You're signed up!</h1>
+          <p class="page-intro" id="confirm-intro"></p>
+        </div>
+      </div>
+      <section class="section" aria-labelledby="my-shifts-title">
+        <h2 class="section-title" id="my-shifts-title">Your shifts</h2>
+        <p class="section-help" id="confirm-event"></p>
+        <ul class="my-shifts" id="my-shifts"></ul>
+        <div class="fill-row" style="margin-top:16px">
+          <button type="button" class="btn btn-secondary btn-small" id="add-calendar">Add to calendar (.ics)</button>
+          <a class="btn btn-secondary btn-small" id="manage-link" href="#">Manage my sign-up</a>
+          <a class="btn btn-secondary btn-small" id="more-shifts" href="#">Sign up for more shifts</a>
+        </div>
+        <p class="hint" id="manage-hint" style="margin-top:12px">In the live app, your confirmation email includes this "Manage my sign-up" link.</p>
+        <p class="status" id="confirm-status" role="status" aria-live="polite"></p>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© 2026 The ANB Group. All rights reserved.</span>
+      <span><a href="../terms.html">Terms of Service</a> · <a href="../privacy.html">Privacy Policy</a></span>
+    </div>
+  </footer>
+</body>
+</html>

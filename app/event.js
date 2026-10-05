@@ -420,6 +420,12 @@
 
   function applyStatus() {
     var published = status === "published";
+    // Link to what volunteers see (a preview while the event is a draft).
+    $("volunteer-link-row").hidden = !eventId;
+    if (eventId) {
+      $("volunteer-link").href = "signup.html?event=" + encodeURIComponent(eventId);
+      $("volunteer-link-hint").textContent = published ? "Share this link with volunteers." : "Preview only until you publish.";
+    }
     $("publish").textContent = published ? "Save changes" : "Publish";
     $("save-draft").textContent = published ? "Unpublish" : "Save draft";
     $("delete-event").hidden = !eventId;

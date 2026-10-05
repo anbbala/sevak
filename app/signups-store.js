@@ -22,6 +22,25 @@
     return counts;
   }
 
+  // Sign-ups made in one form submission (a "registration").
+  function forRegistration(registrationId) {
+    return all().filter(function (s) { return s.registrationId === registrationId; });
+  }
+
+  // True if this email already has a confirmed place on the shift.
+  function isSignedUp(email, shiftId) {
+    var e = (email || "").trim().toLowerCase();
+    return all().some(function (s) {
+      return s.shiftId === shiftId && s.status !== "cancelled" && (s.email || "").toLowerCase() === e;
+    });
+  }
+
+  function cancel(id) {
+    return F.store(KEY, all().map(function (s) {
+      return s.id === id ? Object.assign({}, s, { status: "cancelled", cancelledAt: new Date().toISOString() }) : s;
+    }));
+  }
+
   function addMany(list) {
     return F.store(KEY, all().concat(list));
   }
@@ -37,6 +56,9 @@
   window.SevakSignups = {
     all: all,
     countsByShift: countsByShift,
+    forRegistration: forRegistration,
+    isSignedUp: isSignedUp,
+    cancel: cancel,
     addMany: addMany,
     removeSamples: removeSamples,
     hasSamples: hasSamples

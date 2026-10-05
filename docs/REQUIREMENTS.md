@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.12 (host dashboard) · **Updated:** 2026-10-05 · **Status:** Draft for review
+**Version:** 2.13 (volunteer sign-up page) · **Updated:** 2026-10-05 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -184,6 +184,15 @@ allows, or right after launch. **Later** means post-MVP.
 | SGN-8 | The sign-up form has bot and spam protection (an invisible challenge plus rate limits). | Must |
 | SGN-9 | The confirmation screen and email include **Add to calendar** (an .ics file and a Google Calendar link). | Should |
 | SGN-10 | The form has an opt-in checkbox: *"Keep me posted about future opportunities from {Organization}."* | Should |
+| SGN-14 | **Prototype of the volunteer sign-up page** (`app/signup.html`), covering SGN-1 to SGN-9 and DSC-1:
+
+- **Find events:** lists published, upcoming, public events with spots left. Verified organizations come first. Unverified organizations' events appear in a labeled *Preview: not listed publicly yet* section, per EVT-16. Private events, drafts and past events are never listed.
+- **Event page:** shows the host and its verification, dates, place, time zone (when it differs from the visitor's) and description. Shifts are grouped by day with spots left, and full or past shifts can't be picked.
+- **Signing up:** a volunteer ticks several shifts, gets an overlap warning when times clash, and fills in their details (pre-filled from their saved profile, with the phone in international form). Capacity is re-checked on submit. The same email can't take the same shift twice.
+- **Confirmation:** lists the shifts and offers **Add to calendar** (.ics in the event's time zone) and a **Manage my sign-up** link, where shifts can be cancelled and the spots open up again.
+- **Drafts and the editor:** drafts show a host preview with sign-up closed. The event editor links to the volunteer page.
+
+Sign-ups appear on the host dashboard right away. | Must |
 | SGN-11 | Waitlists for full shifts, and a host-approval sign-up mode. In the MVP every sign-up is **confirmed automatically** (decision Q3). | Later |
 
 ### 4.4 Volunteer profile and private log

@@ -16,6 +16,7 @@ sign up in seconds.
   - [`app/main-event.html`](app/main-event.html): a main event that groups sub-events, such as a festival and its rehearsals
   - [`app/event.html`](app/event.html): create and edit an event, with its roles and shifts
   - [`app/dashboard.html`](app/dashboard.html): upcoming events and volunteers required vs enrolled
+  - [`app/signup.html`](app/signup.html): volunteer side: find events, sign up for shifts, manage or cancel a sign-up
 
 ## Preview locally
 
