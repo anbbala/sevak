@@ -230,6 +230,7 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.5; }
   border: 1px solid transparent;
   cursor: pointer;
 }
+a.btn { text-decoration: none; }
 .btn-primary { background: var(--primary); color: var(--on-primary); }
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -314,6 +315,21 @@ input[type="time"], input[type="number"] {
 .badge-published { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
 .badge-draft { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
 .empty { margin: 16px 0 0; color: var(--muted); }
+.main-group {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+}
+.main-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; }
+.main-head h3 { margin: 0; font-size: 1.05rem; }
+.main-head h3 a { color: inherit; text-decoration: none; }
+.main-head h3 a:hover { text-decoration: underline; }
+.sub-list { margin-top: 12px; padding-left: 14px; border-left: 3px solid var(--primary-soft); }
+.sub-list .event-item { background: var(--surface); }
+.main-group .empty { margin-top: 8px; font-size: 0.9rem; }
+.list-heading { margin: 24px 0 0; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 
 /* Save bar */
 .save-bar {

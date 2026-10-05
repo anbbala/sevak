@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.7 (events under organizations) · **Updated:** 2026-10-05 · **Status:** Draft for review
+**Version:** 2.8 (main events and sub-events) · **Updated:** 2026-10-05 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -86,7 +86,7 @@ themselves. Volunteers are mostly on phones and may arrive cold from a WhatsApp 
 ## 3. Core concepts
 
 ```
-Organization ──< Event ──< Role ──< Shift ──< Sign-up ──> Attendance ──> Certificate
+Organization ──< Main event (optional) ──< Event ──< Role ──< Shift ──< Sign-up ──> Attendance ──> Certificate
                    │                              │
                    └── Updates (messages)         └── Volunteer (identified by email)
 ```
@@ -163,6 +163,7 @@ allows, or right after launch. **Later** means post-MVP.
 | EVT-14 | **Events belong to an organization.** The organization profile has an **Events** section that lists the organization's events by date, showing the dates, location, number of shifts and volunteer spots, and whether each is a Draft or Published and Public or Private. A **Create event** button opens the event editor, and only appears once the organization profile is saved. Deleting an organization deletes its events. *(Prototype: `app/organization.html#events`, `app/event.html`.)* | Must |
 | EVT-15 | **Event editor rules.** Events last 1–31 days. The end date follows the start date for one-day events. The time zone defaults to the host's browser. In-person events need a country, street and city, and the host can copy the organization's address in one click. Online events take an optional meeting link, shown only to volunteers who sign up. Each shift has a day within the event dates, a start time, an end time after the start, and 1–999 volunteers. A new shift copies the role's previous shift. "Copy first day's shifts to every day" skips days that already have the same shift. If the dates change, any shift left outside them is flagged. **Save draft** needs only a name and dates. **Publish** needs everything complete, including at least one role with at least one shift. A published event can be **unpublished** back to a draft. Overnight shifts that end after midnight are a later addition. | Must |
 | EVT-16 | If an organization isn't verified yet, a **public** event stays private until it is (ORG-3, PRV-1), and the editor says so. | Must |
+| EVT-17 | **Main events and sub-events.** An organization can create a **main event** (for example *Arudra*) with a name and an optional description, to group related events called **sub-events** (for example *Arudra*, *Arudra Rehearsal 1* and *Arudra Rehearsal 2*). Each sub-event is a normal event with its own dates, location, roles, shifts, visibility and draft or published status. The main event's dates run from its first sub-event to its last. Main events are optional, so one-off events stay standalone. An event can be put into, moved between, or taken out of a main event from the event editor. The organization page shows each main event with its sub-events nested underneath, then any other events. Deleting a main event keeps its sub-events as standalone events. *(Prototype: `app/main-event.html`.)* | Must |
 | EVT-9 | A host can duplicate an event, for example to repeat it next month. | Should |
 | EVT-10 | A host can add custom sign-up questions to an event, such as T-shirt size or emergency contact. | Should |
 | EVT-11 | A host can add a waiver or policy checkbox that links to the host's own document. | Should |
@@ -369,7 +370,8 @@ This is the list of screens to build in Phase 1 with mock data.
 | **Organization** | id, name, slug, type, description, logo_url, website, whatsapp_link, address (country, line1, line2, city, state, postal_code), charity_status (`charity`/`nonprofit-other`/`pending`/`none`), registration_number (private), primary_contact_user_id, contact_title, visibility (`public`/`private`), verification_status (`unverified`/`pending`/`verified`/`rejected`) | Has many OrgMembers and Events |
 | **OrgMember** | org_id, user_id, role (`owner`/`admin`/`coordinator`), invited_at, accepted_at. Unique per (org_id, user_id). | Links a User to an Organization |
 | **VerificationRequest** | id, org_id, evidence, status, reviewed_by, reviewed_at | Belongs to an Organization |
-| **Event** | id, org_id, title, slug, description, cover_url, venue, address, city, is_online, timezone, start_date, end_date, visibility (`public`/`private`), invite_only, private_token, status (`draft`/`published`/`completed`/`cancelled`) | Belongs to an Organization. Has many Roles, Shifts, Messages and Invites |
+| **MainEvent** | id, org_id, title, description, created_at | Belongs to an Organization. Has many Events (its sub-events) |
+| **Event** | id, org_id, main_event_id (optional), title, slug, description, cover_url, venue, address, city, is_online, timezone, start_date, end_date, visibility (`public`/`private`), invite_only, private_token, status (`draft`/`published`/`completed`/`cancelled`) | Belongs to an Organization. Has many Roles, Shifts, Messages and Invites |
 | **Role** | id, event_id, name, description, requirements | Belongs to an Event. Has many Shifts |
 | **Shift** | id, event_id, role_id, starts_at, ends_at (stored in UTC), capacity | Belongs to a Role. Has many Signups |
 | **Registration** | id, event_id, user_id, manage_token, opted_in_updates, answers (JSON), created_at | One form submission. Has many Signups |

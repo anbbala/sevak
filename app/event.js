@@ -15,7 +15,8 @@
   var $ = function (id) { return document.getElementById(id); };
 
   var org = F.load(ORG_KEY);
-  var eventId = new URLSearchParams(location.search).get("id");
+  var params = new URLSearchParams(location.search);
+  var eventId = params.get("id");
   var existing = eventId ? E.get(eventId) : null;
   var status = existing ? existing.status : "draft";
   var createdAt = existing ? existing.createdAt : null;
@@ -240,6 +241,32 @@
     if (card) card.querySelector('[data-key="name"]').focus();
   });
 
+  // ---------- Main event ----------
+
+  function fillMainEvents(selected) {
+    var select = $("mainEventId");
+    select.innerHTML = "";
+    var none = document.createElement("option");
+    none.value = "";
+    none.textContent = "No, this is a standalone event";
+    select.appendChild(none);
+    E.allMain().slice().sort(function (a, b) { return (a.title || "").localeCompare(b.title || ""); }).forEach(function (m) {
+      var option = document.createElement("option");
+      option.value = m.id;
+      option.textContent = m.title || "Untitled main event";
+      select.appendChild(option);
+    });
+    select.value = selected && E.getMain(selected) ? selected : "";
+  }
+
+  // The back link goes to the main event when there is one.
+  function applyBreadcrumb() {
+    var main = E.getMain($("mainEventId").value);
+    $("back-link").href = main ? "main-event.html?id=" + encodeURIComponent(main.id) : "organization.html#events";
+    $("org-name-crumb").textContent = main ? main.title || "Main event" : org.name;
+  }
+  $("mainEventId").addEventListener("change", applyBreadcrumb);
+
   // ---------- Location and visibility ----------
 
   function applyLocationType() {
@@ -338,6 +365,7 @@
     return {
       id: eventId || E.newId("event"),
       organizationName: org ? org.name : "",
+      mainEventId: $("mainEventId").value || undefined,
       title: v("title"),
       description: v("description"),
       startDate: v("startDate"),
@@ -364,6 +392,7 @@
 
   function fill(event) {
     var set = function (id, value) { if (value != null) $(id).value = value; };
+    fillMainEvents(event.mainEventId);
     set("title", event.title);
     set("description", event.description);
     set("startDate", event.startDate);
@@ -432,8 +461,9 @@
 
   $("delete-event").addEventListener("click", function () {
     if (!window.confirm("Delete this event? This can't be undone.")) return;
+    var back = $("back-link").href;
     E.remove(eventId);
-    location.href = "organization.html#events";
+    location.href = back;
   });
 
   // ---------- Start ----------
@@ -479,9 +509,11 @@
   if (existing) {
     fill(existing);
   } else {
+    fillMainEvents(params.get("main"));
     fillTimezones();
     addRole();
   }
+  applyBreadcrumb();
 
   applyLocationType();
   applyVisibility();

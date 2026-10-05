@@ -4,6 +4,7 @@
   "use strict";
 
   var KEY = "sevak.events.v1";
+  var MAIN_KEY = "sevak.mainEvents.v1";
   var F = window.SevakForms;
 
   function all() {
@@ -24,6 +25,98 @@
 
   function remove(id) {
     return F.store(KEY, all().filter(function (e) { return e.id !== id; }));
+  }
+
+  // ---------- Main events ----------
+  // A main event (for example a festival) groups related events, called
+  // sub-events (for example the performance and its rehearsals). Events
+  // point to their main event with mainEventId; standalone events have none.
+
+  function allMain() {
+    var list = F.load(MAIN_KEY);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function getMain(id) {
+    return allMain().filter(function (m) { return m.id === id; })[0] || null;
+  }
+
+  function saveMain(main) {
+    var list = allMain();
+    var i = list.findIndex(function (m) { return m.id === main.id; });
+    if (i === -1) list.push(main); else list[i] = main;
+    return F.store(MAIN_KEY, list);
+  }
+
+  // Deleting a main event keeps its sub-events, as standalone events.
+  function removeMain(id) {
+    var events = all().map(function (e) {
+      if (e.mainEventId === id) { e = Object.assign({}, e); delete e.mainEventId; }
+      return e;
+    });
+    F.store(KEY, events);
+    return F.store(MAIN_KEY, allMain().filter(function (m) { return m.id !== id; }));
+  }
+
+  function byDate(a, b) {
+    return (a.startDate || "9999").localeCompare(b.startDate || "9999");
+  }
+
+  function subEvents(mainId) {
+    return all().filter(function (e) { return e.mainEventId === mainId; }).sort(byDate);
+  }
+
+  // The main event's dates run from its first sub-event to its last.
+  function mainRange(mainId) {
+    var subs = subEvents(mainId).filter(function (e) { return e.startDate; });
+    if (!subs.length) return { start: "", end: "" };
+    var end = subs.reduce(function (max, e) { var d = e.endDate || e.startDate; return d > max ? d : max; }, "");
+    return { start: subs[0].startDate, end: end };
+  }
+
+  function clearAll() {
+    F.clear(KEY);
+    F.clear(MAIN_KEY);
+  }
+
+  // ---------- List items ----------
+
+  function badge(text, kind) {
+    var span = document.createElement("span");
+    span.className = "badge" + (kind ? " badge-" + kind : "");
+    span.textContent = text;
+    return span;
+  }
+
+  // A list item linking to an event, with its dates, place, size and badges.
+  function eventItem(event) {
+    var t = totals(event);
+    var li = document.createElement("li");
+    li.className = "event-item";
+
+    var info = document.createElement("div");
+    var h3 = document.createElement("h3");
+    var link = document.createElement("a");
+    link.href = "event.html?id=" + encodeURIComponent(event.id);
+    link.textContent = event.title || "Untitled event";
+    h3.appendChild(link);
+    var meta = document.createElement("p");
+    meta.className = "event-meta";
+    var loc = event.location || {};
+    var where = loc.type === "online" ? "Online" : loc.venue || loc.city || "";
+    meta.textContent = [rangeLabel(event.startDate, event.endDate), where,
+      plural(t.shifts, "shift") + ", " + plural(t.volunteers, "volunteer spot")].filter(Boolean).join(" · ");
+    info.appendChild(h3);
+    info.appendChild(meta);
+
+    var badges = document.createElement("div");
+    badges.className = "badges";
+    badges.appendChild(event.status === "published" ? badge("Published", "published") : badge("Draft", "draft"));
+    badges.appendChild(badge(event.visibility === "private" ? "Private" : "Public"));
+
+    li.appendChild(info);
+    li.appendChild(badges);
+    return li;
   }
 
   function newId(prefix) {
@@ -91,6 +184,16 @@
   window.SevakEvents = {
     all: all,
     get: get,
+    allMain: allMain,
+    getMain: getMain,
+    saveMain: saveMain,
+    removeMain: removeMain,
+    subEvents: subEvents,
+    mainRange: mainRange,
+    byDate: byDate,
+    clearAll: clearAll,
+    eventItem: eventItem,
+    badge: badge,
     save: save,
     remove: remove,
     newId: newId,

@@ -40,9 +40,15 @@
     <section class="section" id="events" aria-labelledby="events-title">
       <div class="section-head">
         <h2 class="section-title" id="events-title">Events</h2>
-        <a class="btn btn-primary btn-small" id="create-event" href="event.html">+ Create event</a>
+        <div class="fill-row" id="create-buttons">
+          <a class="btn btn-secondary btn-small" id="create-main" href="main-event.html">+ Main event</a>
+          <a class="btn btn-primary btn-small" id="create-event" href="event.html">+ Event</a>
+        </div>
       </div>
       <p class="hint" id="events-hint" style="margin-top:8px" hidden>Save your organization profile below to start creating events.</p>
+      <p class="hint" id="events-help" style="margin-top:8px" hidden>Use a <strong>main event</strong> to group related events, such as a festival and its rehearsals. A one-off event doesn't need one.</p>
+      <div id="main-groups"></div>
+      <h3 class="list-heading" id="standalone-heading" hidden>Other events</h3>
       <ul class="event-list" id="event-list"></ul>
       <p class="empty" id="events-empty" hidden>No events yet. Create one to start recruiting volunteers.</p>
     </section>

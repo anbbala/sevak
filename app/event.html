@@ -47,6 +47,11 @@
       <fieldset class="section">
         <legend>Event details</legend>
         <div class="stack">
+          <div class="field" id="main-field">
+            <label for="mainEventId">Part of a main event? <span class="optional">(optional)</span></label>
+            <select id="mainEventId"></select>
+            <p class="hint">Use a main event to group related events, such as a festival and its rehearsals. <a href="main-event.html" id="new-main-link">Create a main event</a></p>
+          </div>
           <div class="field">
             <label for="title">Event name</label>
             <input id="title" type="text" required maxlength="120" placeholder="e.g. Community Food Drive">

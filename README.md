@@ -10,6 +10,7 @@ sign up in seconds.
 - Front-end prototype: [`app/`](app/). It uses mock data stored in your browser, with no backend yet.
   - [`app/profile.html`](app/profile.html): user profile for volunteers and host team members
   - [`app/organization.html`](app/organization.html): host organization profile, with its events list
+  - [`app/main-event.html`](app/main-event.html): a main event that groups sub-events, such as a festival and its rehearsals
   - [`app/event.html`](app/event.html): create and edit an event, with its roles and shifts
 
 ## Preview locally

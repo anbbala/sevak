@@ -371,52 +371,71 @@
   function renderEvents() {
     var E = window.SevakEvents;
     var saved = !!F.load(STORAGE_KEY);
-    var create = $("create-event");
-    create.hidden = !saved;
+    $("create-buttons").hidden = !saved;
     $("events-hint").hidden = saved;
 
-    var list = $("event-list");
-    list.innerHTML = "";
-    var events = E.all().slice().sort(function (a, b) {
-      return (a.startDate || "9999").localeCompare(b.startDate || "9999");
+    var events = E.all().slice().sort(E.byDate);
+    var mains = E.allMain().slice().sort(function (a, b) {
+      var ra = E.mainRange(a.id).start || "9999", rb = E.mainRange(b.id).start || "9999";
+      return ra.localeCompare(rb) || (a.title || "").localeCompare(b.title || "");
     });
-    $("events-empty").hidden = !saved || events.length > 0;
+    var mainIds = {};
+    mains.forEach(function (m) { mainIds[m.id] = true; });
+    var standalone = events.filter(function (e) { return !e.mainEventId || !mainIds[e.mainEventId]; });
 
-    events.forEach(function (event) {
-      var t = E.totals(event);
-      var li = document.createElement("li");
-      li.className = "event-item";
+    $("events-empty").hidden = !saved || events.length > 0 || mains.length > 0;
+    $("events-help").hidden = !saved || mains.length > 0;
 
-      var info = document.createElement("div");
+    // Main events, each with its sub-events nested underneath.
+    var groups = $("main-groups");
+    groups.innerHTML = "";
+    mains.forEach(function (main) {
+      var subs = E.subEvents(main.id);
+      var range = E.mainRange(main.id);
+      var group = document.createElement("div");
+      group.className = "main-group";
+
+      var head = document.createElement("div");
+      head.className = "main-head";
+      var titleWrap = document.createElement("div");
       var h3 = document.createElement("h3");
       var link = document.createElement("a");
-      link.href = "event.html?id=" + encodeURIComponent(event.id);
-      link.textContent = event.title || "Untitled event";
+      link.href = "main-event.html?id=" + encodeURIComponent(main.id);
+      link.textContent = main.title || "Untitled main event";
       h3.appendChild(link);
       var meta = document.createElement("p");
       meta.className = "event-meta";
-      var where = event.location && event.location.type === "online" ? "Online"
-        : (event.location && (event.location.venue || event.location.city)) || "";
-      meta.textContent = [E.rangeLabel(event.startDate, event.endDate), where,
-        E.plural(t.shifts, "shift") + ", " + E.plural(t.volunteers, "volunteer spot")].filter(Boolean).join(" · ");
-      info.appendChild(h3);
-      info.appendChild(meta);
+      meta.textContent = ["Main event", E.plural(subs.length, "sub-event"),
+        range.start ? E.rangeLabel(range.start, range.end) : ""].filter(Boolean).join(" · ");
+      titleWrap.appendChild(h3);
+      titleWrap.appendChild(meta);
+      var add = document.createElement("a");
+      add.className = "btn btn-secondary btn-small";
+      add.href = "event.html?main=" + encodeURIComponent(main.id);
+      add.textContent = "+ Sub-event";
+      add.setAttribute("aria-label", "Add a sub-event to " + (main.title || "this main event"));
+      head.appendChild(titleWrap);
+      head.appendChild(add);
+      group.appendChild(head);
 
-      var badges = document.createElement("div");
-      badges.className = "badges";
-      var statusBadge = document.createElement("span");
-      statusBadge.className = "badge badge-" + (event.status === "published" ? "published" : "draft");
-      statusBadge.textContent = event.status === "published" ? "Published" : "Draft";
-      var visBadge = document.createElement("span");
-      visBadge.className = "badge";
-      visBadge.textContent = event.visibility === "private" ? "Private" : "Public";
-      badges.appendChild(statusBadge);
-      badges.appendChild(visBadge);
-
-      li.appendChild(info);
-      li.appendChild(badges);
-      list.appendChild(li);
+      var list = document.createElement("ul");
+      list.className = "event-list sub-list";
+      subs.forEach(function (event) { list.appendChild(E.eventItem(event)); });
+      group.appendChild(list);
+      if (!subs.length) {
+        var empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = "No sub-events yet.";
+        group.appendChild(empty);
+      }
+      groups.appendChild(group);
     });
+
+    // Events that aren't part of a main event.
+    var list = $("event-list");
+    list.innerHTML = "";
+    standalone.forEach(function (event) { list.appendChild(E.eventItem(event)); });
+    $("standalone-heading").hidden = !(mains.length && standalone.length);
   }
 
   // ---------- Events ----------
@@ -449,7 +468,7 @@
   $("delete-org").addEventListener("click", function () {
     if (!window.confirm("Delete this organization profile and its events from this device? This can't be undone.")) return;
     F.clear(STORAGE_KEY);
-    window.SevakEvents.all().forEach(function (ev) { window.SevakEvents.remove(ev.id); });
+    window.SevakEvents.clearAll();
     form.reset();
     $("country").value = F.defaultCountry();
     F.resetPhone($("contactPhone"));
