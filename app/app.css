@@ -73,6 +73,18 @@ body {
 
 /* Header and footer */
 .site-header { padding-block: 20px; }
+.header-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.app-nav { display: flex; flex-wrap: wrap; gap: 4px; }
+.app-nav a {
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+.app-nav a:hover { color: var(--text); background: var(--surface); }
+.app-nav a[aria-current="page"] { color: var(--primary); background: var(--primary-soft); }
 .brand {
   display: inline-flex;
   align-items: center;

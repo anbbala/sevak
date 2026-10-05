@@ -283,6 +283,45 @@
     /* Features */
     .features { padding-bottom: 72px; }
 
+    /* Calls to action */
+    .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+    .cta-primary { background: var(--primary); color: var(--on-primary); }
+    .cta-primary:hover { filter: brightness(1.08); }
+    .cta-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+    .cta-secondary:hover { border-color: var(--primary); }
+    .cta:focus-visible, .try-card:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+    /* Try the prototype */
+    .try { padding-bottom: 72px; }
+    .try h2 { margin: 0 0 6px; font-size: clamp(1.5rem, 3vw, 1.9rem); letter-spacing: -0.02em; }
+    .try-note { margin: 0 0 20px; color: var(--muted); }
+    .try-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .try-card {
+      display: block;
+      padding: 20px 22px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--text);
+      text-decoration: none;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .try-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .try-card strong { display: block; margin-bottom: 4px; color: var(--primary); }
+    .try-card strong::after { content: " →"; }
+    .try-card span { display: block; color: var(--muted); font-size: 0.95rem; }
+
     .features h2 {
       margin: 0 0 24px;
       font-size: clamp(1.5rem, 3vw, 1.9rem);
@@ -343,6 +382,16 @@
     .site-footer a { color: inherit; text-underline-offset: 3px; }
     .site-footer a:hover { color: var(--text); }
 
+    @media (max-width: 600px) {
+      .try-grid { grid-template-columns: minmax(0, 1fr); }
+      .cta { flex: 1 1 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .try-card { transition: none; }
+      .try-card:hover { transform: none; }
+    }
+
     @media (max-width: 880px) {
       .hero { grid-template-columns: 1fr; gap: 40px; padding-block: 24px 56px; }
       .preview { transform: none; }
@@ -383,6 +432,10 @@
         <h1 id="hero-title">Volunteering, <span class="highlight">made simple.</span></h1>
         <p class="lead">Publish volunteer shifts in minutes. Sign up in seconds. Say thank you with an official certificate.</p>
         <p class="note">We're building Sevak, a simple web app for organizations and the people who show up for them. We'll launch soon with a small group of pilot organizations.</p>
+        <div class="cta-row">
+          <a class="cta cta-primary" href="app/organization.html">Set up your organization</a>
+          <a class="cta cta-secondary" href="app/profile.html">Create your profile</a>
+        </div>
       </div>
 
       <figure class="preview">
@@ -481,6 +534,28 @@
             </li>
           </ul>
         </article>
+      </div>
+    </section>
+    <section class="container try" id="try" aria-labelledby="try-title">
+      <h2 id="try-title">Try the prototype</h2>
+      <p class="try-note">An early preview. Nothing is sent anywhere, and what you enter is saved only in your browser.</p>
+      <div class="try-grid">
+        <a class="try-card" href="app/profile.html">
+          <strong>My profile</strong>
+          <span>For volunteers and host team members: contact details, availability and your organizations.</span>
+        </a>
+        <a class="try-card" href="app/organization.html">
+          <strong>Organization profile &amp; events</strong>
+          <span>Your organization's details, team and the list of its events.</span>
+        </a>
+        <a class="try-card" href="app/event.html">
+          <strong>Create an event</strong>
+          <span>Single or multi-day, with roles and shifts for volunteers.</span>
+        </a>
+        <a class="try-card" href="app/main-event.html">
+          <strong>Create a main event</strong>
+          <span>Group related events, such as a festival and its rehearsals.</span>
+        </a>
       </div>
     </section>
   </main>
