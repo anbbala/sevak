@@ -7,6 +7,8 @@ sign up in seconds.
 
 - MVP requirements: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
 - Landing page: [`index.html`](index.html) (static, no build step)
+- Front-end prototype: [`app/`](app/). It uses mock data stored in your browser, with no backend yet.
+  - [`app/profile.html`](app/profile.html): volunteer profile, including the under-18 rules
 
 ## Preview locally
 

@@ -124,7 +124,7 @@ allows, or right after launch. **Later** means post-MVP.
 | 2 | As a prospective volunteer, I want to very easily sign up for one or more time shifts. | SGN-1 to SGN-8 |
 | 3 | As an event host, I want to send confirmation emails to those who signed up, and after my team has checked that they volunteered, send an official certificate or branded email confirming their participation. | COM-1, COM-2, ATT-1 to ATT-6 |
 | 4 | As an event host, I want to send regular communications and event updates to volunteers. | COM-3 to COM-6 |
-| 5 | As a volunteer, I'd like a profile so future sign-ups are one click (not a must). | VOL-2 (Should) |
+| 5 | As a volunteer, I'd like a profile so future sign-ups are one click (not a must). | VOL-2, VOL-11, VOL-12 (Should) |
 | 6 | As an event host, I want a trusted, vetted profile for my organization that shows what type of organization it is, plus clean event pages. | ORG-1 to ORG-5, EVT-7, EVT-8 |
 | 7 | As a volunteer, I want to see all available events on a calendar, filtered by city and/or by organization. | DSC-1 to DSC-4 |
 | 8 | As an event host, I want to restrict visibility for private events or organizations while still inviting volunteers by email, text or WhatsApp. | ORG-6, PRV-1 to PRV-5 |
@@ -183,15 +183,17 @@ allows, or right after launch. **Later** means post-MVP.
 | ID | Requirement | Priority |
 |---|---|---|
 | VOL-1 | Any volunteer who has signed up can **sign in with their email** using a one-time link, with no password. The email address is their identity. | Must |
-| VOL-2 | A signed-in volunteer can save their name, phone and home city so that future sign-ups are pre-filled and take one click. | Should |
+| VOL-2 | A signed-in volunteer can keep a **profile** so future sign-ups are pre-filled and take one click. The profile holds: first and last name, email, mobile phone, date of birth (used only for age checks and never shown), an optional address, optional **affiliations** (up to 5, each with a type such as school, Scouting, faith community, workplace or club, plus a name), and **usual availability** (weekends only, weekdays, evenings only, or anytime). Organizations never see the street address. *(Prototype: `app/profile.html`.)* | Should |
+| VOL-11 | **Profiles for volunteers aged 13–17** also need a parent or guardian's name, relationship, email and phone. The guardian's email must be different from the teen's. The teen confirms their guardian knows they're volunteering. The guardian is then emailed to confirm before the teen can sign up for shifts, and gets copies of the teen's confirmations. Teens give only a city, never a home address, and their own phone is optional. | Should |
+| VOL-12 | **Anyone under 13 cannot create a profile.** The form explains that a parent or guardian must create a profile and add the child under *My children* (VOL-10). | Should |
 | VOL-3 | A signed-in volunteer has a **"My volunteering"** page showing upcoming and past shifts across all organizations, **including private events**, with hours credited and certificates. | Must |
 | VOL-4 | The log is **private to the volunteer.** Hosts only ever see records for their own organization's events. Nothing about a private event appears on any public page, in search, or to other volunteers. | Must |
 | VOL-5 | A volunteer can download a summary of their hours as a PDF or CSV, for example for school or employer service-hour requirements. | Should |
 | VOL-6 | A volunteer can export or delete their account and data (see open question Q9 on what the organization keeps). | Must |
 | VOL-7 | An optional public volunteer profile or shareable badge. Entries from private events would never be shown on it. | Later |
-| VOL-8 | Skills, interests and availability preferences used for matching. | Later |
+| VOL-8 | Skills and interests, and **matching** shifts to a volunteer's availability (VOL-2 collects availability now). | Later |
 | VOL-9 | A parent's "My volunteering" log also shows the shifts, hours and certificates of children they signed up, grouped by child. Children under 13 never have their own login. | Must |
-| VOL-10 | A signed-in parent can save their children's details so they can sign a child up in one click. | Should |
+| VOL-10 | A signed-in adult can add children under 18 to their profile (name, date of birth, and an optional school or group) after confirming they are the parent or legal guardian and consenting to storage. They can then sign a child up in one click. | Should |
 
 ### 4.5 Discovery
 
@@ -342,8 +344,10 @@ This is the list of screens to build in Phase 1 with mock data.
 
 | Entity | Key fields | Relationships |
 |---|---|---|
-| **User** | id, email (unique), name, phone, home_city, age_confirmed_at, is_platform_admin, created_at | One user can be a volunteer, a parent, a host team member, or any mix |
-| **Child** | id, guardian_user_id, name, date_of_birth, created_at | Belongs to a parent or guardian User. Never has a login. |
+| **User** | id, email (unique), first_name, last_name, phone, date_of_birth, address (line1, line2, city, state, zip; adults only), city (teens), availability (`weekends`/`weekdays`/`evenings`/`anytime`), is_platform_admin, created_at | One user can be a volunteer, a parent, a host team member, or any mix |
+| **Child** | id, guardian_user_id, name, date_of_birth, affiliation, consent_at, created_at | Belongs to a parent or guardian User. Never has a login. |
+| **Affiliation** | id, user_id, type (`school`/`scouting`/`faith`/`workplace`/`club`/`other`), name | Up to 5 per User |
+| **Guardian** | id, user_id (the teen), name, relationship, email, phone, acknowledged_at, confirmed_at | One per User aged 13–17. Confirmed by email. |
 | **Organization** | id, name, slug, type, description, logo_url, website, contact_email, city, visibility (`public`/`private`), verification_status (`unverified`/`pending`/`verified`/`rejected`) | Has many OrgMembers and Events |
 | **OrgMember** | org_id, user_id, role (`owner`/`coordinator`) | Links a User to an Organization |
 | **VerificationRequest** | id, org_id, evidence, status, reviewed_by, reviewed_at | Belongs to an Organization |
