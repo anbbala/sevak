@@ -74,11 +74,6 @@
     return { start: subs[0].startDate, end: end };
   }
 
-  function clearAll() {
-    F.clear(KEY);
-    F.clear(MAIN_KEY);
-  }
-
   // ---------- List items ----------
 
   function badge(text, kind) {
@@ -117,6 +112,15 @@
     li.appendChild(info);
     li.appendChild(badges);
     return li;
+  }
+
+  // Events and main events of one organization.
+  function forOrg(orgId) {
+    return all().filter(function (e) { return e.organizationId === orgId; });
+  }
+
+  function mainForOrg(orgId) {
+    return allMain().filter(function (m) { return m.organizationId === orgId; });
   }
 
   function newId(prefix) {
@@ -191,7 +195,8 @@
     subEvents: subEvents,
     mainRange: mainRange,
     byDate: byDate,
-    clearAll: clearAll,
+    forOrg: forOrg,
+    mainForOrg: mainForOrg,
     eventItem: eventItem,
     badge: badge,
     save: save,

@@ -3,8 +3,8 @@
 (function () {
   "use strict";
 
-  var ORG_KEY = "sevak.organization.v1";
   var F = window.SevakForms;
+  var O = window.SevakOrgs;
   var $ = function (id) { return document.getElementById(id); };
 
   var CHARITY_LABELS = {
@@ -50,13 +50,14 @@
 
   function renderEvents() {
     var E = window.SevakEvents;
-    var saved = !!F.load(ORG_KEY);
+    var org = O.current();
+    var saved = !!org;
     $("create-buttons").hidden = !saved;
     $("no-org").hidden = saved;
     $("events").hidden = !saved;
 
-    var events = E.all().slice().sort(E.byDate);
-    var mains = E.allMain().slice().sort(function (a, b) {
+    var events = saved ? E.forOrg(org.id).sort(E.byDate) : [];
+    var mains = (saved ? E.mainForOrg(org.id) : []).sort(function (a, b) {
       var ra = E.mainRange(a.id).start || "9999", rb = E.mainRange(b.id).start || "9999";
       return ra.localeCompare(rb) || (a.title || "").localeCompare(b.title || "");
     });
@@ -119,6 +120,7 @@
     $("standalone-heading").hidden = !(mains.length && standalone.length);
   }
 
-  renderOrgContext(F.load(ORG_KEY));
+  renderOrgContext(O.current());
+  O.renderSwitcher($("org-switcher"), { switchTo: "events.html" });
   renderEvents();
 })();

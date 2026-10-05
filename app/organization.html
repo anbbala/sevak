@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="app.css">
   <script src="countries.js" defer></script>
   <script src="forms.js" defer></script>
+  <script src="orgs-store.js" defer></script>
   <script src="events-store.js" defer></script>
   <script src="website-import.js" defer></script>
   <script src="organization.js" defer></script>
@@ -39,7 +40,9 @@
   <main class="container">
     <p class="banner"><strong>Prototype.</strong> Nothing is sent anywhere. What you enter is saved only in this browser.</p>
 
-    <h1 class="page-title">Organization profile</h1>
+    <div id="org-switcher"></div>
+
+    <h1 class="page-title" id="page-title">Organization profile</h1>
     <p class="page-intro">Tell volunteers who you are. A complete profile also lets us verify your organization so you can list public events.</p>
 
     <form id="org-form" novalidate>

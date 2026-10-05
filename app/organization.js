@@ -2,7 +2,6 @@
 (function () {
   "use strict";
 
-  var STORAGE_KEY = "sevak.organization.v1";
   var MAX_MEMBERS = 20;
   // Statuses where we ask for a registration number (always optional).
   var REGISTRATION_STATUSES = { "charity": true, "nonprofit-other": true, "pending": true };
@@ -10,6 +9,7 @@
   var LEGACY_STATUS = { "501c3": "charity", "501c-other": "nonprofit-other" };
 
   var F = window.SevakForms;
+  var O = window.SevakOrgs;
   var form = document.getElementById("org-form");
   var $ = function (id) { return document.getElementById(id); };
 
@@ -459,33 +459,66 @@
       firstInvalid.focus();
       return;
     }
-    $("status").textContent = F.store(STORAGE_KEY, readForm())
-      ? "Organization profile saved on this device. You can now create events on the Events tab."
-      : "Couldn't save in this browser. Check that site storage is allowed.";
+    var existingOrg = orgId ? O.get(orgId) : null;
+    var data = readForm();
+    data.id = orgId || undefined;
+    data.createdAt = existingOrg && existingOrg.createdAt ? existingOrg.createdAt : data.updatedAt;
+    if (existingOrg && existingOrg.verificationStatus) data.verificationStatus = existingOrg.verificationStatus;
+    var saved = O.save(data);
+    if (!saved) {
+      $("status").textContent = "Couldn't save in this browser. Check that site storage is allowed.";
+      return;
+    }
+    var wasNew = !orgId;
+    orgId = saved.id;
+    O.setCurrent(orgId);
+    if (creating) {
+      creating = false;
+      history.replaceState(null, "", location.pathname + location.hash);
+    }
+    dirty = false;
+    applyMode();
+    $("status").textContent = (wasNew ? "Organization created and saved on this device." : "Organization profile saved on this device.") +
+      " You can now create events on the Events tab.";
   });
 
   $("delete-org").addEventListener("click", function () {
-    if (!window.confirm("Delete this organization profile and its events from this device? This can't be undone.")) return;
-    F.clear(STORAGE_KEY);
-    window.SevakEvents.clearAll();
-    form.reset();
-    $("country").value = F.defaultCountry();
-    F.resetPhone($("contactPhone"));
-    memberRows.innerHTML = "";
-    renumberMembers();
-    applyTaxStatus();
-    updateCounter();
-    updateOpenLinks();
-    $("status").textContent = "Organization profile deleted.";
+    var name = $("orgName").value.trim() || "this organization";
+    if (!window.confirm("Delete " + name + " and its events from this device? This can't be undone.")) return;
+    O.remove(orgId);
+    // Show the next organization, or an empty form if none are left.
+    location.href = location.pathname;
   });
+
+  // ---------- Several organizations ----------
+
+  // Unsaved changes are confirmed before switching organization.
+  var dirty = false;
+  form.addEventListener("input", function () { dirty = true; });
+  form.addEventListener("change", function () { dirty = true; });
+
+  function confirmLeave() {
+    return !dirty || window.confirm("You have unsaved changes. Leave without saving?");
+  }
+
+  function applyMode() {
+    var title = creating ? "New organization" : "Organization profile";
+    $("page-title").textContent = title;
+    document.title = title + " · Sevak";
+    $("delete-org").hidden = !orgId;
+    O.renderSwitcher($("org-switcher"), { creating: creating, confirmLeave: confirmLeave });
+  }
 
   // ---------- Start ----------
 
   F.fillCountrySelect($("country"));
   F.enhancePhone($("contactPhone"));
 
-  var existing = F.load(STORAGE_KEY);
+  var creating = new URLSearchParams(location.search).get("new") === "1";
+  var orgId = creating ? null : O.currentId();
+  var existing = orgId ? O.get(orgId) : null;
   if (existing) fill(existing);
+  applyMode();
   renumberMembers();
   applyTaxStatus();
   updateCounter();

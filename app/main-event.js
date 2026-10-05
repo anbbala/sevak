@@ -3,15 +3,15 @@
 (function () {
   "use strict";
 
-  var ORG_KEY = "sevak.organization.v1";
   var F = window.SevakForms;
   var E = window.SevakEvents;
   var form = document.getElementById("main-form");
   var $ = function (id) { return document.getElementById(id); };
 
-  var org = F.load(ORG_KEY);
   var mainId = new URLSearchParams(location.search).get("id");
   var existing = mainId ? E.getMain(mainId) : null;
+  var org = existing && existing.organizationId ? window.SevakOrgs.get(existing.organizationId) : window.SevakOrgs.current();
+  if (org && existing) window.SevakOrgs.setCurrent(org.id);
 
   function messageFor(input) {
     return F.basicMessage(input);
@@ -68,7 +68,8 @@
     var now = new Date().toISOString();
     var main = {
       id: mainId || E.newId("main"),
-      organizationName: org ? org.name : "",
+      organizationId: org.id,
+      organizationName: org.name || "",
       title: $("title").value.trim(),
       description: $("description").value.trim(),
       createdAt: existing ? existing.createdAt : now,

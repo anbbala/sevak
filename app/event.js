@@ -4,7 +4,6 @@
 (function () {
   "use strict";
 
-  var ORG_KEY = "sevak.organization.v1";
   var MAX_DAYS = 31;
   var MAX_ROLES = 20;
   var MAX_SHIFTS_PER_ROLE = 100;
@@ -14,10 +13,11 @@
   var form = document.getElementById("event-form");
   var $ = function (id) { return document.getElementById(id); };
 
-  var org = F.load(ORG_KEY);
   var params = new URLSearchParams(location.search);
   var eventId = params.get("id");
   var existing = eventId ? E.get(eventId) : null;
+  var org = existing && existing.organizationId ? window.SevakOrgs.get(existing.organizationId) : window.SevakOrgs.current();
+  if (org && existing) window.SevakOrgs.setCurrent(org.id);
   var status = existing ? existing.status : "draft";
   var createdAt = existing ? existing.createdAt : null;
   var counter = 0;
@@ -250,7 +250,7 @@
     none.value = "";
     none.textContent = "No, this is a standalone event";
     select.appendChild(none);
-    E.allMain().slice().sort(function (a, b) { return (a.title || "").localeCompare(b.title || ""); }).forEach(function (m) {
+    E.mainForOrg(org.id).sort(function (a, b) { return (a.title || "").localeCompare(b.title || ""); }).forEach(function (m) {
       var option = document.createElement("option");
       option.value = m.id;
       option.textContent = m.title || "Untitled main event";
@@ -364,7 +364,8 @@
     var online = locationType() === "online";
     return {
       id: eventId || E.newId("event"),
-      organizationName: org ? org.name : "",
+      organizationId: org.id,
+      organizationName: org.name || "",
       mainEventId: $("mainEventId").value || undefined,
       title: v("title"),
       description: v("description"),

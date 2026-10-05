@@ -5,7 +5,6 @@
   "use strict";
 
   var STORAGE_KEY = "sevak.profile.v1";
-  var ORG_STORAGE_KEY = "sevak.organization.v1";
   var MAX_AFFILIATIONS = 5;
   var MAX_ORGS = 10;
 
@@ -111,13 +110,13 @@
     if (input) input.focus();
   });
 
-  // Suggest the organization saved on the organization profile page, if any.
-  var savedOrg = F.load(ORG_STORAGE_KEY);
-  if (savedOrg && savedOrg.name) {
+  // Suggest the organizations saved on the Organization tab.
+  window.SevakOrgs.all().forEach(function (o) {
+    if (!o.name) return;
     var option = document.createElement("option");
-    option.value = savedOrg.name;
+    option.value = o.name;
     $("known-orgs").appendChild(option);
-  }
+  });
 
   // ---------- Affiliations ----------
 
