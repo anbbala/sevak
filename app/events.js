@@ -7,6 +7,47 @@
   var F = window.SevakForms;
   var $ = function (id) { return document.getElementById(id); };
 
+  var CHARITY_LABELS = {
+    "charity": "Registered charity or nonprofit",
+    "nonprofit-other": "Nonprofit or tax-exempt",
+    "pending": "Registration pending",
+    "none": "Not registered"
+  };
+
+  function initials(name) {
+    var words = name.replace(/[^\p{L}\p{N}\s]/gu, "").split(/\s+/).filter(Boolean);
+    return ((words[0] || "")[0] || "").concat((words[1] || "")[0] || "").toUpperCase() || "?";
+  }
+
+  function countryName(code) {
+    var c = F.countries.filter(function (x) { return x.code === code; })[0];
+    return c ? c.name : "";
+  }
+
+  // The organization these events belong to, shown at the top of the page.
+  function renderOrgContext(org) {
+    var box = $("org-context");
+    box.hidden = !org;
+    if (!org) return;
+    var name = org.name || "Your organization";
+    $("org-avatar").textContent = initials(name);
+    $("org-context-name").textContent = name;
+    var a = org.address || {};
+    var place = [a.city, countryName(a.country)].filter(Boolean).join(", ");
+    $("org-context-details").textContent = [place, CHARITY_LABELS[org.taxStatus] || ""].filter(Boolean).join(" · ");
+    $("org-context-details").hidden = !$("org-context-details").textContent;
+
+    var badges = $("org-context-badges");
+    badges.innerHTML = "";
+    var verified = org.verificationStatus === "verified";
+    badges.appendChild(window.SevakEvents.badge(verified ? "Verified" : "Not verified yet", verified ? "published" : "draft"));
+    if (!verified) badges.lastChild.title = "Public events stay private until your organization is verified.";
+
+    var site = $("org-context-website");
+    site.hidden = !org.website;
+    if (org.website) site.href = org.website;
+  }
+
   function renderEvents() {
     var E = window.SevakEvents;
     var saved = !!F.load(ORG_KEY);
@@ -78,5 +119,6 @@
     $("standalone-heading").hidden = !(mains.length && standalone.length);
   }
 
+  renderOrgContext(F.load(ORG_KEY));
   renderEvents();
 })();
