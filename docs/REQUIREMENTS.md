@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.8 (main events and sub-events) · **Updated:** 2026-10-05 · **Status:** Draft for review
+**Version:** 2.9 (separate Organization and Events tabs) · **Updated:** 2026-10-05 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -160,10 +160,10 @@ allows, or right after launch. **Later** means post-MVP.
 | EVT-6 | Cancelling an event or a shift emails the affected volunteers. | Must |
 | EVT-7 | Each event has a clean, shareable page at `/e/{slug}` showing what, when, where, the organization and its badge, the roles, open shifts, and a sign-up button. | Must |
 | EVT-8 | Public event pages include structured data (schema.org `Event`), Open Graph and link-preview tags, and a canonical URL, so they look good when shared and rank well in search. | Must |
-| EVT-14 | **Events belong to an organization.** The organization profile has an **Events** section that lists the organization's events by date, showing the dates, location, number of shifts and volunteer spots, and whether each is a Draft or Published and Public or Private. A **Create event** button opens the event editor, and only appears once the organization profile is saved. Deleting an organization deletes its events. *(Prototype: `app/organization.html#events`, `app/event.html`.)* | Must |
+| EVT-14 | **Events belong to an organization** and have their own **Events** tab, separate from the Organization tab. The Events tab lists the organization's main events with their sub-events nested underneath, then other events, all by date. Each event shows its dates, location, number of shifts and volunteer spots, and whether it is a Draft or Published and Public or Private. **+ Event** and **+ Main event** buttons appear once the organization profile is saved; until then the tab asks for it. Deleting an organization deletes its events. *(Prototype: `app/events.html`, `app/event.html`.)* | Must |
 | EVT-15 | **Event editor rules.** Events last 1–31 days. The end date follows the start date for one-day events. The time zone defaults to the host's browser. In-person events need a country, street and city, and the host can copy the organization's address in one click. Online events take an optional meeting link, shown only to volunteers who sign up. Each shift has a day within the event dates, a start time, an end time after the start, and 1–999 volunteers. A new shift copies the role's previous shift. "Copy first day's shifts to every day" skips days that already have the same shift. If the dates change, any shift left outside them is flagged. **Save draft** needs only a name and dates. **Publish** needs everything complete, including at least one role with at least one shift. A published event can be **unpublished** back to a draft. Overnight shifts that end after midnight are a later addition. | Must |
 | EVT-16 | If an organization isn't verified yet, a **public** event stays private until it is (ORG-3, PRV-1), and the editor says so. | Must |
-| EVT-17 | **Main events and sub-events.** An organization can create a **main event** (for example *Arudra*) with a name and an optional description, to group related events called **sub-events** (for example *Arudra*, *Arudra Rehearsal 1* and *Arudra Rehearsal 2*). Each sub-event is a normal event with its own dates, location, roles, shifts, visibility and draft or published status. The main event's dates run from its first sub-event to its last. Main events are optional, so one-off events stay standalone. An event can be put into, moved between, or taken out of a main event from the event editor. The organization page shows each main event with its sub-events nested underneath, then any other events. Deleting a main event keeps its sub-events as standalone events. *(Prototype: `app/main-event.html`.)* | Must |
+| EVT-17 | **Main events and sub-events.** An organization can create a **main event** (for example *Arudra*) with a name and an optional description, to group related events called **sub-events** (for example *Arudra*, *Arudra Rehearsal 1* and *Arudra Rehearsal 2*). Each sub-event is a normal event with its own dates, location, roles, shifts, visibility and draft or published status. The main event's dates run from its first sub-event to its last. Main events are optional, so one-off events stay standalone. An event can be put into, moved between, or taken out of a main event from the event editor. The Events tab shows each main event with its sub-events nested underneath, then any other events. Deleting a main event keeps its sub-events as standalone events. *(Prototype: `app/main-event.html`.)* | Must |
 | EVT-9 | A host can duplicate an event, for example to repeat it next month. | Should |
 | EVT-10 | A host can add custom sign-up questions to an event, such as T-shirt size or emergency contact. | Should |
 | EVT-11 | A host can add a waiver or policy checkbox that links to the host's own document. | Should |
@@ -315,7 +315,7 @@ This is the list of screens to build in Phase 1 with mock data.
 | # | Screen | Notes |
 |---|---|---|
 | H1 | Organization setup and settings | Includes the verification request |
-| H2 | Host dashboard | Events split into Drafts, Upcoming and Past. *(Prototype: a simple events list on the organization page.)* |
+| H2 | Host dashboard | Events split into Drafts, Upcoming and Past. *(Prototype: the Events tab, `app/events.html`.)* |
 | H3 | **Event editor** *(prototype: `app/event.html`)* | Details → Roles → Shifts (grid with "copy to other days") → Visibility → Publish |
 | H4 | Share and invite | Copy link, WhatsApp, text and email invitations |
 | H5 | Roster and attendance | Designed for phones, used on the day |

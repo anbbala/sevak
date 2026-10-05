@@ -262,8 +262,8 @@
   // The back link goes to the main event when there is one.
   function applyBreadcrumb() {
     var main = E.getMain($("mainEventId").value);
-    $("back-link").href = main ? "main-event.html?id=" + encodeURIComponent(main.id) : "organization.html#events";
-    $("org-name-crumb").textContent = main ? main.title || "Main event" : org.name;
+    $("back-link").href = main ? "main-event.html?id=" + encodeURIComponent(main.id) : "events.html";
+    $("org-name-crumb").textContent = main ? main.title || "Main event" : "Events";
   }
   $("mainEventId").addEventListener("change", applyBreadcrumb);
 

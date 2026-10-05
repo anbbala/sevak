@@ -94,7 +94,7 @@
       : "Delete this main event? This can't be undone.";
     if (!window.confirm(message)) return;
     E.removeMain(mainId);
-    location.href = "organization.html#events";
+    location.href = "events.html";
   });
 
   // ---------- Start ----------
@@ -105,7 +105,7 @@
     $("back-link").hidden = true;
     return;
   }
-  $("org-name-crumb").textContent = org.name;
+  $("org-name-crumb").textContent = "Events";
 
   if (mainId && !existing) {
     $("status").textContent = "We couldn't find that main event, so this is a new one.";

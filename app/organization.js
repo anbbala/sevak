@@ -366,78 +366,6 @@
     (data.team || []).forEach(addMember);
   }
 
-  // ---------- Event list ----------
-
-  function renderEvents() {
-    var E = window.SevakEvents;
-    var saved = !!F.load(STORAGE_KEY);
-    $("create-buttons").hidden = !saved;
-    $("events-hint").hidden = saved;
-
-    var events = E.all().slice().sort(E.byDate);
-    var mains = E.allMain().slice().sort(function (a, b) {
-      var ra = E.mainRange(a.id).start || "9999", rb = E.mainRange(b.id).start || "9999";
-      return ra.localeCompare(rb) || (a.title || "").localeCompare(b.title || "");
-    });
-    var mainIds = {};
-    mains.forEach(function (m) { mainIds[m.id] = true; });
-    var standalone = events.filter(function (e) { return !e.mainEventId || !mainIds[e.mainEventId]; });
-
-    $("events-empty").hidden = !saved || events.length > 0 || mains.length > 0;
-    $("events-help").hidden = !saved || mains.length > 0;
-
-    // Main events, each with its sub-events nested underneath.
-    var groups = $("main-groups");
-    groups.innerHTML = "";
-    mains.forEach(function (main) {
-      var subs = E.subEvents(main.id);
-      var range = E.mainRange(main.id);
-      var group = document.createElement("div");
-      group.className = "main-group";
-
-      var head = document.createElement("div");
-      head.className = "main-head";
-      var titleWrap = document.createElement("div");
-      var h3 = document.createElement("h3");
-      var link = document.createElement("a");
-      link.href = "main-event.html?id=" + encodeURIComponent(main.id);
-      link.textContent = main.title || "Untitled main event";
-      h3.appendChild(link);
-      var meta = document.createElement("p");
-      meta.className = "event-meta";
-      meta.textContent = ["Main event", E.plural(subs.length, "sub-event"),
-        range.start ? E.rangeLabel(range.start, range.end) : ""].filter(Boolean).join(" · ");
-      titleWrap.appendChild(h3);
-      titleWrap.appendChild(meta);
-      var add = document.createElement("a");
-      add.className = "btn btn-secondary btn-small";
-      add.href = "event.html?main=" + encodeURIComponent(main.id);
-      add.textContent = "+ Sub-event";
-      add.setAttribute("aria-label", "Add a sub-event to " + (main.title || "this main event"));
-      head.appendChild(titleWrap);
-      head.appendChild(add);
-      group.appendChild(head);
-
-      var list = document.createElement("ul");
-      list.className = "event-list sub-list";
-      subs.forEach(function (event) { list.appendChild(E.eventItem(event)); });
-      group.appendChild(list);
-      if (!subs.length) {
-        var empty = document.createElement("p");
-        empty.className = "empty";
-        empty.textContent = "No sub-events yet.";
-        group.appendChild(empty);
-      }
-      groups.appendChild(group);
-    });
-
-    // Events that aren't part of a main event.
-    var list = $("event-list");
-    list.innerHTML = "";
-    standalone.forEach(function (event) { list.appendChild(E.eventItem(event)); });
-    $("standalone-heading").hidden = !(mains.length && standalone.length);
-  }
-
   // ---------- Events ----------
 
   F.clearErrorsAsYouType(form, messageFor);
@@ -460,9 +388,8 @@
       return;
     }
     $("status").textContent = F.store(STORAGE_KEY, readForm())
-      ? "Organization profile saved on this device."
+      ? "Organization profile saved on this device. You can now create events on the Events tab."
       : "Couldn't save in this browser. Check that site storage is allowed.";
-    renderEvents();
   });
 
   $("delete-org").addEventListener("click", function () {
@@ -478,7 +405,6 @@
     updateCounter();
     updateOpenLinks();
     $("status").textContent = "Organization profile deleted.";
-    renderEvents();
   });
 
   // ---------- Start ----------
@@ -494,5 +420,4 @@
   $("fill-from-website").disabled = !websiteUrl();
   lastFetched = websiteUrl();
   updateOpenLinks();
-  renderEvents();
 })();
