@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.11 (several organizations per person) · **Updated:** 2026-10-05 · **Status:** Draft for review
+**Version:** 2.12 (host dashboard) · **Updated:** 2026-10-05 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -250,6 +250,7 @@ allows, or right after launch. **Later** means post-MVP.
 | ATT-7 | A host can customize the certificate wording and add a signature image. | Should |
 | ATT-8 | A host can **export the roster as CSV**, including sign-ups and attendance. | Must |
 | ATT-9 | Each event has a summary showing shifts filled against capacity, the attendance rate and total hours. | Should |
+| ATT-11 | **Host dashboard** for the current organization. Filters (date range: next 7, 30 or 90 days or all upcoming; status: published, drafts or both) scope everything on the page. It shows headline numbers (upcoming events, volunteers required, enrolled, spots still open) and an overall fill meter. A required-vs-enrolled bar for each event is labeled "enrolled / required · %", with a tooltip on hover or keyboard focus and a breakdown by shift. A **table view** shows the same numbers. Events that are under half full and start within 14 days are flagged **Needs volunteers** (icon and label, never color alone). Past events, cancelled sign-ups and other organizations' events are excluded. *(Prototype: `app/dashboard.html`. Until volunteer sign-up exists, a clearly marked "Add sample sign-ups" button fills in made-up numbers.)* | Must |
 | ATT-10 | QR code self check-in and GPS check-in. | Later |
 
 ### 4.9 Platform administration
@@ -316,7 +317,7 @@ This is the list of screens to build in Phase 1 with mock data.
 | # | Screen | Notes |
 |---|---|---|
 | H1 | Organization setup and settings | Includes the verification request |
-| H2 | Host dashboard | Events split into Drafts, Upcoming and Past. *(Prototype: the Events tab, `app/events.html`.)* |
+| H2 | Host dashboard | Events split into Drafts, Upcoming and Past, plus volunteers required vs enrolled. *(Prototype: the Events tab, `app/events.html`, and the Dashboard tab, `app/dashboard.html`.)* |
 | H3 | **Event editor** *(prototype: `app/event.html`)* | Details → Roles → Shifts (grid with "copy to other days") → Visibility → Publish |
 | H4 | Share and invite | Copy link, WhatsApp, text and email invitations |
 | H5 | Roster and attendance | Designed for phones, used on the day |

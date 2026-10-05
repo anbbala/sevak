@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard · Sevak</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230f766e'/%3E%3Cg fill='%23fff' transform='translate(12 12) scale(.78) translate(-12 -12.4)'%3E%3Crect x='8' y='9' width='8' height='8' transform='rotate(45 12 13)'/%3E%3Ccircle cx='9.17' cy='10.17' r='4'/%3E%3Ccircle cx='14.83' cy='10.17' r='4'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="app.css">
+  <script src="countries.js" defer></script>
+  <script src="forms.js" defer></script>
+  <script src="orgs-store.js" defer></script>
+  <script src="events-store.js" defer></script>
+  <script src="signups-store.js" defer></script>
+  <script src="dashboard.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="brand" href="../">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect width="24" height="24" rx="6" fill="#0f766e"/>
+          <g fill="#fff" transform="translate(12 12) scale(.78) translate(-12 -12.4)">
+            <rect x="8" y="9" width="8" height="8" transform="rotate(45 12 13)"/>
+            <circle cx="9.17" cy="10.17" r="4"/>
+            <circle cx="14.83" cy="10.17" r="4"/>
+          </g>
+        </svg>
+        <span class="brand-text"><span class="brand-name">Sevak</span><span class="brand-tagline">A Service of The ANB Group</span></span>
+      </a>
+      <nav class="app-nav" aria-label="Prototype pages">
+        <a href="profile.html">My profile</a>
+        <a href="organization.html">Organization</a>
+        <a href="events.html">Events</a>
+        <a href="dashboard.html" aria-current="page">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="banner"><strong>Prototype.</strong> Nothing is sent anywhere. What you enter is saved only in this browser.</p>
+
+    <div id="org-switcher"></div>
+    <section class="org-context" id="org-context" aria-label="Organization" hidden></section>
+
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-intro">Upcoming events and how many volunteers have signed up against how many you need.</p>
+
+    <div class="section notice notice-warn" id="no-org" hidden>
+      <p><strong>Create your organization profile first.</strong></p>
+      <p>The dashboard shows an organization's events. <a href="organization.html">Set up your organization profile</a>, then create events.</p>
+    </div>
+
+    <div id="dashboard" hidden>
+      <!-- Filters scope everything below them. -->
+      <div class="filter-row" role="group" aria-label="Filters">
+        <div class="field">
+          <label for="range">Dates</label>
+          <select id="range">
+            <option value="7">Next 7 days</option>
+            <option value="30">Next 30 days</option>
+            <option value="90">Next 90 days</option>
+            <option value="all" selected>All upcoming</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="status-filter">Status</label>
+          <select id="status-filter">
+            <option value="all" selected>Published and drafts</option>
+            <option value="published">Published only</option>
+            <option value="draft">Drafts only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="kpi-row" id="kpis">
+        <div class="kpi"><p class="kpi-label">Upcoming events</p><p class="kpi-value" id="kpi-events">0</p></div>
+        <div class="kpi"><p class="kpi-label">Volunteers required</p><p class="kpi-value" id="kpi-required">0</p></div>
+        <div class="kpi"><p class="kpi-label">Enrolled</p><p class="kpi-value" id="kpi-enrolled">0</p></div>
+        <div class="kpi"><p class="kpi-label">Spots still open</p><p class="kpi-value" id="kpi-open">0</p></div>
+      </div>
+
+      <div class="section fill-card">
+        <div class="fill-head">
+          <p class="kpi-label">Overall fill</p>
+          <p class="fill-value"><span id="fill-pct">0%</span> <span class="fill-note" id="fill-note"></span></p>
+        </div>
+        <div class="meter" id="overall-meter" role="img" aria-label="">
+          <span class="meter-fill" id="overall-fill"></span>
+        </div>
+      </div>
+
+      <section class="section chart-card" aria-labelledby="chart-title">
+        <div class="section-head">
+          <h2 class="section-title" id="chart-title">Volunteers required vs enrolled</h2>
+          <div class="view-toggle" role="group" aria-label="View">
+            <button type="button" class="view-btn" id="view-chart" aria-pressed="true">Chart</button>
+            <button type="button" class="view-btn" id="view-table" aria-pressed="false">Table</button>
+          </div>
+        </div>
+        <div class="legend" aria-hidden="true">
+          <span><i class="swatch swatch-enrolled"></i>Enrolled</span>
+          <span><i class="swatch swatch-required"></i>Required</span>
+        </div>
+
+        <div id="chart-view">
+          <ol class="bars" id="bars"></ol>
+        </div>
+        <div id="table-view" hidden>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th scope="col">Event</th><th scope="col">Dates</th><th scope="col" class="num">Required</th><th scope="col" class="num">Enrolled</th><th scope="col" class="num">Open</th><th scope="col" class="num">Filled</th></tr>
+              </thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <p class="empty" id="dash-empty" hidden></p>
+        <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+      </section>
+
+      <section class="section sample-card" aria-labelledby="sample-title">
+        <h2 class="section-title" id="sample-title">Sample sign-ups</h2>
+        <p class="section-help">Volunteers can't sign up in the prototype yet. To see the dashboard with numbers, add made-up sign-ups to this organization's upcoming events. They're marked as samples and can be removed at any time.</p>
+        <div class="fill-row">
+          <button type="button" class="btn btn-secondary btn-small" id="add-samples">Add sample sign-ups</button>
+          <button type="button" class="btn btn-danger-link" id="remove-samples" hidden>Remove sample sign-ups</button>
+        </div>
+        <p class="status" id="sample-status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© 2026 The ANB Group. All rights reserved.</span>
+      <span><a href="../terms.html">Terms of Service</a> · <a href="../privacy.html">Privacy Policy</a></span>
+    </div>
+  </footer>
+</body>
+</html>

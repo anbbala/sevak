@@ -15,6 +15,7 @@ sign up in seconds.
   - [`app/events.html`](app/events.html): the organization's events, with main events and their sub-events
   - [`app/main-event.html`](app/main-event.html): a main event that groups sub-events, such as a festival and its rehearsals
   - [`app/event.html`](app/event.html): create and edit an event, with its roles and shifts
+  - [`app/dashboard.html`](app/dashboard.html): upcoming events and volunteers required vs enrolled
 
 ## Preview locally
 
