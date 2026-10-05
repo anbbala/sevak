@@ -50,6 +50,7 @@
           <div class="field">
             <label for="website">Website <span class="optional">(optional)</span></label>
             <input id="website" type="url" inputmode="url" autocomplete="url" maxlength="200" placeholder="example.org">
+            <a class="open-link" id="website-open" target="_blank" rel="noopener noreferrer" hidden></a>
             <div class="fill-row">
               <button type="button" class="btn btn-secondary btn-small" id="fill-from-website" disabled>Fill in from website</button>
               <p class="hint" id="fill-status" role="status" aria-live="polite">Add your website and we'll try to fill in your description and address.</p>
@@ -59,6 +60,7 @@
           <div class="field">
             <label for="whatsappLink">WhatsApp group, community or channel <span class="optional">(optional)</span></label>
             <input id="whatsappLink" type="url" inputmode="url" maxlength="200" placeholder="https://chat.whatsapp.com/…">
+            <a class="open-link" id="whatsappLink-open" target="_blank" rel="noopener noreferrer" hidden></a>
             <p class="hint">Volunteers can tap this link to join. Use an invite link from WhatsApp, or a wa.me link to a number.</p>
             <p class="error" id="whatsappLink-error"></p>
           </div>

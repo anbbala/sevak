@@ -98,6 +98,34 @@
     r.addEventListener("change", applyTaxStatus);
   });
 
+  // ---------- Open links in a new tab ----------
+
+  // Shows a link under a URL field once what's typed is valid, so the host
+  // can check it opens the right page.
+  function updateOpenLink(inputId, isValid) {
+    var input = $(inputId);
+    var link = $(inputId + "-open");
+    var v = input.value.trim();
+    var url = v && isValid(v) ? normalizeUrl(v) : "";
+    link.hidden = !url;
+    if (!url) return;
+    var u = new URL(url);
+    var shown = (u.hostname + u.pathname + u.search).replace(/^www\./, "").replace(/\/$/, "");
+    link.href = url;
+    link.textContent = shown;
+    link.setAttribute("aria-label", "Open " + shown + " in a new tab");
+  }
+
+  function updateOpenLinks() {
+    updateOpenLink("website", isValidWebsite);
+    updateOpenLink("whatsappLink", isValidWhatsappLink);
+  }
+
+  ["website", "whatsappLink"].forEach(function (id) {
+    $(id).addEventListener("input", updateOpenLinks);
+    $(id).addEventListener("change", updateOpenLinks);
+  });
+
   // ---------- Fill in from website ----------
 
   var COUNTRY_ALIASES = {
@@ -374,6 +402,7 @@
     renumberMembers();
     applyTaxStatus();
     updateCounter();
+    updateOpenLinks();
     $("status").textContent = "Organization profile deleted.";
   });
 
@@ -389,4 +418,5 @@
   updateCounter();
   $("fill-from-website").disabled = !websiteUrl();
   lastFetched = websiteUrl();
+  updateOpenLinks();
 })();

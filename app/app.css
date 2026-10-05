@@ -188,6 +188,10 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.5; }
 .whatsapp input { width: 18px; height: 18px; margin: 0; accent-color: var(--primary); }
 .whatsapp a { font-weight: 600; word-break: break-all; }
 
+/* Link that opens what was typed in a URL field */
+.open-link { justify-self: start; max-width: 100%; font-size: 0.9rem; font-weight: 600; overflow-wrap: anywhere; }
+.open-link::after { content: " ↗"; }
+
 /* Fill-from-website row */
 .fill-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .btn-small { min-height: 36px; padding: 6px 14px; font-size: 0.9rem; }
