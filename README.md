@@ -8,6 +8,7 @@ sign up in seconds.
 **Status:** pre-MVP. The site currently shows a coming-soon landing page.
 
 - MVP requirements: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
+- Architecture, back end and hosting plan: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - Landing page: [`index.html`](index.html) (static, no build step)
 - Front-end prototype: [`app/`](app/). It uses mock data stored in your browser, with no backend yet.
   - [`app/profile.html`](app/profile.html): user profile for volunteers and host team members
@@ -29,9 +30,14 @@ python3 -m http.server 8000
 
 ## Publish with GitHub Pages
 
-1. Go to **Settings → Pages**.
-2. Under **Build and deployment**, set **Source** to **Deploy from a branch**.
-3. Pick the branch that holds this code and the **`/ (root)`** folder, then click **Save**.
+The site is deployed by the [`Deploy to GitHub Pages`](.github/workflows/pages.yml) workflow on
+every push to `main`. It checks that local links and scripts exist, then publishes the files as
+they are (no build step). One-time setup:
 
-The site will be published at `https://anbbala.github.io/vms-app/`. The empty `.nojekyll` file tells
-Pages to serve files as they are, without running Jekyll.
+1. Go to **Settings → Pages**.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+
+To redeploy without a new commit, open **Actions → Deploy to GitHub Pages → Run workflow**.
+
+The site is published at `https://anbbala.github.io/vms-app/`. If the repository is renamed, this
+address changes to match the new name, and the old address does not redirect.
