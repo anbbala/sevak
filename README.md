@@ -5,12 +5,13 @@
 A simple web app for organizations to publish volunteer events and shifts, and for volunteers to
 sign up in seconds.
 
-**Status:** pre-MVP. The site currently shows a coming-soon landing page.
+**Status:** pre-MVP. The landing page welcomes volunteers with Sign in and Sign up.
 
 - MVP requirements: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
 - Architecture, back end and hosting plan: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - Landing page: [`index.html`](index.html) (static, no build step)
 - Front-end prototype: [`app/`](app/). It uses mock data stored in your browser, with no backend yet.
+  - [`app/signin.html`](app/signin.html): prototype sign-in (matches the email on the profile saved in this browser)
   - [`app/profile.html`](app/profile.html): user profile for volunteers and host team members
   - [`app/organization.html`](app/organization.html): host organization profile
   - [`app/events.html`](app/events.html): the organization's events, with main events and their sub-events
