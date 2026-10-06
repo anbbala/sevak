@@ -32,6 +32,11 @@
     .feed strong { display: block; margin-bottom: 2px; }
     .feed p { margin: 0; color: var(--muted); font-size: 0.95rem; }
 
+    .shortcuts { margin: 32px 0 8px; padding: 14px 18px; border: 1px dashed var(--border); border-radius: 14px; font-size: 0.9rem; color: var(--muted); }
+    .shortcuts h2 { margin: 0 0 6px; font-size: 0.9rem; color: var(--text); }
+    .shortcuts ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+    .shortcuts a { color: var(--primary); text-underline-offset: 3px; }
+
     @media (max-width: 480px) {
       .welcome { margin-top: 8px; }
       .welcome-sign { padding: 32px 20px; }
@@ -84,6 +89,17 @@
           </li>
         </ul>
       </section>
+      <nav class="shortcuts" aria-labelledby="shortcuts-title">
+        <h2 id="shortcuts-title">Prototype shortcuts (for reviewers)</h2>
+        <ul>
+          <li><a href="app/profile.html">My profile</a></li>
+          <li><a href="app/organization.html">Organization</a></li>
+          <li><a href="app/events.html">Events</a></li>
+          <li><a href="app/dashboard.html">Dashboard</a></li>
+          <li><a href="app/signup.html">Volunteer sign-up</a></li>
+          <li><a href="app/dashboard.html?demo=1">Dashboard with demo data</a></li>
+        </ul>
+      </nav>
     </div>
   </main>
 
