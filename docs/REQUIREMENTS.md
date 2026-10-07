@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.15 (inactive events, admin-only delete) · **Updated:** 2026-10-07 · **Status:** Draft for review
+**Version:** 2.16 (About me and services) · **Updated:** 2026-10-07 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -211,6 +211,7 @@ Sign-ups appear on the host dashboard right away. | Must |
 | VOL-7 | An optional public volunteer profile or shareable badge. Entries from private events would never be shown on it. | Later |
 | VOL-13 | In their profile, a person chooses **how they use Sevak**: **Volunteer**, **Host team member**, or both, with at least one required. Host team members list the **organizations** they help run (up to 10) and their **role in each**, Admin or Coordinator, so the same person can be an Admin for one organization and a Coordinator for another. Volunteer-only fields (address, affiliations, availability) appear only for volunteers. In the live app, organization memberships come from invitations (ORG-5) rather than being typed in. *(Prototype: `app/profile.html`.)* | Must |
 | VOL-14 | **Personal documents.** A person's profile has two tabs, **My details** and **Documents**, where they can keep their own files (certificates, background checks, training records), with the same grid and actions as ORG-12. Only they can see these. Deleting the profile deletes them. | Should |
+| VOL-15 | **Get to know me, and services.** A profile has an optional **Get to know me** section with four free-text fields: **About me** (up to 1,000 characters), **My passion**, **My certifications** and **How I can help** (up to 500 each), with character counters. A **Services I can provide** section has a drop-down of service types: *General help, AV system help, Food service, Website maintenance, Telemarketing, Fundraising, Accounting, Office help*. Each pick is added to a list of removable chips, so a person can offer several; a service already chosen can't be picked twice. Organizations see these when the person signs up for their events. Matching services to roles is future work (VOL-8). | Should |
 | VOL-8 | Skills and interests, and **matching** shifts to a volunteer's availability (VOL-2 collects availability now). | Later |
 
 ### 4.5 Discovery

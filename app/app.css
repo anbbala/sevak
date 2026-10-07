@@ -614,6 +614,16 @@ input[type="time"], input[type="number"] {
 .event-list .list-heading { display: grid; gap: 2px; margin-top: 20px; }
 .event-list .list-heading .hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
 
+/* Services */
+.service-picker { max-width: 360px; }
+.service-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+.service-list[hidden] { display: none; }
+.service-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 4px 4px 12px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-weight: 600; font-size: 0.9rem; }
+.service-remove { display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; font: inherit; font-size: 0.8rem; color: inherit; background: none; cursor: pointer; }
+.service-remove:hover { background: var(--surface); }
+.service-remove:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--focus); }
+#service-empty { margin-top: 12px; }
+
 /* Documents */
 .docs-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px 16px; }
 .docs-head .section-title { float: none; }

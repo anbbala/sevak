@@ -144,6 +144,70 @@
     if (input) input.focus();
   });
 
+  // ---------- About me ----------
+
+  var ABOUT_FIELDS = ["aboutMe", "passion", "certifications", "howICanHelp"];
+
+  function updateCounters() {
+    ABOUT_FIELDS.forEach(function (id) {
+      form.querySelector('[data-counter-for="' + id + '"]').textContent = $(id).value.length + " / " + $(id).maxLength;
+    });
+  }
+  ABOUT_FIELDS.forEach(function (id) { $(id).addEventListener("input", updateCounters); });
+
+  // ---------- Services ----------
+  // Picking a service from the drop-down adds it to the list below; each
+  // service can be chosen once and removed again.
+
+  var serviceSelect = $("serviceSelect");
+  var serviceList = $("service-list");
+
+  function serviceLabel(value) {
+    var option = serviceSelect.querySelector('option[value="' + value + '"]');
+    return option ? option.textContent : value;
+  }
+
+  function services() {
+    return Array.prototype.map.call(serviceList.children, function (li) { return li.dataset.value; });
+  }
+
+  function refreshServices() {
+    var chosen = services();
+    Array.prototype.forEach.call(serviceSelect.options, function (o) {
+      if (o.value) o.disabled = chosen.indexOf(o.value) !== -1;
+    });
+    $("service-empty").hidden = chosen.length > 0;
+    serviceList.hidden = !chosen.length;
+  }
+
+  function addService(value) {
+    if (!value || services().indexOf(value) !== -1 || !serviceSelect.querySelector('option[value="' + value + '"]')) return;
+    var li = document.createElement("li");
+    li.className = "service-chip";
+    li.dataset.value = value;
+    var name = document.createElement("span");
+    name.textContent = serviceLabel(value);
+    var remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "service-remove";
+    remove.setAttribute("aria-label", "Remove " + serviceLabel(value));
+    remove.textContent = "✕";
+    remove.addEventListener("click", function () {
+      li.remove();
+      refreshServices();
+      serviceSelect.focus();
+    });
+    li.appendChild(name);
+    li.appendChild(remove);
+    serviceList.appendChild(li);
+    refreshServices();
+  }
+
+  serviceSelect.addEventListener("change", function () {
+    addService(serviceSelect.value);
+    serviceSelect.value = "";
+  });
+
   // ---------- Read / fill ----------
 
   function readForm() {
@@ -154,6 +218,11 @@
       email: v("email"),
       phone: F.phoneValue($("phone")),
       roles: { volunteer: isVolunteer(), host: isHost() },
+      aboutMe: v("aboutMe"),
+      passion: v("passion"),
+      certifications: v("certifications"),
+      howICanHelp: v("howICanHelp"),
+      services: services(),
       updatedAt: new Date().toISOString()
     };
     if (isHost()) {
@@ -181,6 +250,8 @@
     set("lastName", data.lastName);
     set("email", data.email);
     F.setPhone($("phone"), data.phone);
+    ABOUT_FIELDS.forEach(function (id) { set(id, data[id]); });
+    (data.services || []).forEach(addService);
     // Profiles saved before user types existed were volunteer profiles.
     var roles = data.roles || { volunteer: true, host: false };
     $("role-volunteer").checked = !!roles.volunteer;
@@ -229,6 +300,9 @@
     F.resetPhone($("phone"));
     affiliationRows.innerHTML = "";
     orgRows.innerHTML = "";
+    serviceList.innerHTML = "";
+    refreshServices();
+    updateCounters();
     updateAffiliationButton();
     updateOrgButton();
     applyRoles();
@@ -242,6 +316,8 @@
 
   var existing = F.load(STORAGE_KEY);
   if (existing) fill(existing);
+  refreshServices();
+  updateCounters();
   updateAffiliationButton();
   updateOrgButton();
   applyRoles();

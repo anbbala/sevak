@@ -90,6 +90,68 @@
         <p class="error" id="roles-error"></p>
       </fieldset>
 
+      <!-- About me -->
+      <fieldset class="section" id="about-me-section">
+        <legend>Get to know me <span class="optional">(optional)</span></legend>
+        <p class="section-help">Help organizations get to know you. They see this when you sign up for their events.</p>
+        <div class="stack">
+          <div class="field">
+            <label for="aboutMe">About me</label>
+            <textarea id="aboutMe" maxlength="1000" rows="3" placeholder="e.g. Retired teacher, grandmother of three, love being outdoors" aria-describedby="aboutMe-hint"></textarea>
+            <div class="field-footer">
+              <p class="hint" id="aboutMe-hint">A few lines about who you are.</p>
+              <p class="counter" data-counter-for="aboutMe" aria-live="polite">0 / 1000</p>
+            </div>
+          </div>
+          <div class="field">
+            <label for="passion">My passion</label>
+            <textarea id="passion" maxlength="500" rows="3" placeholder="e.g. Making sure no family in our town goes hungry" aria-describedby="passion-hint"></textarea>
+            <div class="field-footer">
+              <p class="hint" id="passion-hint">What you care about most.</p>
+              <p class="counter" data-counter-for="passion" aria-live="polite">0 / 500</p>
+            </div>
+          </div>
+          <div class="field">
+            <label for="certifications">My certifications</label>
+            <textarea id="certifications" maxlength="500" rows="3" placeholder="e.g. CPR and First Aid (Red Cross, 2025), Food Handler card" aria-describedby="certifications-hint"></textarea>
+            <div class="field-footer">
+              <p class="hint" id="certifications-hint">For example first aid, food handling or a professional licence.</p>
+              <p class="counter" data-counter-for="certifications" aria-live="polite">0 / 500</p>
+            </div>
+          </div>
+          <div class="field">
+            <label for="howICanHelp">How I can help</label>
+            <textarea id="howICanHelp" maxlength="500" rows="3" placeholder="e.g. I can set up sound systems and run the mixing desk" aria-describedby="howICanHelp-hint"></textarea>
+            <div class="field-footer">
+              <p class="hint" id="howICanHelp-hint">The kind of help you'd most like to give.</p>
+              <p class="counter" data-counter-for="howICanHelp" aria-live="polite">0 / 500</p>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Services -->
+      <fieldset class="section" id="services-section">
+        <legend>Services I can provide <span class="optional">(optional)</span></legend>
+        <p class="section-help">Choose from the list. Add as many as you like.</p>
+        <div class="field service-picker">
+          <label for="serviceSelect">Type of service</label>
+          <select id="serviceSelect">
+            <option value="">Choose a service…</option>
+            <option value="general">General help</option>
+            <option value="av">AV system help</option>
+            <option value="food">Food service</option>
+            <option value="website">Website maintenance</option>
+            <option value="telemarketing">Telemarketing</option>
+            <option value="fundraising">Fundraising</option>
+            <option value="accounting">Accounting</option>
+            <option value="office">Office help</option>
+          </select>
+        </div>
+        <ul class="service-list" id="service-list" aria-label="Services you've chosen"></ul>
+        <p class="hint" id="service-empty">No services chosen yet.</p>
+      </fieldset>
+
       <!-- Host organizations -->
       <fieldset class="section" id="host-fields" hidden>
         <legend>My organizations</legend>
