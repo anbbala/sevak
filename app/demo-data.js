@@ -104,7 +104,7 @@
       description: "A demo organization for testing Sevak. Its events, roles and sign-ups are made up.",
       address: { country: "US", line1: "200 Elm Street", city: "Austin", state: "TX", postalCode: "78701" },
       taxStatus: "charity",
-      primaryContact: { name: "Demo Coordinator", title: "Volunteer Coordinator", email: "coordinator@example.org" },
+      primaryContact: { name: "Demo Coordinator", title: "Volunteer Coordinator", email: "coordinator@example.org", phone: { country: "US", number: "+15125550100" } },
       team: [],
       verificationStatus: "verified",
       createdAt: now,

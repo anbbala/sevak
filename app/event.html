@@ -12,6 +12,7 @@
   <script src="forms.js" defer></script>
   <script src="orgs-store.js" defer></script>
   <script src="events-store.js" defer></script>
+  <script src="documents.js" defer></script>
   <script src="event.js" defer></script>
 </head>
 <body>
@@ -52,7 +53,12 @@
       <p>Events belong to an organization. <a href="organization.html">Set up your organization profile</a>, then come back to create an event.</p>
     </div>
 
-    <form id="event-form" novalidate>
+    <div class="tabs" role="tablist" aria-label="Event sections" id="event-tabs">
+      <button type="button" class="tab" role="tab" id="tab-details" aria-controls="event-form" aria-selected="true">Event details</button>
+      <button type="button" class="tab" role="tab" id="tab-documents" aria-controls="panel-documents" aria-selected="false" tabindex="-1">Documents</button>
+    </div>
+
+    <form id="event-form" class="tab-panel" role="tabpanel" aria-labelledby="tab-details" novalidate>
       <!-- Details -->
       <fieldset class="section">
         <legend>Event details</legend>
@@ -180,6 +186,8 @@
         </div>
       </div>
     </form>
+
+    <section class="section tab-panel is-hidden" role="tabpanel" id="panel-documents" aria-labelledby="tab-documents"></section>
 
     <template id="role-template">
       <div class="member role-card">

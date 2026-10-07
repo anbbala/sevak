@@ -388,6 +388,8 @@
       // Keep the selected tab visible when the tab bar scrolls on small screens.
       if (selected) t.parentNode.scrollLeft = Math.max(0, t.offsetLeft - (t.parentNode.clientWidth - t.offsetWidth) / 2);
     });
+    // Documents save on their own, so the profile's Save bar isn't shown there.
+    $("save-bar").hidden = key === "documents";
     if (opts.updateUrl !== false) history.replaceState(null, "", "#" + key);
   }
 
@@ -420,7 +422,8 @@
     var withErrors = [];
     tabs.forEach(function (t) {
       var panel = $("panel-" + tabKey(t));
-      var bad = !!panel.querySelector('[aria-invalid="true"]');
+      // Documents has its own form and checks.
+      var bad = tabKey(t) !== "documents" && !!panel.querySelector('[aria-invalid="true"]');
       t.classList.toggle("has-error", bad);
       t.querySelector(".tab-alert").textContent = bad ? " (needs attention)" : "";
       if (bad) withErrors.push(tabKey(t));
@@ -478,6 +481,7 @@
     }
     dirty = false;
     applyMode();
+    docs.setOwner("org:" + orgId);
     $("status").textContent = (wasNew ? "Organization created and saved on this device." : "Organization profile saved on this device.") +
       " You can now create events on the Events tab.";
   });
@@ -518,6 +522,11 @@
   var orgId = creating ? null : O.currentId();
   var existing = orgId ? O.get(orgId) : null;
   if (existing) fill(existing);
+  var docs = window.SevakDocs.mount($("panel-documents"), {
+    owner: existing ? "org:" + orgId : null,
+    help: "Policies, insurance certificates, registration papers and anything else your team needs.",
+    blockedMessage: "Save the organization profile first, then you can add documents."
+  });
   applyMode();
   renumberMembers();
   applyTaxStatus();

@@ -453,7 +453,8 @@
     if (!eventId) {
       eventId = event.id;
       createdAt = event.createdAt;
-      history.replaceState(null, "", "?id=" + encodeURIComponent(eventId));
+      history.replaceState(null, "", "?id=" + encodeURIComponent(eventId) + location.hash);
+      docs.setOwner("event:" + eventId);
     }
     applyStatus();
     var privateNote = event.visibility === "public" && !(org && org.verificationStatus === "verified")
@@ -497,6 +498,7 @@
   if (!org || !org.name) {
     $("no-org").hidden = false;
     form.hidden = true;
+    $("event-tabs").hidden = true;
     $("back-link").hidden = true;
     $("page-title").textContent = "New event";
     return;
@@ -528,4 +530,11 @@
   applyStatus();
   updateCounter();
   refreshDays();
+
+  var docs = window.SevakDocs.mount($("panel-documents"), {
+    owner: eventId ? "event:" + eventId : null,
+    help: "Briefings, maps, run sheets, waivers and anything else for this event.",
+    blockedMessage: "Save the event first (a draft is fine), then you can add documents."
+  });
+  window.SevakDocs.pageTabs($("event-tabs"));
 })();

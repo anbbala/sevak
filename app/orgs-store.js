@@ -10,6 +10,7 @@
   var LEGACY_KEY = "sevak.organization.v1";
   var EVENTS_KEY = "sevak.events.v1";
   var MAIN_KEY = "sevak.mainEvents.v1";
+  var DOCS_KEY = "sevak.documents.v1";
 
   var F = window.SevakForms;
 
@@ -55,6 +56,10 @@
   // Deletes an organization with its events and main events.
   function remove(id) {
     var keep = function (x) { return x.organizationId !== id; };
+    // Its documents and its events' documents go too (files are cleared
+    // from IndexedDB the next time a documents tab opens).
+    var owners = ["org:" + id].concat((F.load(EVENTS_KEY) || []).filter(function (e) { return !keep(e); }).map(function (e) { return "event:" + e.id; }));
+    F.store(DOCS_KEY, (F.load(DOCS_KEY) || []).filter(function (d) { return owners.indexOf(d.owner) === -1; }));
     F.store(EVENTS_KEY, (F.load(EVENTS_KEY) || []).filter(keep));
     F.store(MAIN_KEY, (F.load(MAIN_KEY) || []).filter(keep));
     F.store(LIST_KEY, all().filter(function (o) { return o.id !== id; }));

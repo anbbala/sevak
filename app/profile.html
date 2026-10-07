@@ -11,6 +11,7 @@
   <script src="countries.js" defer></script>
   <script src="forms.js" defer></script>
   <script src="orgs-store.js" defer></script>
+  <script src="documents.js" defer></script>
   <script src="profile.js" defer></script>
 </head>
 <body>
@@ -42,7 +43,12 @@
     <h1 class="page-title">My profile</h1>
     <p class="page-intro">Your details in one place, whether you volunteer, help run events, or both.</p>
 
-    <form id="profile-form" novalidate>
+    <div class="tabs" role="tablist" aria-label="Profile sections" id="profile-tabs">
+      <button type="button" class="tab" role="tab" id="tab-details" aria-controls="profile-form" aria-selected="true">My details</button>
+      <button type="button" class="tab" role="tab" id="tab-documents" aria-controls="panel-documents" aria-selected="false" tabindex="-1">Documents</button>
+    </div>
+
+    <form id="profile-form" class="tab-panel" role="tabpanel" aria-labelledby="tab-details" novalidate>
       <!-- About you -->
       <fieldset class="section">
         <legend>About you</legend>
@@ -161,6 +167,8 @@
         </div>
       </div>
     </form>
+
+    <section class="section tab-panel is-hidden" role="tabpanel" id="panel-documents" aria-labelledby="tab-documents"></section>
 
     <template id="org-template">
       <div class="row row-org">

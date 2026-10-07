@@ -13,6 +13,7 @@
   <script src="orgs-store.js" defer></script>
   <script src="events-store.js" defer></script>
   <script src="website-import.js" defer></script>
+  <script src="documents.js" defer></script>
   <script src="organization.js" defer></script>
 </head>
 <body>
@@ -47,12 +48,13 @@
     <p class="page-intro">Tell volunteers who you are. A complete profile also lets us verify your organization so you can list public events.</p>
 
     <form id="org-form" novalidate>
-      <div class="tabs" role="tablist" aria-label="Organization profile sections">
+      <div class="tabs tabs-wrap" role="tablist" aria-label="Organization profile sections">
         <button type="button" class="tab" role="tab" id="tab-about" aria-controls="panel-about" aria-selected="false" tabindex="-1">About<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
         <button type="button" class="tab" role="tab" id="tab-address" aria-controls="panel-address" aria-selected="false" tabindex="-1">Address<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
         <button type="button" class="tab" role="tab" id="tab-status" aria-controls="panel-status" aria-selected="false" tabindex="-1">Status<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
         <button type="button" class="tab" role="tab" id="tab-contact" aria-controls="panel-contact" aria-selected="false" tabindex="-1">Contact<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
         <button type="button" class="tab" role="tab" id="tab-team" aria-controls="panel-team" aria-selected="false" tabindex="-1">Team<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
+        <button type="button" class="tab" role="tab" id="tab-documents" aria-controls="panel-documents" aria-selected="false" tabindex="-1">Documents<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
       </div>
 
       <!-- About the organization -->
@@ -190,7 +192,7 @@
         <button type="button" class="btn btn-secondary" id="add-member">+ Add a team member</button>
       </fieldset>
 
-      <div class="save-bar">
+      <div class="save-bar" id="save-bar">
         <p class="status" id="status" role="status" aria-live="polite"></p>
         <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap">
           <button type="button" class="btn btn-danger-link" id="delete-org">Delete organization</button>
@@ -198,6 +200,9 @@
         </div>
       </div>
     </form>
+
+    <!-- Documents are saved as soon as they're added, so they sit outside the profile form. -->
+    <section class="section tab-panel is-hidden" role="tabpanel" id="panel-documents" aria-labelledby="tab-documents"></section>
 
     <template id="member-template">
       <div class="member">

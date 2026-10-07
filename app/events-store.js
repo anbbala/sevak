@@ -5,6 +5,7 @@
 
   var KEY = "sevak.events.v1";
   var MAIN_KEY = "sevak.mainEvents.v1";
+  var DOCS_KEY = "sevak.documents.v1";
   var F = window.SevakForms;
 
   function all() {
@@ -24,6 +25,7 @@
   }
 
   function remove(id) {
+    F.store(DOCS_KEY, (F.load(DOCS_KEY) || []).filter(function (d) { return d.owner !== "event:" + id; }));
     return F.store(KEY, all().filter(function (e) { return e.id !== id; }));
   }
 

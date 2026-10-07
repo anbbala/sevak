@@ -219,8 +219,11 @@
   });
 
   $("delete-profile").addEventListener("click", function () {
-    if (!window.confirm("Delete your profile from this device? This can't be undone.")) return;
+    var docCount = window.SevakDocs.forOwner("profile").length;
+    if (!window.confirm("Delete your profile" + (docCount ? " and your " + (docCount === 1 ? "document" : docCount + " documents") : "") +
+      " from this device? This can't be undone.")) return;
     F.clear(STORAGE_KEY);
+    window.SevakDocs.removeFor(["profile"]).then(docs.render);
     form.reset();
     $("country").value = F.defaultCountry();
     F.resetPhone($("phone"));
@@ -242,4 +245,10 @@
   updateAffiliationButton();
   updateOrgButton();
   applyRoles();
+
+  var docs = window.SevakDocs.mount($("panel-documents"), {
+    owner: "profile",
+    help: "Certificates, background checks, training records and anything else you want to keep handy. Only you can see these."
+  });
+  window.SevakDocs.pageTabs($("profile-tabs"));
 })();
