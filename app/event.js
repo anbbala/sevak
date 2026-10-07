@@ -19,6 +19,8 @@
   var org = existing && existing.organizationId ? window.SevakOrgs.get(existing.organizationId) : window.SevakOrgs.current();
   if (org && existing) window.SevakOrgs.setCurrent(org.id);
   var status = existing ? existing.status : "draft";
+  var active = window.SevakEvents.isActive(existing) || !existing;
+  var isAdmin = window.SevakOrgs.isAdmin(org);
   var createdAt = existing ? existing.createdAt : null;
   var counter = 0;
 
@@ -386,6 +388,8 @@
       roles: Array.prototype.map.call(roleList.children, readRole),
       visibility: visibility(),
       status: status,
+      active: active,
+      inactiveAt: active ? undefined : (existing && existing.inactiveAt) || new Date().toISOString(),
       createdAt: createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -421,14 +425,18 @@
   function applyStatus() {
     var published = status === "published";
     // Link to what volunteers see (a preview while the event is a draft).
-    $("volunteer-link-row").hidden = !eventId;
+    $("volunteer-link-row").hidden = !eventId || !active;
     if (eventId) {
       $("volunteer-link").href = "signup.html?event=" + encodeURIComponent(eventId);
       $("volunteer-link-hint").textContent = published ? "Share this link with volunteers." : "Preview only until you publish.";
     }
     $("publish").textContent = published ? "Save changes" : "Publish";
     $("save-draft").textContent = published ? "Unpublish" : "Save draft";
-    $("delete-event").hidden = !eventId;
+    // Only Admins can delete an event; anyone can make it inactive.
+    $("delete-event").hidden = !eventId || !isAdmin;
+    $("delete-hint").hidden = !eventId || isAdmin;
+    $("deactivate").hidden = !eventId || !active;
+    $("inactive-note").hidden = !eventId || active;
     var title = $("title").value.trim();
     $("page-title").textContent = eventId ? (title || "Untitled event") : "New event";
     document.title = (eventId ? title || "Event" : "New event") + " · Sevak";
@@ -467,7 +475,35 @@
   form.addEventListener("submit", function (e) { e.preventDefault(); save(true); });
   $("save-draft").addEventListener("click", function () { save(false); });
 
+  function setActive(on) {
+    var saved = E.setActive(eventId, on);
+    if (!saved) {
+      $("status").textContent = "Couldn't save in this browser. Check that site storage is allowed.";
+      return;
+    }
+    active = on;
+    existing = saved;
+    applyStatus();
+    $("status").textContent = on ? "Event reactivated." : "Event made inactive. It's hidden from volunteers and lists.";
+    if (on) $("deactivate").focus(); else $("reactivate").focus();
+  }
+
+  $("deactivate").addEventListener("click", function () {
+    var signups = window.SevakSignups ? window.SevakSignups.forEvent(eventId).length : 0;
+    if (!window.confirm("Make this event inactive? It will be hidden from volunteers, the Events list and the dashboard" +
+      (signups ? ", and no one can sign up. Its " + E.plural(signups, "existing sign-up") + " will be kept" : "") +
+      ". You can reactivate it at any time.")) return;
+    setActive(false);
+  });
+  $("reactivate").addEventListener("click", function () { setActive(true); });
+
   $("delete-event").addEventListener("click", function () {
+    if (!window.SevakOrgs.isAdmin(org)) {
+      isAdmin = false;
+      applyStatus();
+      $("status").textContent = "Only admins can delete events. You can make it inactive instead.";
+      return;
+    }
     if (!window.confirm("Delete this event? This can't be undone.")) return;
     var back = $("back-link").href;
     E.remove(eventId);

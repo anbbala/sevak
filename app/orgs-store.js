@@ -11,6 +11,7 @@
   var EVENTS_KEY = "sevak.events.v1";
   var MAIN_KEY = "sevak.mainEvents.v1";
   var DOCS_KEY = "sevak.documents.v1";
+  var PROFILE_KEY = "sevak.profile.v1";
 
   var F = window.SevakForms;
 
@@ -49,9 +50,49 @@
     var list = all();
     var saved = Object.assign({}, org, { id: org.id || newId() });
     var i = list.findIndex(function (o) { return o.id === saved.id; });
+    // Remember who created it: the creator is an Admin (see roleFor).
+    var creator = i === -1 ? (profileEmail() || undefined) : list[i].createdBy;
+    if (!saved.createdBy && creator) saved.createdBy = creator;
     if (i === -1) list.push(saved); else list[i] = saved;
     return F.store(LIST_KEY, list) ? saved : null;
   }
+
+  // ---------- Roles ----------
+  // The prototype has no sign-in, so "you" are the person in My profile.
+  // Your role in an organization is Admin if any of these say so: the
+  // organization's Team tab lists your email as Admin, you are its primary
+  // contact, you created it, or My profile lists it with the Admin role.
+  // Otherwise it's Coordinator if the Team tab or My profile says so.
+
+  function profile() { return F.load(PROFILE_KEY) || {}; }
+
+  function profileEmail() {
+    return String(profile().email || "").trim().toLowerCase();
+  }
+
+  function same(a, b) {
+    return String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
+  }
+
+  // Returns "admin", "coordinator" or null.
+  function roleFor(org) {
+    if (!org) return null;
+    var p = profile();
+    var email = profileEmail();
+    var roles = [];
+    if (email) {
+      (org.team || []).forEach(function (m) { if (same(m.email, email)) roles.push(m.role || "coordinator"); });
+      if (org.primaryContact && same(org.primaryContact.email, email)) roles.push("admin");
+      if (same(org.createdBy, email)) roles.push("admin");
+    }
+    if (!p.roles || p.roles.host) {
+      (p.organizations || []).forEach(function (o) { if (same(o.name, org.name)) roles.push(o.role || "coordinator"); });
+    }
+    if (roles.indexOf("admin") !== -1) return "admin";
+    return roles.length ? "coordinator" : null;
+  }
+
+  function isAdmin(org) { return roleFor(org) === "admin"; }
 
   // Deletes an organization with its events and main events.
   function remove(id) {
@@ -209,6 +250,8 @@
     save: save,
     remove: remove,
     renderSwitcher: renderSwitcher,
-    renderHeader: renderHeader
+    renderHeader: renderHeader,
+    roleFor: roleFor,
+    isAdmin: isAdmin
   };
 })();

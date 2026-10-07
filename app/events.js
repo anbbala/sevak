@@ -15,7 +15,14 @@
     $("no-org").hidden = saved;
     $("events").hidden = !saved;
 
-    var events = saved ? E.forOrg(org.id).sort(E.byDate) : [];
+    var allEvents = saved ? E.forOrg(org.id).sort(E.byDate) : [];
+    // Inactive events are hidden unless asked for.
+    var inactiveCount = allEvents.filter(function (e) { return !E.isActive(e); }).length;
+    var showInactive = inactiveCount > 0 && $("show-inactive").checked;
+    var shown = function (e) { return showInactive || E.isActive(e); };
+    $("show-inactive-wrap").hidden = !inactiveCount;
+    $("inactive-count").textContent = inactiveCount;
+    var events = allEvents.filter(shown);
     var mains = (saved ? E.mainForOrg(org.id) : []).sort(function (a, b) {
       var ra = E.mainRange(a.id).start || "9999", rb = E.mainRange(b.id).start || "9999";
       return ra.localeCompare(rb) || (a.title || "").localeCompare(b.title || "");
@@ -25,13 +32,16 @@
     var standalone = events.filter(function (e) { return !e.mainEventId || !mainIds[e.mainEventId]; });
 
     $("events-empty").hidden = !saved || events.length > 0 || mains.length > 0;
+    $("events-empty").textContent = inactiveCount
+      ? "No active events. Create one, or show inactive events to reactivate one."
+      : "No events yet. Create one to start recruiting volunteers.";
     $("events-help").hidden = !saved || mains.length > 0;
 
     // Main events, each with its sub-events nested underneath.
     var groups = $("main-groups");
     groups.innerHTML = "";
     mains.forEach(function (main) {
-      var subs = E.subEvents(main.id);
+      var subs = E.subEvents(main.id).filter(shown);
       var range = E.mainRange(main.id);
       var group = document.createElement("div");
       group.className = "main-group";
@@ -81,5 +91,6 @@
 
   O.renderHeader($("org-context"), O.current());
   O.renderSwitcher($("org-switcher"), { switchTo: "events.html" });
+  $("show-inactive").addEventListener("change", renderEvents);
   renderEvents();
 })();

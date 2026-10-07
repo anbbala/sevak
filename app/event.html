@@ -12,6 +12,7 @@
   <script src="forms.js" defer></script>
   <script src="orgs-store.js" defer></script>
   <script src="events-store.js" defer></script>
+  <script src="signups-store.js" defer></script>
   <script src="documents.js" defer></script>
   <script src="event.js" defer></script>
 </head>
@@ -51,6 +52,11 @@
     <div class="section notice notice-warn" id="no-org" hidden>
       <p><strong>Create your organization profile first.</strong></p>
       <p>Events belong to an organization. <a href="organization.html">Set up your organization profile</a>, then come back to create an event.</p>
+    </div>
+
+    <div class="section notice notice-warn inactive-note" id="inactive-note" hidden>
+      <p><strong>This event is inactive.</strong> It's hidden from volunteers, the Events list and the dashboard. Its sign-ups and documents are kept.</p>
+      <p><button type="button" class="btn btn-secondary btn-small" id="reactivate">Reactivate event</button></p>
     </div>
 
     <div class="tabs" role="tablist" aria-label="Event sections" id="event-tabs">
@@ -180,7 +186,9 @@
       <div class="save-bar">
         <p class="status" id="status" role="status" aria-live="polite"></p>
         <div style="display:flex; gap:12px 16px; align-items:center; flex-wrap:wrap">
+          <span class="hint" id="delete-hint" hidden>Only admins can delete events.</span>
           <button type="button" class="btn btn-danger-link" id="delete-event" hidden>Delete event</button>
+          <button type="button" class="btn btn-link" id="deactivate" hidden>Make inactive</button>
           <button type="button" class="btn btn-secondary" id="save-draft">Save draft</button>
           <button type="submit" class="btn btn-primary" id="publish">Publish</button>
         </div>

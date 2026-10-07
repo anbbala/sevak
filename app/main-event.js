@@ -26,24 +26,35 @@
     list.innerHTML = "";
     $("add-sub").hidden = !mainId;
     $("subs-hint").hidden = !!mainId;
-    $("delete-main").hidden = !mainId;
+    // Only Admins can delete.
+    var isAdmin = window.SevakOrgs.isAdmin(org);
+    $("delete-main").hidden = !mainId || !isAdmin;
+    $("delete-hint").hidden = !mainId || isAdmin;
     if (!mainId) {
       $("subs-summary").textContent = "";
       return;
     }
     $("add-sub").href = "event.html?main=" + encodeURIComponent(mainId);
-    var subs = E.subEvents(mainId);
+    var allSubs = E.subEvents(mainId);
+    // Inactive sub-events are hidden unless asked for.
+    var inactive = allSubs.filter(function (e) { return !E.isActive(e); }).length;
+    $("show-inactive-wrap").hidden = !inactive;
+    $("inactive-count").textContent = inactive;
+    var showInactive = inactive > 0 && $("show-inactive").checked;
+    var subs = allSubs.filter(function (e) { return showInactive || E.isActive(e); });
     subs.forEach(function (event) { list.appendChild(E.eventItem(event)); });
-    if (!subs.length) {
+    if (!allSubs.length) {
       $("subs-summary").textContent = "No sub-events yet. Add the first one, for example a rehearsal or the main performance.";
       return;
     }
+    var activeSubs = allSubs.filter(E.isActive);
     var range = E.mainRange(mainId);
-    var published = subs.filter(function (e) { return e.status === "published"; }).length;
+    var published = activeSubs.filter(function (e) { return e.status === "published"; }).length;
     $("subs-summary").textContent = [
-      E.plural(subs.length, "sub-event"),
+      E.plural(activeSubs.length, "active sub-event"),
       range.start ? E.rangeLabel(range.start, range.end) : "",
-      published + " published"
+      published + " published",
+      inactive ? inactive + " inactive" : ""
     ].filter(Boolean).join(" · ");
   }
 
@@ -89,6 +100,7 @@
   });
 
   $("delete-main").addEventListener("click", function () {
+    if (!window.SevakOrgs.isAdmin(org)) { renderSubEvents(); return; }
     var count = E.subEvents(mainId).length;
     var message = count
       ? "Delete this main event? Its " + E.plural(count, "sub-event") + " will be kept as separate events."
@@ -121,4 +133,5 @@
   updateCounter();
   applyTitle();
   renderSubEvents();
+  $("show-inactive").addEventListener("change", renderSubEvents);
 })();

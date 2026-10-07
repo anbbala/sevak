@@ -24,6 +24,24 @@
     return F.store(KEY, list);
   }
 
+  // ---------- Inactive events ----------
+  // Making an event inactive hides it from volunteers, the Events list (unless
+  // inactive events are shown), main event dates and the dashboard, without
+  // deleting it. Only Admins can delete events; anyone running events can
+  // make one inactive and reactivate it.
+
+  function isActive(event) {
+    return !!event && event.active !== false;
+  }
+
+  function setActive(id, active) {
+    var event = get(id);
+    if (!event) return null;
+    event = Object.assign({}, event, { active: !!active, updatedAt: new Date().toISOString() });
+    if (active) delete event.inactiveAt; else event.inactiveAt = event.updatedAt;
+    return save(event) ? event : null;
+  }
+
   function remove(id) {
     F.store(DOCS_KEY, (F.load(DOCS_KEY) || []).filter(function (d) { return d.owner !== "event:" + id; }));
     return F.store(KEY, all().filter(function (e) { return e.id !== id; }));
@@ -68,9 +86,9 @@
     return all().filter(function (e) { return e.mainEventId === mainId; }).sort(byDate);
   }
 
-  // The main event's dates run from its first sub-event to its last.
+  // The main event's dates run from its first active sub-event to its last.
   function mainRange(mainId) {
-    var subs = subEvents(mainId).filter(function (e) { return e.startDate; });
+    var subs = subEvents(mainId).filter(function (e) { return e.startDate && isActive(e); });
     if (!subs.length) return { start: "", end: "" };
     var end = subs.reduce(function (max, e) { var d = e.endDate || e.startDate; return d > max ? d : max; }, "");
     return { start: subs[0].startDate, end: end };
@@ -108,6 +126,10 @@
 
     var badges = document.createElement("div");
     badges.className = "badges";
+    if (!isActive(event)) {
+      li.classList.add("is-inactive");
+      badges.appendChild(badge("Inactive", "inactive"));
+    }
     badges.appendChild(event.status === "published" ? badge("Published", "published") : badge("Draft", "draft"));
     badges.appendChild(badge(event.visibility === "private" ? "Private" : "Public"));
 
@@ -203,6 +225,8 @@
     badge: badge,
     save: save,
     remove: remove,
+    isActive: isActive,
+    setActive: setActive,
     newId: newId,
     days: days,
     dayLabel: dayLabel,

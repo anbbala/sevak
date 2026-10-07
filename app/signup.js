@@ -100,7 +100,7 @@
     document.title = "Volunteer opportunities · Sevak";
     var today = todayString();
     var events = E.all().filter(function (e) {
-      return e.status === "published" && e.visibility !== "private" && e.startDate && (e.endDate || e.startDate) >= today;
+      return e.status === "published" && E.isActive(e) && e.visibility !== "private" && e.startDate && (e.endDate || e.startDate) >= today;
     }).sort(E.byDate);
     var listed = events.filter(function (e) { return isVerified(O.get(e.organizationId)); });
     var preview = events.filter(function (e) { return !isVerified(O.get(e.organizationId)); });
@@ -307,6 +307,13 @@
 
   function renderEvent(id) {
     event = E.get(id);
+    // Inactive events are hidden from volunteers, as if removed.
+    if (event && !E.isActive(event)) {
+      var more = el("a", null, "See all volunteer opportunities");
+      more.href = "signup.html";
+      showNotice([el("p", null, "This event is no longer available. "), more]);
+      return;
+    }
     if (!event) {
       var back = el("a", null, "See all volunteer opportunities");
       back.href = "signup.html";
@@ -391,6 +398,10 @@
       return;
     }
     showOnly("confirm-view");
+    if (!E.isActive(ev)) {
+      showNotice([el("strong", null, "This event is no longer active. "),
+        document.createTextNode("The host has taken it off Sevak for now. Your sign-up is kept; contact the organizers if you have questions.")]);
+    }
     var shiftById = {};
     allShifts(ev).forEach(function (s) { shiftById[s.id] = s; });
     var items = signups.map(function (s) { return { signup: s, shift: shiftById[s.shiftId] }; })

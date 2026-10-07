@@ -68,7 +68,7 @@
     var until = range === "all" ? null : addDays(today, Number(range));
     var status = $("status-filter").value;
     return E.forOrg(org.id).filter(function (e) {
-      if (!e.startDate) return false;
+      if (!e.startDate || !E.isActive(e)) return false;
       if ((e.endDate || e.startDate) < today) return false;
       if (until && e.startDate > until) return false;
       if (status !== "all" && (e.status || "draft") !== status) return false;
@@ -276,7 +276,7 @@
     var added = [];
     var today = todayString();
     E.forOrg(org.id).forEach(function (event) {
-      if (!event.startDate || (event.endDate || event.startDate) < today) return;
+      if (!event.startDate || !E.isActive(event) || (event.endDate || event.startDate) < today) return;
       var counts = S.countsByShift(event.id);
       (event.roles || []).forEach(function (role) {
         (role.shifts || []).forEach(function (shift) {

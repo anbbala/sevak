@@ -22,6 +22,11 @@
     return counts;
   }
 
+  // Confirmed sign-ups for an event.
+  function forEvent(eventId) {
+    return all().filter(function (s) { return s.eventId === eventId && s.status !== "cancelled"; });
+  }
+
   // Sign-ups made in one form submission (a "registration").
   function forRegistration(registrationId) {
     return all().filter(function (s) { return s.registrationId === registrationId; });
@@ -56,6 +61,7 @@
   window.SevakSignups = {
     all: all,
     countsByShift: countsByShift,
+    forEvent: forEvent,
     forRegistration: forRegistration,
     isSignedUp: isSignedUp,
     cancel: cancel,
