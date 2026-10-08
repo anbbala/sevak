@@ -487,6 +487,12 @@
   });
 
   $("delete-org").addEventListener("click", function () {
+    // Checked against the saved profile, so unsaved Team changes don't count.
+    if (!O.isAdmin(O.get(orgId))) {
+      applyMode();
+      $("status").textContent = "Only admins can delete this organization.";
+      return;
+    }
     var name = $("orgName").value.trim() || "this organization";
     if (!window.confirm("Delete " + name + " and its events from this device? This can't be undone.")) return;
     O.remove(orgId);
@@ -509,7 +515,10 @@
     var title = creating ? "New organization" : "Organization profile";
     $("page-title").textContent = title;
     document.title = title + " · Sevak";
-    $("delete-org").hidden = !orgId;
+    // Only Admins can delete the organization (see SevakOrgs.roleFor).
+    var isAdmin = !!orgId && O.isAdmin(O.get(orgId));
+    $("delete-org").hidden = !isAdmin;
+    $("delete-org-hint").hidden = !orgId || isAdmin;
     O.renderSwitcher($("org-switcher"), { creating: creating, confirmLeave: confirmLeave });
   }
 
