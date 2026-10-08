@@ -86,6 +86,14 @@
     ]
   };
 
+  // If you're signed in, the demo makes you one of its Admins so you can try
+  // the Manage pages. Leave its team (My profile) to see the volunteer view.
+  function demoTeam() {
+    var p = F.session.signedIn() ? F.session.profile() : null;
+    if (!p) return [];
+    return [{ name: [p.firstName, p.lastName].filter(Boolean).join(" ") || p.email, email: p.email, role: "admin" }];
+  }
+
   function isLoaded() {
     return !!O.get(ORG_ID);
   }
@@ -111,7 +119,7 @@
       address: { country: "US", line1: "200 Elm Street", city: "Austin", state: "TX", postalCode: "78701" },
       taxStatus: "charity",
       primaryContact: { name: "Demo Coordinator", title: "Volunteer Coordinator", email: "coordinator@example.org", phone: { country: "US", number: "+15125550100" } },
-      team: [],
+      team: demoTeam(),
       verificationStatus: "verified",
       createdAt: now,
       updatedAt: now

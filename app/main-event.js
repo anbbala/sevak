@@ -11,6 +11,8 @@
   var mainId = new URLSearchParams(location.search).get("id");
   var existing = mainId ? E.getMain(mainId) : null;
   var org = existing && existing.organizationId ? window.SevakOrgs.get(existing.organizationId) : window.SevakOrgs.current();
+  // Only the organization's team can manage its events.
+  if (!window.SevakNav.guard({ org: existing ? org : null })) return;
   if (org && existing) window.SevakOrgs.setCurrent(org.id);
 
   function messageFor(input) {

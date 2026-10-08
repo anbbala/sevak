@@ -389,7 +389,7 @@
       if (selected) t.parentNode.scrollLeft = Math.max(0, t.offsetLeft - (t.parentNode.clientWidth - t.offsetWidth) / 2);
     });
     // Documents save on their own, so the profile's Save bar isn't shown there.
-    $("save-bar").hidden = key === "documents";
+    $("save-bar").hidden = key === "documents" || readOnly;
     if (opts.updateUrl !== false) history.replaceState(null, "", "#" + key);
   }
 
@@ -482,6 +482,8 @@
     dirty = false;
     applyMode();
     docs.setOwner("org:" + orgId);
+    // Setting up an organization puts you on its team, so Manage appears.
+    window.SevakNav.render();
     $("status").textContent = (wasNew ? "Organization created and saved on this device." : "Organization profile saved on this device.") +
       " You can now create events on the Events tab.";
   });
@@ -528,9 +530,14 @@
   F.enhancePhone($("contactPhone"));
 
   var creating = new URLSearchParams(location.search).get("new") === "1";
+  // Signed in, you need to be on an organization's team (or be setting a new one up).
+  if (!window.SevakNav.guard({ creating: creating })) return;
   var orgId = creating ? null : O.currentId();
   var existing = orgId ? O.get(orgId) : null;
   if (existing) fill(existing);
+  // Coordinators can look but not change the profile or its team, so nobody
+  // can make themselves an Admin.
+  var readOnly = !!existing && F.session.signedIn() && O.roleFor(existing) === "coordinator";
   var docs = window.SevakDocs.mount($("panel-documents"), {
     owner: existing ? "org:" + orgId : null,
     help: "Policies, insurance certificates, registration papers and anything else your team needs.",
@@ -543,6 +550,12 @@
   $("fill-from-website").disabled = !websiteUrl();
   lastFetched = websiteUrl();
   updateOpenLinks();
+  if (readOnly) {
+    form.querySelectorAll("input, select, textarea, button").forEach(function (c) {
+      if (c.getAttribute("role") !== "tab" && !c.classList.contains("next-tab")) c.disabled = true;
+    });
+    $("readonly-note").hidden = false;
+  }
   showTab(location.hash.replace("#", ""), { updateUrl: false });
   window.addEventListener("hashchange", function () { showTab(location.hash.replace("#", ""), { updateUrl: false }); });
 })();

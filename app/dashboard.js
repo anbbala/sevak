@@ -17,6 +17,7 @@
   if (new URLSearchParams(location.search).get("demo") === "1" && window.SevakDemo) {
     window.SevakDemo.load();
     history.replaceState(null, "", location.pathname);
+    window.SevakNav.render();
   }
 
   var org = O.current();
@@ -305,6 +306,8 @@
   }
 
   // ---------- Start ----------
+
+  if (!window.SevakNav.guard()) return;
 
   // Demo data buttons work with or without an organization.
   var D = window.SevakDemo;

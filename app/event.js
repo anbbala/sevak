@@ -17,6 +17,8 @@
   var eventId = params.get("id");
   var existing = eventId ? E.get(eventId) : null;
   var org = existing && existing.organizationId ? window.SevakOrgs.get(existing.organizationId) : window.SevakOrgs.current();
+  // Only the organization's team can manage its events.
+  if (!window.SevakNav.guard({ org: existing ? org : null })) return;
   if (org && existing) window.SevakOrgs.setCurrent(org.id);
   var status = existing ? existing.status : "draft";
   var active = window.SevakEvents.isActive(existing) || !existing;

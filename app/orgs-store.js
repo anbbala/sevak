@@ -2,6 +2,10 @@
 // several organizations; one of them is "current" and the Organization and
 // Events tabs show that one. Events and main events record their
 // organization in organizationId.
+//
+// When signed in, you only see the organizations whose team you're on (see
+// roleFor). When signed out, every organization is shown, so reviewers can
+// preview the pages.
 (function () {
   "use strict";
 
@@ -28,11 +32,18 @@
     return all().filter(function (o) { return o.id === id; })[0] || null;
   }
 
+  // The organizations you can manage: those whose team you're on, or all of
+  // them when you're signed out (a reviewer's preview).
+  function accessible() {
+    if (!F.session.signedIn()) return all();
+    return all().filter(function (o) { return !!roleFor(o); });
+  }
+
   function currentId() {
+    var list = accessible();
     var id = F.load(CURRENT_KEY);
-    if (id && get(id)) return id;
-    var first = all()[0];
-    return first ? first.id : null;
+    if (id && list.some(function (o) { return o.id === id; })) return id;
+    return list[0] ? list[0].id : null;
   }
 
   function current() {
@@ -58,11 +69,11 @@
   }
 
   // ---------- Roles ----------
-  // The prototype has no sign-in, so "you" are the person in My profile.
-  // Your role in an organization is Admin if any of these say so: the
-  // organization's Team tab lists your email as Admin, you are its primary
-  // contact, you created it, or My profile lists it with the Admin role.
-  // Otherwise it's Coordinator if the Team tab or My profile says so.
+  // "You" are the person in My profile. You're on an organization's team
+  // when its Team tab lists your email (as Admin or Coordinator), you are
+  // its primary contact (Admin), or you created it (Admin). Nobody can add
+  // themselves: an Admin adds you, or you create a new organization. In the
+  // live app, being added sends an invitation to accept.
 
   function profile() { return F.load(PROFILE_KEY) || {}; }
 
@@ -77,7 +88,6 @@
   // Returns "admin", "coordinator" or null.
   function roleFor(org) {
     if (!org) return null;
-    var p = profile();
     var email = profileEmail();
     var roles = [];
     if (email) {
@@ -85,14 +95,42 @@
       if (org.primaryContact && same(org.primaryContact.email, email)) roles.push("admin");
       if (same(org.createdBy, email)) roles.push("admin");
     }
-    if (!p.roles || p.roles.host) {
-      (p.organizations || []).forEach(function (o) { if (same(o.name, org.name)) roles.push(o.role || "coordinator"); });
-    }
     if (roles.indexOf("admin") !== -1) return "admin";
     return roles.length ? "coordinator" : null;
   }
 
   function isAdmin(org) { return roleFor(org) === "admin"; }
+
+  // Your teams when signed in: [{ org, role }], sorted by name.
+  function myTeams() {
+    if (!F.session.signedIn()) return [];
+    return accessible().map(function (o) { return { org: o, role: roleFor(o) }; })
+      .sort(function (a, b) { return (a.org.name || "").localeCompare(b.org.name || ""); });
+  }
+
+  function adminEmails(org) {
+    var list = (org.team || []).filter(function (m) { return m.role === "admin"; }).map(function (m) { return m.email; });
+    if (org.primaryContact) list.push(org.primaryContact.email);
+    list.push(org.createdBy);
+    return list.map(function (e) { return String(e || "").trim().toLowerCase(); })
+      .filter(function (e, i, a) { return e && a.indexOf(e) === i; });
+  }
+
+  // Takes you off an organization's team. Refused (with a reason) when you
+  // are its primary contact or its only Admin, so it's never left without one.
+  function leave(id) {
+    var email = profileEmail();
+    var list = all();
+    var i = list.findIndex(function (o) { return o.id === id; });
+    if (i === -1 || !email || !roleFor(list[i])) return { ok: false, reason: "not-member" };
+    var org = list[i];
+    if (org.primaryContact && same(org.primaryContact.email, email)) return { ok: false, reason: "primary-contact" };
+    if (roleFor(org) === "admin" && !adminEmails(org).some(function (e) { return e !== email; })) return { ok: false, reason: "only-admin" };
+    org = Object.assign({}, org, { team: (org.team || []).filter(function (m) { return !same(m.email, email); }) });
+    if (same(org.createdBy, email)) delete org.createdBy;
+    list[i] = org;
+    return { ok: F.store(LIST_KEY, list) };
+  }
 
   // Deletes an organization with its events and main events.
   function remove(id) {
@@ -104,7 +142,7 @@
     F.store(EVENTS_KEY, (F.load(EVENTS_KEY) || []).filter(keep));
     F.store(MAIN_KEY, (F.load(MAIN_KEY) || []).filter(keep));
     F.store(LIST_KEY, all().filter(function (o) { return o.id !== id; }));
-    var next = all()[0];
+    var next = accessible()[0];
     if (next) setCurrent(next.id); else F.clear(CURRENT_KEY);
   }
 
@@ -118,6 +156,7 @@
       if (org) setCurrent(org.id);
     }
     if (legacy) F.clear(LEGACY_KEY);
+    migrateProfileOrganizations();
     var id = currentId();
     if (!id) return;
     [EVENTS_KEY, MAIN_KEY].forEach(function (key) {
@@ -127,13 +166,35 @@
     });
   }
 
+  // My profile used to let you list organizations and pick your own role.
+  // Those entries now go onto the organizations' Team tabs (so you keep the
+  // access you had) and the list is removed from the profile.
+  function migrateProfileOrganizations() {
+    var p = profile();
+    if (!p || !Array.isArray(p.organizations)) return;
+    var email = profileEmail();
+    if (email) {
+      var list = all();
+      var changed = false;
+      p.organizations.forEach(function (row) {
+        var org = list.filter(function (o) { return same(o.name, row.name); })[0];
+        if (!org || (org.team || []).some(function (m) { return same(m.email, email); })) return;
+        org.team = (org.team || []).concat([{ name: [p.firstName, p.lastName].filter(Boolean).join(" ") || email, email: p.email, role: row.role === "admin" ? "admin" : "coordinator" }]);
+        changed = true;
+      });
+      if (changed) F.store(LIST_KEY, list);
+    }
+    delete p.organizations;
+    F.store(PROFILE_KEY, p);
+  }
+
   // Draws the organization switcher: a picker of the person's
   // organizations and a "+ New organization" link. Switching reloads the
   // page; confirmLeave() can return false to cancel (e.g. unsaved changes).
   function renderSwitcher(container, opts) {
     opts = opts || {};
     container.innerHTML = "";
-    var orgs = all().slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || ""); });
+    var orgs = accessible().slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || ""); });
     var wrap = document.createElement("div");
     wrap.className = "org-switcher";
 
@@ -252,6 +313,9 @@
     renderSwitcher: renderSwitcher,
     renderHeader: renderHeader,
     roleFor: roleFor,
-    isAdmin: isAdmin
+    isAdmin: isAdmin,
+    accessible: accessible,
+    myTeams: myTeams,
+    leave: leave
   };
 })();

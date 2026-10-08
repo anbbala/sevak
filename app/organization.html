@@ -14,6 +14,7 @@
   <script src="events-store.js" defer></script>
   <script src="website-import.js" defer></script>
   <script src="documents.js" defer></script>
+  <script src="nav.js" defer></script>
   <script src="organization.js" defer></script>
 </head>
 <body>
@@ -30,12 +31,7 @@
         </svg>
         <span class="brand-text"><span class="brand-name">Sevak</span><span class="brand-subtitle">Volunteer Management System</span><span class="brand-tagline">A Service of The ANB Group</span></span>
       </a>
-      <nav class="app-nav" aria-label="Prototype pages">
-        <a href="profile.html">My profile</a>
-        <a href="organization.html" aria-current="page">Organization</a>
-        <a href="events.html">Events</a>
-        <a href="dashboard.html">Dashboard</a>
-      </nav>
+      <nav class="app-nav" id="app-nav" aria-label="Main"></nav>
     </div>
   </header>
 
@@ -46,6 +42,9 @@
 
     <h1 class="page-title" id="page-title">Organization profile</h1>
     <p class="page-intro">Tell volunteers who you are. A complete profile also lets us verify your organization so you can list public events.</p>
+    <div class="section notice" id="readonly-note" hidden>
+      <p><strong>You're a Coordinator here, so this profile is view-only.</strong> Its Admins can change it and its team. You can still add documents.</p>
+    </div>
 
     <form id="org-form" novalidate>
       <div class="tabs tabs-wrap" role="tablist" aria-label="Organization profile sections">

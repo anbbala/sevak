@@ -13,6 +13,7 @@
   <script src="orgs-store.js" defer></script>
   <script src="documents.js" defer></script>
   <script src="photo.js" defer></script>
+  <script src="nav.js" defer></script>
   <script src="profile.js" defer></script>
 </head>
 <body>
@@ -29,12 +30,7 @@
         </svg>
         <span class="brand-text"><span class="brand-name">Sevak</span><span class="brand-subtitle">Volunteer Management System</span><span class="brand-tagline">A Service of The ANB Group</span></span>
       </a>
-      <nav class="app-nav" aria-label="Prototype pages">
-        <a href="profile.html" aria-current="page">My profile</a>
-        <a href="organization.html">Organization</a>
-        <a href="events.html">Events</a>
-        <a href="dashboard.html">Dashboard</a>
-      </nav>
+      <nav class="app-nav" id="app-nav" aria-label="Main"></nav>
     </div>
   </header>
 
@@ -86,12 +82,19 @@
         <!-- How you use Sevak -->
         <fieldset class="section">
           <legend>How you use Sevak</legend>
-          <p class="section-help">Choose one or both. You can be a volunteer and also help run events for one or more organizations.</p>
-          <div class="choices">
-            <label class="choice"><input type="checkbox" name="roles" value="volunteer" id="role-volunteer"><span><strong>Volunteer</strong><small>I sign up for shifts</small></span></label>
-            <label class="choice"><input type="checkbox" name="roles" value="host" id="role-host"><span><strong>Host team member</strong><small>I help run events for an organization</small></span></label>
+          <div class="choices choices-wide">
+            <label class="choice"><input type="checkbox" name="roles" value="volunteer" id="role-volunteer"><span><strong>I volunteer</strong><small>I sign up for shifts. This adds your address, availability and affiliations.</small></span></label>
           </div>
           <p class="error" id="roles-error"></p>
+
+          <h3 class="subhead" id="teams-title">Organization teams</h3>
+          <ul class="team-list" id="team-list" aria-labelledby="teams-title"></ul>
+          <p class="hint" id="team-empty">You're not on any organization's team.</p>
+          <div class="team-doors">
+            <p id="setup-org-row"><strong>Run volunteer events for a group?</strong> <a href="organization.html?new=1" id="setup-org">Set up your organization</a> and you'll be its Admin.</p>
+            <p class="hint" id="join-hint">To help run an existing organization, ask one of its Admins to add <strong id="join-email">your email</strong> on their Team tab.</p>
+          </div>
+          <p class="status" id="team-status" role="status" aria-live="polite"></p>
         </fieldset>
 
         <!-- Services -->
@@ -114,16 +117,6 @@
           </div>
           <ul class="service-list" id="service-list" aria-label="Services you've chosen"></ul>
           <p class="hint" id="service-empty">No services chosen yet.</p>
-        </fieldset>
-
-        <!-- Host organizations -->
-        <fieldset class="section" id="host-fields" hidden>
-          <legend>My organizations</legend>
-          <p class="section-help">The organizations you help run and your role in each. <strong>Coordinators</strong> manage rosters, mark attendance and send updates. <strong>Admins</strong> can also edit the organization's profile and manage its team.</p>
-          <p class="hint" style="margin:-8px 0 16px">In the live app, an organization appears here when one of its admins invites you.</p>
-          <div class="rows" id="org-rows"></div>
-          <button type="button" class="btn btn-secondary" id="add-org">+ Add an organization</button>
-          <datalist id="known-orgs"></datalist>
         </fieldset>
 
         <div id="volunteer-fields" hidden>
@@ -240,24 +233,6 @@
     </form>
 
     <section class="section tab-panel is-hidden" role="tabpanel" id="panel-documents" aria-labelledby="tab-documents"></section>
-
-    <template id="org-template">
-      <div class="row row-org">
-        <div class="field">
-          <label>Organization</label>
-          <input data-key="name" type="text" required maxlength="120" list="known-orgs">
-          <p class="error"></p>
-        </div>
-        <div class="field">
-          <label>Your role</label>
-          <select data-key="role">
-            <option value="coordinator">Coordinator</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-        <button type="button" class="btn btn-secondary remove">Remove</button>
-      </div>
-    </template>
 
     <template id="affiliation-template">
       <div class="row">

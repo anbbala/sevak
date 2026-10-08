@@ -86,7 +86,10 @@ body {
 /* Header and footer */
 .site-header { padding-block: 20px; }
 .header-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
-.app-nav { display: flex; flex-wrap: wrap; gap: 4px; }
+.app-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.nav-group { display: flex; align-items: center; gap: 4px; }
+.nav-manage { padding-left: 12px; border-left: 1px solid var(--border); }
+.nav-label { margin-right: 2px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .app-nav a {
   padding: 8px 12px;
   border-radius: 10px;
@@ -672,6 +675,28 @@ input[type="time"], input[type="number"] {
 .my-signup.is-cancelled h3, .my-signup.is-cancelled .signup-shifts { color: var(--muted); }
 .my-signup.is-cancelled .signup-shifts { text-decoration: line-through; }
 
+/* Way in to the Manage pages, team list on My profile */
+.way-in-doors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 8px; }
+.way-in-door { margin: 0; display: grid; align-content: start; gap: 4px; }
+.way-in-door .section-title { float: none; }
+.way-in-door .btn { justify-self: start; margin-top: 4px; }
+.way-in-back { margin: 20px 0 0; }
+.way-in-back a, .team-doors a { color: var(--primary); text-underline-offset: 3px; }
+.team-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 16px; }
+.team-notice a { color: var(--primary); font-weight: 600; text-underline-offset: 3px; }
+.preview-note { display: inline; }
+.subhead { margin: 20px 0 8px; font-size: 1rem; }
+.team-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.team-list[hidden] { display: none; }
+.team-item { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 12px; }
+.team-item strong { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.team-item a { color: var(--primary); font-weight: 600; text-underline-offset: 3px; }
+.team-doors { display: grid; gap: 6px; margin-top: 14px; }
+.team-doors p { margin: 0; }
+@media (max-width: 600px) {
+  .way-in-doors { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* Services */
 .service-picker { max-width: 360px; }
 .service-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
@@ -759,7 +784,10 @@ input[type="time"], input[type="number"] {
   .grid .span-2 { grid-column: auto; }
   .row { grid-template-columns: 1fr; }
   .event-item { grid-template-columns: minmax(0, 1fr); }
-  .app-nav { gap: 0; flex: 1 1 100%; flex-wrap: nowrap; }
+  .app-nav { gap: 2px 0; flex: 1 1 100%; }
+  .nav-group { gap: 0; }
+  .nav-manage { flex: 1 1 100%; padding-left: 0; border-left: 0; }
+  .nav-label { margin: 0 4px 0 6px; }
   .app-nav a { padding: 6px 6px; font-size: 0.84rem; white-space: nowrap; }
   .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .shift-choice { grid-template-columns: 22px minmax(0, 1fr); }
@@ -785,4 +813,10 @@ input[type="time"], input[type="number"] {
 /* Very narrow phones: let the header menu wrap rather than overflow. */
 @media (max-width: 365px) {
   .app-nav { flex-wrap: wrap; }
+}
+
+/* Very narrow phones: the Manage links fit on one row without their label
+   (the group is still named "Manage" for screen readers). */
+@media (max-width: 350px) {
+  .nav-label { display: none; }
 }

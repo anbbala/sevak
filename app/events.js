@@ -89,6 +89,7 @@
     $("standalone-heading").hidden = !(mains.length && standalone.length);
   }
 
+  if (!window.SevakNav.guard()) return;
   O.renderHeader($("org-context"), O.current());
   O.renderSwitcher($("org-switcher"), { switchTo: "events.html" });
   $("show-inactive").addEventListener("change", renderEvents);

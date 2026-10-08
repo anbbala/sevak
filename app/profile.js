@@ -1,12 +1,13 @@
 // User profile (prototype). Data is kept in this browser only.
-// A person can be a volunteer, a host team member, or both. Host team members
-// can belong to several organizations with a different role in each.
+// A person can volunteer, be on one or more organizations' teams, or both.
+// Teams aren't chosen here: you're on a team when you set up an
+// organization or one of its Admins adds you (see SevakOrgs.roleFor).
 (function () {
   "use strict";
 
   var STORAGE_KEY = "sevak.profile.v1";
   var MAX_AFFILIATIONS = 5;
-  var MAX_ORGS = 10;
+  var SEEN_TEAMS_KEY = "sevak.seenTeams.v1";
 
   var form = document.getElementById("profile-form");
   var $ = function (id) { return document.getElementById(id); };
@@ -15,40 +16,25 @@
   // ---------- User types ----------
 
   function isVolunteer() { return $("role-volunteer").checked; }
-  function isHost() { return $("role-host").checked; }
 
   function applyRoles() {
     $("volunteer-fields").hidden = !isVolunteer();
     // Affiliations (on the Get to know me tab) are for volunteers.
     $("affiliations-section").hidden = !isVolunteer();
     $("affiliations-note").hidden = isVolunteer();
-    $("host-fields").hidden = !isHost();
-    if (isHost() && !orgRows.children.length) addOrg();
   }
 
   form.querySelectorAll('input[name="roles"]').forEach(function (box) {
     box.addEventListener("change", function () {
       applyRoles();
-      if (isVolunteer() || isHost()) F.setError($("role-volunteer"), "");
     });
   });
 
   // ---------- Validation ----------
 
   function messageFor(input) {
-    if (input.name === "roles") {
-      return isVolunteer() || isHost() ? "" : "Choose at least one.";
-    }
-    var basic = F.basicMessage(input);
-    if (basic) return basic;
-    if (input.dataset.key === "name" && input.closest("#org-rows")) {
-      var name = input.value.trim().toLowerCase();
-      var duplicate = Array.prototype.some.call(orgRows.querySelectorAll('[data-key="name"]'), function (el) {
-        return el !== input && el.value.trim().toLowerCase() === name;
-      });
-      if (duplicate) return "You've already added this organization.";
-    }
-    return "";
+    if (input.name === "roles") return "";
+    return F.basicMessage(input);
   }
 
   function validateForm() {
@@ -84,42 +70,68 @@
     }).filter(function (d) { return d.name; });
   }
 
-  // ---------- Host organizations ----------
+  // ---------- Organization teams ----------
+  // A read-only list of the teams you're on, each with Manage and Leave.
 
-  var orgRows = $("org-rows");
-
-  function addOrg(value) {
-    if (orgRows.children.length >= MAX_ORGS) return null;
-    var row = makeRow($("org-template"), "org", value);
-    row.querySelector(".remove").addEventListener("click", function () {
-      row.remove();
-      updateOrgButton();
-      $("add-org").focus();
+  function renderTeams() {
+    var O = window.SevakOrgs;
+    var profile = F.session.profile();
+    var teams = O.myTeams();
+    var list = $("team-list");
+    list.innerHTML = "";
+    teams.forEach(function (t) {
+      var li = document.createElement("li");
+      li.className = "team-item";
+      var name = document.createElement("strong");
+      name.textContent = t.org.name || "Untitled organization";
+      var badge = document.createElement("span");
+      badge.className = "badge" + (t.role === "admin" ? " badge-published" : "");
+      badge.textContent = t.role === "admin" ? "Admin" : "Coordinator";
+      var manage = document.createElement("a");
+      manage.href = "events.html";
+      manage.textContent = "Manage";
+      manage.setAttribute("aria-label", "Manage " + (t.org.name || "this organization"));
+      manage.addEventListener("click", function () { O.setCurrent(t.org.id); });
+      var leave = document.createElement("button");
+      leave.type = "button";
+      leave.className = "btn btn-danger-link";
+      leave.textContent = "Leave";
+      leave.setAttribute("aria-label", "Leave the team of " + (t.org.name || "this organization"));
+      leave.addEventListener("click", function () { leaveTeam(t.org); });
+      [name, badge, manage, leave].forEach(function (x) { li.appendChild(x); });
+      list.appendChild(li);
     });
-    orgRows.appendChild(row);
-    updateOrgButton();
-    return row.querySelector('[data-key="name"]');
+    list.hidden = !teams.length;
+    $("team-empty").hidden = teams.length > 0;
+    $("join-email").textContent = profile ? profile.email : "your email";
+    // Setting up an organization needs a saved profile: you become its Admin.
+    var row = $("setup-org-row");
+    if (profile && F.session.signedIn()) {
+      row.innerHTML = '<strong>Run volunteer events for a group?</strong> <a href="organization.html?new=1" id="setup-org">Set up your organization</a> and you\'ll be its Admin.';
+    } else {
+      row.innerHTML = "<strong>Run volunteer events for a group?</strong> Save your profile first, then you can set up your organization and be its Admin.";
+    }
   }
 
-  function updateOrgButton() {
-    $("add-org").hidden = orgRows.children.length >= MAX_ORGS;
-    // Keep at least one row while "Host team member" is selected.
-    var only = orgRows.children.length === 1;
-    orgRows.querySelectorAll(".remove").forEach(function (btn) { btn.hidden = only; });
+  function leaveTeam(org) {
+    var name = org.name || "this organization";
+    if (!window.confirm("Leave the team of " + name + "? You won't be able to manage its events until an Admin adds you again.")) return;
+    var result = window.SevakOrgs.leave(org.id);
+    var messages = {
+      "primary-contact": "You're the primary contact of " + name + ". Change its primary contact on the Organization page first.",
+      "only-admin": "You're the only Admin of " + name + ". Make someone else an Admin on its Team tab first, or delete the organization."
+    };
+    if (!result.ok) {
+      $("team-status").textContent = messages[result.reason] || "Couldn't leave the team. Please try again.";
+      return;
+    }
+    // If an Admin adds you again later, you'll be told about it.
+    var seen = F.load(SEEN_TEAMS_KEY);
+    if (Array.isArray(seen)) F.store(SEEN_TEAMS_KEY, seen.filter(function (id) { return id !== org.id; }));
+    renderTeams();
+    window.SevakNav.render();
+    $("team-status").textContent = "You've left the team of " + name + ".";
   }
-
-  $("add-org").addEventListener("click", function () {
-    var input = addOrg();
-    if (input) input.focus();
-  });
-
-  // Suggest the organizations saved on the Organization tab.
-  window.SevakOrgs.all().forEach(function (o) {
-    if (!o.name) return;
-    var option = document.createElement("option");
-    option.value = o.name;
-    $("known-orgs").appendChild(option);
-  });
 
   // ---------- Affiliations ----------
 
@@ -220,7 +232,7 @@
       lastName: v("lastName"),
       email: v("email"),
       phone: F.phoneValue($("phone")),
-      roles: { volunteer: isVolunteer(), host: isHost() },
+      roles: { volunteer: isVolunteer(), host: window.SevakOrgs.myTeams().length > 0 },
       photo: photo.get(),
       aboutMe: v("aboutMe"),
       passion: v("passion"),
@@ -229,9 +241,6 @@
       services: services(),
       updatedAt: new Date().toISOString()
     };
-    if (isHost()) {
-      data.organizations = readRows(orgRows);
-    }
     if (isVolunteer()) {
       var availability = form.querySelector('input[name="availability"]:checked');
       data.address = {
@@ -260,8 +269,6 @@
     // Profiles saved before user types existed were volunteer profiles.
     var roles = data.roles || { volunteer: true, host: false };
     $("role-volunteer").checked = !!roles.volunteer;
-    $("role-host").checked = !!roles.host;
-    (data.organizations || []).forEach(addOrg);
     if (data.address) {
       set("addressLine1", data.address.line1);
       set("addressLine2", data.address.line2);
@@ -313,6 +320,8 @@
     $("status").textContent = stored
       ? "Profile saved on this device."
       : "Couldn't save in this browser. Check that site storage is allowed.";
+    renderTeams();
+    window.SevakNav.render();
   });
 
   $("delete-profile").addEventListener("click", function () {
@@ -322,17 +331,18 @@
     F.clear(STORAGE_KEY);
     window.SevakDocs.removeFor(["profile"]).then(docs.render);
     form.reset();
+    $("role-volunteer").checked = true;
     $("country").value = F.defaultCountry();
     F.resetPhone($("phone"));
     affiliationRows.innerHTML = "";
-    orgRows.innerHTML = "";
     serviceList.innerHTML = "";
     photo.set("");
     refreshServices();
     updateCounters();
     updateAffiliationButton();
-    updateOrgButton();
     applyRoles();
+    renderTeams();
+    window.SevakNav.render();
     $("status").textContent = "Profile deleted.";
   });
 
@@ -344,11 +354,12 @@
 
   var existing = F.load(STORAGE_KEY);
   if (existing) fill(existing);
+  else $("role-volunteer").checked = true;
   refreshServices();
   updateCounters();
   updateAffiliationButton();
-  updateOrgButton();
   applyRoles();
+  renderTeams();
 
   var docs = window.SevakDocs.mount($("panel-documents"), {
     owner: "profile",
