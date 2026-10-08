@@ -45,10 +45,40 @@
 
     <!-- Find events: published, upcoming events from every organization -->
     <section id="discover-view" hidden>
-      <h1 class="page-title">Available volunteer opportunities</h1>
-      <p class="page-intro">Upcoming events looking for volunteers. Pick one to see its shifts and sign up.</p>
-      <ul class="event-list" id="discover-list"></ul>
-      <p class="empty" id="discover-empty" hidden>There are no published upcoming events yet. Hosts can create one on the <a href="events.html">Events</a> tab.</p>
+      <h1 class="page-title" id="discover-title">Available volunteer opportunities</h1>
+      <p class="page-intro" id="discover-intro">Upcoming events looking for volunteers. Pick one to see its shifts and sign up.</p>
+
+      <!-- Signed in: your sign-ups and the opportunities, as two tabs -->
+      <div class="tabs" role="tablist" aria-label="Volunteering" id="volunteer-tabs" hidden>
+        <button type="button" class="tab" role="tab" id="tab-mine" aria-controls="panel-mine" aria-selected="false" tabindex="-1">My sign-ups <span class="tab-count" id="mine-count"></span></button>
+        <button type="button" class="tab" role="tab" id="tab-available" aria-controls="panel-available" aria-selected="true">Available opportunities</button>
+      </div>
+
+      <div class="tab-panel is-hidden" role="tabpanel" id="panel-mine" aria-labelledby="tab-mine">
+        <div id="mine-groups"></div>
+        <div class="section empty-state" id="mine-empty" hidden>
+          <p><strong>You haven't signed up for anything yet.</strong></p>
+          <p>Find an event that needs help and pick a shift.</p>
+          <p><button type="button" class="btn btn-primary btn-small" id="browse-opportunities">Browse available opportunities</button></p>
+        </div>
+      </div>
+
+      <div class="tab-panel" role="tabpanel" id="panel-available" aria-labelledby="tab-available">
+        <fieldset class="opp-filter" id="opp-filter">
+          <legend class="sr-only">Show</legend>
+          <label class="filter-chip"><input type="radio" name="where" value="all" checked><span>All <span class="chip-count" data-count="all"></span></span></label>
+          <label class="filter-chip"><input type="radio" name="where" value="near"><span>In person near me <span class="chip-count" data-count="near"></span></span></label>
+          <label class="filter-chip"><input type="radio" name="where" value="in-person"><span>All in person <span class="chip-count" data-count="in-person"></span></span></label>
+          <label class="filter-chip"><input type="radio" name="where" value="remote"><span>Remote <span class="chip-count" data-count="remote"></span></span></label>
+        </fieldset>
+        <div class="near-row" id="near-row" hidden>
+          <label for="near">Near</label>
+          <input id="near" type="text" autocomplete="address-level2" maxlength="80" placeholder="City, region or postal code" aria-describedby="near-hint">
+          <p class="hint" id="near-hint">Shows in-person events in the same city or town, state or region, or postal area. <span id="near-source"></span></p>
+        </div>
+        <ul class="event-list" id="discover-list"></ul>
+        <p class="empty" id="discover-empty" hidden>There are no published upcoming events yet. Hosts can create one on the <a href="events.html">Events</a> tab.</p>
+      </div>
     </section>
 
     <!-- Message when the event can't be signed up for -->
@@ -120,6 +150,7 @@
           <button type="button" class="btn btn-secondary btn-small" id="add-calendar">Add to calendar (.ics)</button>
           <a class="btn btn-secondary btn-small" id="manage-link" href="#">Manage my sign-up</a>
           <a class="btn btn-secondary btn-small" id="more-shifts" href="#">Sign up for more shifts</a>
+          <a class="btn btn-secondary btn-small" id="all-signups" href="signup.html#mine" hidden>All my sign-ups</a>
         </div>
         <p class="hint" id="manage-hint" style="margin-top:12px">In the live app, your confirmation email includes this "Manage my sign-up" link.</p>
         <p class="status" id="confirm-status" role="status" aria-live="polite"></p>

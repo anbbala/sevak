@@ -401,48 +401,9 @@
     return { setOwner: setOwner, render: render };
   }
 
-  // ---------- Simple page tabs ----------
-  // For pages with two views (details and documents). Panels are found by
-  // aria-controls; the selected tab is kept in the URL hash.
-
-  function pageTabs(tablist, onChange) {
-    var tabs = Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
-    var key = function (t) { return t.id.replace(/^tab-/, ""); };
-    function show(k, focus) {
-      if (!tabs.some(function (t) { return key(t) === k; })) k = key(tabs[0]);
-      tabs.forEach(function (t) {
-        var on = key(t) === k;
-        t.setAttribute("aria-selected", on ? "true" : "false");
-        t.tabIndex = on ? 0 : -1;
-        document.getElementById(t.getAttribute("aria-controls")).classList.toggle("is-hidden", !on);
-        if (on && focus) t.focus();
-      });
-      if (onChange) onChange(k);
-      return k;
-    }
-    tabs.forEach(function (t, i) {
-      t.addEventListener("click", function () {
-        history.replaceState(null, "", location.search + "#" + show(key(t)));
-      });
-      t.addEventListener("keydown", function (e) {
-        var n = null;
-        if (e.key === "ArrowRight") n = tabs[(i + 1) % tabs.length];
-        else if (e.key === "ArrowLeft") n = tabs[(i - 1 + tabs.length) % tabs.length];
-        else if (e.key === "Home") n = tabs[0];
-        else if (e.key === "End") n = tabs[tabs.length - 1];
-        if (!n) return;
-        e.preventDefault();
-        history.replaceState(null, "", location.search + "#" + show(key(n), true));
-      });
-    });
-    show(location.hash.replace("#", ""));
-    window.addEventListener("hashchange", function () { show(location.hash.replace("#", "")); });
-    return { show: show };
-  }
-
   window.SevakDocs = {
     mount: mount,
-    pageTabs: pageTabs,
+    pageTabs: function () { return F.pageTabs.apply(null, arguments); },
     all: all,
     forOwner: forOwner,
     remove: remove,

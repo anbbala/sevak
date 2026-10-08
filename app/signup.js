@@ -89,19 +89,93 @@
     info.appendChild(el("p", "event-meta", [E.rangeLabel(event.startDate, event.endDate), placeText(event)].filter(Boolean).join(" · ")));
     var left = spotsLeft(event);
     var side = el("div", "badges");
+    if (isRemote(event)) side.appendChild(E.badge("Remote"));
     side.appendChild(left ? E.badge(E.plural(left, "spot") + " left", "published") : E.badge("Full"));
     li.appendChild(info);
     li.appendChild(side);
     return li;
   }
 
-  function renderDiscover() {
-    showOnly("discover-view");
-    document.title = "Available volunteer opportunities · Sevak";
+  // Published, active, public events that haven't ended.
+  function upcomingEvents() {
     var today = todayString();
-    var events = E.all().filter(function (e) {
+    return E.all().filter(function (e) {
       return e.status === "published" && E.isActive(e) && e.visibility !== "private" && e.startDate && (e.endDate || e.startDate) >= today;
     }).sort(E.byDate);
+  }
+
+  // ---------- Filter: all, in person near me, all in person, remote ----------
+
+  var FILTER_KEY = "sevak.opportunityFilter.v1";
+
+  function norm(x) {
+    return String(x || "").trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
+  function isRemote(event) {
+    return (event.location || {}).type === "online";
+  }
+
+  // "Near" has no map yet: an event is near when it's in the same city or
+  // town, state or region, or postal area (first three characters) as what
+  // was typed. "Austin, TX" matches on the city.
+  function isNear(event, near) {
+    var loc = event.location || {};
+    var q = norm(near);
+    if (!q || isRemote(event)) return false;
+    if (q.indexOf(",") !== -1) return norm(loc.city) === norm(q.split(",")[0]);
+    if (norm(loc.city) === q || norm(loc.state) === q) return true;
+    var typed = q.replace(/[\s-]/g, "");
+    var postal = norm(loc.postalCode).replace(/[\s-]/g, "");
+    return /\d/.test(typed) && typed.length >= 3 && postal.slice(0, 3) === typed.slice(0, 3);
+  }
+
+  function matches(event, where, near) {
+    if (where === "remote") return isRemote(event);
+    if (where === "in-person") return !isRemote(event);
+    if (where === "near") return isNear(event, near);
+    return true;
+  }
+
+  function currentWhere() {
+    var checked = document.querySelector('input[name="where"]:checked');
+    return checked ? checked.value : "all";
+  }
+
+  function setupFilter() {
+    var saved = F.load(FILTER_KEY) || {};
+    var profile = F.session.profile() || {};
+    var address = profile.address || {};
+    var fromProfile = address.city || address.postalCode || "";
+    $("near").value = saved.near != null ? saved.near : fromProfile;
+    $("near-source").textContent = saved.near == null && fromProfile ? "Filled in from your profile." : "";
+    var radio = document.querySelector('input[name="where"][value="' + (saved.where || "all") + '"]');
+    if (radio) radio.checked = true;
+
+    $("opp-filter").addEventListener("change", function () {
+      F.store(FILTER_KEY, { where: currentWhere(), near: $("near").value });
+      renderAvailable();
+      if (currentWhere() === "near" && !$("near").value.trim()) $("near").focus();
+    });
+    $("near").addEventListener("input", function () {
+      $("near-source").textContent = "";
+      F.store(FILTER_KEY, { where: currentWhere(), near: $("near").value });
+      renderAvailable();
+    });
+  }
+
+  function renderAvailable() {
+    var where = currentWhere();
+    var near = $("near").value;
+    var all = upcomingEvents();
+    ["all", "near", "in-person", "remote"].forEach(function (w) {
+      var count = all.filter(function (e) { return matches(e, w, near); }).length;
+      var badge = document.querySelector('[data-count="' + w + '"]');
+      badge.textContent = w === "near" && !norm(near) ? "" : "(" + count + ")";
+    });
+    $("near-row").hidden = where !== "near";
+
+    var events = all.filter(function (e) { return matches(e, where, near); });
     var listed = events.filter(function (e) { return isVerified(O.get(e.organizationId)); });
     var preview = events.filter(function (e) { return !isVerified(O.get(e.organizationId)); });
 
@@ -114,7 +188,129 @@
       list.appendChild(head);
       preview.forEach(function (e) { list.appendChild(discoverItem(e)); });
     }
-    $("discover-empty").hidden = events.length > 0;
+
+    var empty = $("discover-empty");
+    empty.hidden = events.length > 0;
+    if (!all.length) {
+      empty.innerHTML = 'There are no published upcoming events yet. Hosts can create one on the <a href="events.html">Events</a> tab.';
+    } else if (where === "near" && !norm(near)) {
+      empty.textContent = "Enter your city or town, region or postal code to see in-person events near you.";
+    } else if (where === "near") {
+      empty.textContent = "No in-person opportunities near " + near.trim() + " right now. Try All in person.";
+    } else if (where === "remote") {
+      empty.textContent = "No remote opportunities right now.";
+    } else if (where === "in-person") {
+      empty.textContent = "No in-person opportunities right now.";
+    }
+  }
+
+  // ---------- My sign-ups ----------
+
+  function signupCard(reg, kind) {
+    var ev = reg.event;
+    var org = ev ? O.get(ev.organizationId) : null;
+    var li = el("li", "event-item my-signup" + (kind === "cancelled" ? " is-cancelled" : ""));
+    var info = el("div");
+    info.appendChild(el("p", "bar-parent", org ? org.name : ""));
+    var h3 = el("h3");
+    if (ev) {
+      var link = el("a", null, ev.title || "Untitled event");
+      link.href = "signup.html?event=" + encodeURIComponent(ev.id);
+      h3.appendChild(link);
+    } else {
+      h3.textContent = "An event that was removed";
+    }
+    info.appendChild(h3);
+    if (ev) info.appendChild(el("p", "event-meta", [E.rangeLabel(ev.startDate, ev.endDate), placeText(ev)].filter(Boolean).join(" · ")));
+
+    var byId = {};
+    if (ev) allShifts(ev).forEach(function (s) { byId[s.id] = s; });
+    var shiftsList = el("ul", "signup-shifts");
+    (kind === "cancelled" ? reg.signups : reg.confirmed).map(function (s) { return byId[s.shiftId]; })
+      .filter(Boolean)
+      .sort(function (a, b) { return (a.date + a.start).localeCompare(b.date + b.start); })
+      .forEach(function (s) { shiftsList.appendChild(el("li", null, shiftLabel(s))); });
+    if (shiftsList.children.length) info.appendChild(shiftsList);
+
+    var manage = el("a", "signup-manage", kind === "upcoming" && ev ? "Manage or cancel" : "View sign-up");
+    manage.href = "signup.html?registration=" + encodeURIComponent(reg.id);
+    info.appendChild(manage);
+
+    var side = el("div", "badges");
+    if (kind === "cancelled") side.appendChild(E.badge("Cancelled"));
+    else if (!ev) side.appendChild(E.badge("Removed"));
+    else if (!E.isActive(ev)) side.appendChild(E.badge("No longer active", "inactive"));
+    else if (kind === "past") side.appendChild(E.badge("Done"));
+    else side.appendChild(E.badge(E.plural(reg.confirmed.length, "shift"), "published"));
+    li.appendChild(info);
+    li.appendChild(side);
+    return li;
+  }
+
+  // Lists the signed-in volunteer's sign-ups (matched by email), grouped
+  // into upcoming, past and cancelled. Returns how many upcoming events are
+  // still going ahead.
+  function renderMine() {
+    var profile = F.session.profile();
+    var email = norm(profile && profile.email);
+    var regs = {};
+    var order = [];
+    S.all().forEach(function (s) {
+      if (!email || norm(s.email) !== email) return;
+      var key = s.registrationId || s.id;
+      if (!regs[key]) { regs[key] = { id: key, event: E.get(s.eventId), signups: [] }; order.push(key); }
+      regs[key].signups.push(s);
+    });
+    var today = todayString();
+    var groups = { upcoming: [], past: [], cancelled: [] };
+    order.forEach(function (key) {
+      var r = regs[key];
+      r.confirmed = r.signups.filter(function (s) { return s.status !== "cancelled"; });
+      if (!r.confirmed.length) groups.cancelled.push(r);
+      else if (r.event && (r.event.endDate || r.event.startDate || "") < today) groups.past.push(r);
+      else groups.upcoming.push(r);
+    });
+    var start = function (r) { return r.event ? r.event.startDate || "" : "9999"; };
+    groups.upcoming.sort(function (a, b) { return start(a).localeCompare(start(b)); });
+    groups.past.sort(function (a, b) { return start(b).localeCompare(start(a)); });
+
+    var box = $("mine-groups");
+    box.innerHTML = "";
+    [["upcoming", "Upcoming"], ["past", "Past"], ["cancelled", "Cancelled"]].forEach(function (g) {
+      if (!groups[g[0]].length) return;
+      box.appendChild(el("h2", "list-heading mine-heading", g[1]));
+      var ul = el("ul", "event-list");
+      groups[g[0]].forEach(function (r) { ul.appendChild(signupCard(r, g[0])); });
+      box.appendChild(ul);
+    });
+    $("mine-empty").hidden = order.length > 0;
+    // The count is of events still going ahead (not removed or inactive).
+    var live = groups.upcoming.filter(function (r) { return r.event && E.isActive(r.event); }).length;
+    $("mine-count").textContent = live ? "(" + live + ")" : "";
+    return live;
+  }
+
+  function renderDiscover() {
+    showOnly("discover-view");
+    var signedIn = F.session.signedIn();
+    $("volunteer-tabs").hidden = !signedIn;
+    $("discover-title").textContent = signedIn ? "Volunteer opportunities" : "Available volunteer opportunities";
+    $("discover-intro").textContent = signedIn
+      ? "The shifts you've signed up for, and upcoming events looking for volunteers."
+      : "Upcoming events looking for volunteers. Pick one to see its shifts and sign up.";
+    document.title = "Available volunteer opportunities · Sevak";
+    setupFilter();
+    renderAvailable();
+    if (!signedIn) return;
+    // Open on your sign-ups when you have upcoming ones, otherwise on the
+    // opportunities. The tab you pick is kept in the address (#mine, #available).
+    var upcoming = renderMine();
+    var tabs = F.pageTabs($("volunteer-tabs"), function (key) {
+      document.title = (key === "mine" ? "My sign-ups" : "Available volunteer opportunities") + " · Sevak";
+    }, upcoming ? "mine" : "available");
+    $("browse-opportunities").addEventListener("click", function () {
+      history.replaceState(null, "", location.search + "#" + tabs.show("available", true));
+    });
   }
 
   // ---------- One event ----------
@@ -450,6 +646,7 @@
     $("manage-link").hidden = !justSignedUp;
     $("manage-hint").hidden = !justSignedUp;
     $("more-shifts").href = "signup.html?event=" + encodeURIComponent(ev.id);
+    $("all-signups").hidden = !F.session.signedIn();
   }
 
   // ---------- Signed in ----------

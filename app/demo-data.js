@@ -71,6 +71,12 @@
         roles: [
           { name: "Litter pickers", bring: "Sturdy shoes", shifts: [[4, "08:30", "11:30", 20, 7]] },
           { name: "Check-in desk", shifts: [[4, "08:00", "10:00", 2, 2]] }] },
+      { id: "demo-ev-calls", title: "Donor Thank-You Calls", days: [8, 8], status: "published", online: "https://meet.example.org/thank-you-calls",
+        description: "Call our donors from home to say thank you. We'll send you a short script and the list.",
+        roles: [{ name: "Callers", description: "Friendly phone calls, about 3 minutes each", bring: "A phone and a quiet spot", shifts: [[8, "18:00", "20:00", 6, 2]] }] },
+      { id: "demo-ev-books", title: "San Antonio Book Drive", days: [15, 15], status: "published", venue: "Central Library Annex",
+        line1: "600 Soledad Street", city: "San Antonio", postal: "78205",
+        roles: [{ name: "Book sorters", description: "Sort donated books by age group", shifts: [[15, "10:00", "13:00", 8, 3]] }] },
       { id: "demo-ev-reading", title: "Library Reading Hour", days: [40, 40], status: "draft", venue: "Central Library",
         roles: [{ name: "Readers", description: "Read picture books to children", shifts: [[40, "10:00", "11:00", 4, 0]] }] },
       { id: "demo-ev-dinner", title: "Volunteer Appreciation Dinner", days: [35, 35], status: "published", visibility: "private", venue: "Natya Center Hall",
@@ -144,7 +150,9 @@
         id: p.id, organizationId: ORG_ID, organizationName: "Riverside Community Arts (demo)", mainEventId: p.main,
         title: p.title, description: p.description || "",
         startDate: day(p.days[0]), endDate: day(p.days[1]), timezone: timezone(),
-        location: { type: "in-person", venue: p.venue, country: "US", line1: "200 Elm Street", city: "Austin", state: "TX", postalCode: "78701" },
+        location: p.online
+          ? { type: "online", url: p.online }
+          : { type: "in-person", venue: p.venue, country: "US", line1: p.line1 || "200 Elm Street", city: p.city || "Austin", state: "TX", postalCode: p.postal || "78701" },
         roles: roles, visibility: p.visibility || "public", status: p.status, createdAt: now, updatedAt: now
       });
     });

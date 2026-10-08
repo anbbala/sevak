@@ -317,6 +317,47 @@
     });
   }
 
+  // ---------- Simple page tabs ----------
+  // For pages split into a few views (for example details and documents).
+  // Panels are found by aria-controls; the selected tab is kept in the URL
+  // hash. Without one, `defaultKey` (or the first tab) is shown.
+
+  function pageTabs(tablist, onChange, defaultKey) {
+    var tabs = Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
+    var key = function (t) { return t.id.replace(/^tab-/, ""); };
+    function show(k, focus) {
+      var known = function (x) { return tabs.some(function (t) { return key(t) === x; }); };
+      if (!known(k)) k = known(defaultKey) ? defaultKey : key(tabs[0]);
+      tabs.forEach(function (t) {
+        var on = key(t) === k;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).classList.toggle("is-hidden", !on);
+        if (on && focus) t.focus();
+      });
+      if (onChange) onChange(k);
+      return k;
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener("click", function () {
+        history.replaceState(null, "", location.search + "#" + show(key(t)));
+      });
+      t.addEventListener("keydown", function (e) {
+        var n = null;
+        if (e.key === "ArrowRight") n = tabs[(i + 1) % tabs.length];
+        else if (e.key === "ArrowLeft") n = tabs[(i - 1 + tabs.length) % tabs.length];
+        else if (e.key === "Home") n = tabs[0];
+        else if (e.key === "End") n = tabs[tabs.length - 1];
+        if (!n) return;
+        e.preventDefault();
+        history.replaceState(null, "", location.search + "#" + show(key(n), true));
+      });
+    });
+    show(location.hash.replace("#", ""));
+    window.addEventListener("hashchange", function () { show(location.hash.replace("#", "")); });
+    return { show: show };
+  }
+
   // ---------- Sign-in (prototype) ----------
   // There is no server yet. You count as registered when a profile is saved
   // in this browser, and as signed in until you choose Sign out. The index
@@ -354,6 +395,7 @@
     basicMessage: basicMessage,
     validate: validate,
     clearErrorsAsYouType: clearErrorsAsYouType,
-    session: session
+    session: session,
+    pageTabs: pageTabs
   };
 })();
