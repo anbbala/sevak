@@ -19,6 +19,9 @@
 
   function applyRoles() {
     $("volunteer-fields").hidden = !isVolunteer();
+    // Affiliations (on the Get to know me tab) are for volunteers.
+    $("affiliations-section").hidden = !isVolunteer();
+    $("affiliations-note").hidden = isVolunteer();
     $("host-fields").hidden = !isHost();
     if (isHost() && !orgRows.children.length) addOrg();
   }
@@ -218,6 +221,7 @@
       email: v("email"),
       phone: F.phoneValue($("phone")),
       roles: { volunteer: isVolunteer(), host: isHost() },
+      photo: photo.get(),
       aboutMe: v("aboutMe"),
       passion: v("passion"),
       certifications: v("certifications"),
@@ -250,6 +254,7 @@
     set("lastName", data.lastName);
     set("email", data.email);
     F.setPhone($("phone"), data.phone);
+    photo.set(data.photo || "");
     ABOUT_FIELDS.forEach(function (id) { set(id, data[id]); });
     (data.services || []).forEach(addService);
     // Profiles saved before user types existed were volunteer profiles.
@@ -276,11 +281,29 @@
 
   F.clearErrorsAsYouType(form, messageFor);
 
+  // Marks the tabs that contain errors with a dot.
+  function markTabErrors() {
+    ["details", "about"].forEach(function (key) {
+      var bad = !!$("panel-" + key).querySelector('[aria-invalid="true"]');
+      $("tab-" + key).classList.toggle("has-error", bad);
+      $("tab-" + key).querySelector(".tab-alert").textContent = bad ? " (needs attention)" : "";
+    });
+  }
+  form.addEventListener("input", function () { setTimeout(markTabErrors, 0); });
+  form.addEventListener("change", function () { setTimeout(markTabErrors, 0); });
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     var firstInvalid = validateForm();
+    markTabErrors();
     if (firstInvalid) {
-      $("status").textContent = "";
+      // Show the tab with the first problem.
+      var panel = firstInvalid.closest('[role="tabpanel"]');
+      if (panel && panel.classList.contains("is-hidden")) {
+        var key = tabs.show(panel.id.replace(/^panel-/, ""));
+        history.replaceState(null, "", location.search + "#" + key);
+      }
+      $("status").textContent = "Please check the highlighted fields.";
       firstInvalid.focus();
       return;
     }
@@ -301,6 +324,7 @@
     affiliationRows.innerHTML = "";
     orgRows.innerHTML = "";
     serviceList.innerHTML = "";
+    photo.set("");
     refreshServices();
     updateCounters();
     updateAffiliationButton();
@@ -313,6 +337,7 @@
 
   F.fillCountrySelect($("country"));
   F.enhancePhone($("phone"));
+  var photo = window.SevakPhoto.mount($("photo-field"));
 
   var existing = F.load(STORAGE_KEY);
   if (existing) fill(existing);
@@ -326,5 +351,8 @@
     owner: "profile",
     help: "Certificates, background checks, training records and anything else you want to keep handy. Only you can see these."
   });
-  window.SevakDocs.pageTabs($("profile-tabs"));
+  // Documents save on their own, so the profile's Save bar isn't shown there.
+  var tabs = window.SevakDocs.pageTabs($("profile-tabs"), function (key) {
+    $("save-bar").hidden = key === "documents";
+  });
 })();

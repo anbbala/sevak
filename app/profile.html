@@ -12,6 +12,7 @@
   <script src="forms.js" defer></script>
   <script src="orgs-store.js" defer></script>
   <script src="documents.js" defer></script>
+  <script src="photo.js" defer></script>
   <script src="profile.js" defer></script>
 </head>
 <body>
@@ -44,184 +45,192 @@
     <p class="page-intro">Your details in one place, whether you volunteer, help run events, or both.</p>
 
     <div class="tabs" role="tablist" aria-label="Profile sections" id="profile-tabs">
-      <button type="button" class="tab" role="tab" id="tab-details" aria-controls="profile-form" aria-selected="true">My details</button>
+      <button type="button" class="tab" role="tab" id="tab-details" aria-controls="panel-details" aria-selected="true">My details<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
+      <button type="button" class="tab" role="tab" id="tab-about" aria-controls="panel-about" aria-selected="false" tabindex="-1">Get to know me<span class="tab-dot" aria-hidden="true"></span><span class="sr-only tab-alert"></span></button>
       <button type="button" class="tab" role="tab" id="tab-documents" aria-controls="panel-documents" aria-selected="false" tabindex="-1">Documents</button>
     </div>
 
-    <form id="profile-form" class="tab-panel" role="tabpanel" aria-labelledby="tab-details" novalidate>
-      <!-- About you -->
-      <fieldset class="section">
-        <legend>About you</legend>
-        <p class="section-help">Organizations see these details only when you sign up for their events.</p>
-        <div class="grid">
-          <div class="field">
-            <label for="firstName">First name</label>
-            <input id="firstName" name="firstName" type="text" autocomplete="given-name" required maxlength="60">
-            <p class="error" id="firstName-error"></p>
-          </div>
-          <div class="field">
-            <label for="lastName">Last name</label>
-            <input id="lastName" name="lastName" type="text" autocomplete="family-name" required maxlength="60">
-            <p class="error" id="lastName-error"></p>
-          </div>
-          <div class="field">
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" autocomplete="email" required maxlength="254">
-            <p class="hint">You'll use this to sign in. Confirmations and certificates go here.</p>
-            <p class="error" id="email-error"></p>
-          </div>
-          <div class="field">
-            <label for="phone">Mobile phone</label>
-            <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="20">
-            <p class="hint">Only used for last-minute updates about events.</p>
-            <p class="error" id="phone-error"></p>
-          </div>
-        </div>
-      </fieldset>
-
-      <!-- How you use Sevak -->
-      <fieldset class="section">
-        <legend>How you use Sevak</legend>
-        <p class="section-help">Choose one or both. You can be a volunteer and also help run events for one or more organizations.</p>
-        <div class="choices">
-          <label class="choice"><input type="checkbox" name="roles" value="volunteer" id="role-volunteer"><span><strong>Volunteer</strong><small>I sign up for shifts</small></span></label>
-          <label class="choice"><input type="checkbox" name="roles" value="host" id="role-host"><span><strong>Host team member</strong><small>I help run events for an organization</small></span></label>
-        </div>
-        <p class="error" id="roles-error"></p>
-      </fieldset>
-
-      <!-- About me -->
-      <fieldset class="section" id="about-me-section">
-        <legend>Get to know me <span class="optional">(optional)</span></legend>
-        <p class="section-help">Help organizations get to know you. They see this when you sign up for their events.</p>
-        <div class="stack">
-          <div class="field">
-            <label for="aboutMe">About me</label>
-            <textarea id="aboutMe" maxlength="1000" rows="3" placeholder="e.g. Retired teacher, grandmother of three, love being outdoors" aria-describedby="aboutMe-hint"></textarea>
-            <div class="field-footer">
-              <p class="hint" id="aboutMe-hint">A few lines about who you are.</p>
-              <p class="counter" data-counter-for="aboutMe" aria-live="polite">0 / 1000</p>
-            </div>
-          </div>
-          <div class="field">
-            <label for="passion">My passion</label>
-            <textarea id="passion" maxlength="500" rows="3" placeholder="e.g. Making sure no family in our town goes hungry" aria-describedby="passion-hint"></textarea>
-            <div class="field-footer">
-              <p class="hint" id="passion-hint">What you care about most.</p>
-              <p class="counter" data-counter-for="passion" aria-live="polite">0 / 500</p>
-            </div>
-          </div>
-          <div class="field">
-            <label for="certifications">My certifications</label>
-            <textarea id="certifications" maxlength="500" rows="3" placeholder="e.g. CPR and First Aid (Red Cross, 2025), Food Handler card" aria-describedby="certifications-hint"></textarea>
-            <div class="field-footer">
-              <p class="hint" id="certifications-hint">For example first aid, food handling or a professional licence.</p>
-              <p class="counter" data-counter-for="certifications" aria-live="polite">0 / 500</p>
-            </div>
-          </div>
-          <div class="field">
-            <label for="howICanHelp">How I can help</label>
-            <textarea id="howICanHelp" maxlength="500" rows="3" placeholder="e.g. I can set up sound systems and run the mixing desk" aria-describedby="howICanHelp-hint"></textarea>
-            <div class="field-footer">
-              <p class="hint" id="howICanHelp-hint">The kind of help you'd most like to give.</p>
-              <p class="counter" data-counter-for="howICanHelp" aria-live="polite">0 / 500</p>
-            </div>
-          </div>
-        </div>
-      </fieldset>
-
-      <!-- Services -->
-      <fieldset class="section" id="services-section">
-        <legend>Services I can provide <span class="optional">(optional)</span></legend>
-        <p class="section-help">Choose from the list. Add as many as you like.</p>
-        <div class="field service-picker">
-          <label for="serviceSelect">Type of service</label>
-          <select id="serviceSelect">
-            <option value="">Choose a service…</option>
-            <option value="general">General help</option>
-            <option value="av">AV system help</option>
-            <option value="food">Food service</option>
-            <option value="website">Website maintenance</option>
-            <option value="telemarketing">Telemarketing</option>
-            <option value="fundraising">Fundraising</option>
-            <option value="accounting">Accounting</option>
-            <option value="office">Office help</option>
-          </select>
-        </div>
-        <ul class="service-list" id="service-list" aria-label="Services you've chosen"></ul>
-        <p class="hint" id="service-empty">No services chosen yet.</p>
-      </fieldset>
-
-      <!-- Host organizations -->
-      <fieldset class="section" id="host-fields" hidden>
-        <legend>My organizations</legend>
-        <p class="section-help">The organizations you help run and your role in each. <strong>Coordinators</strong> manage rosters, mark attendance and send updates. <strong>Admins</strong> can also edit the organization's profile and manage its team.</p>
-        <p class="hint" style="margin:-8px 0 16px">In the live app, an organization appears here when one of its admins invites you.</p>
-        <div class="rows" id="org-rows"></div>
-        <button type="button" class="btn btn-secondary" id="add-org">+ Add an organization</button>
-        <datalist id="known-orgs"></datalist>
-      </fieldset>
-
-      <div id="volunteer-fields" hidden>
-
-        <!-- Address -->
-        <fieldset class="section" id="address-section">
-          <legend>Address <span class="optional">(optional)</span></legend>
-          <p class="section-help">Helps us show events near you. Organizations never see your street address.</p>
+    <form id="profile-form" novalidate>
+      <div class="tab-panel" role="tabpanel" id="panel-details" aria-labelledby="tab-details">
+        <!-- About you -->
+        <fieldset class="section">
+          <legend>About you</legend>
+          <p class="section-help">Organizations see these details only when you sign up for their events.</p>
+          <div id="photo-field"></div>
           <div class="grid">
-            <div class="field span-2">
-              <label for="country">Country or region</label>
-              <select id="country" name="country" autocomplete="country"></select>
-            </div>
-            <div class="field span-2">
-              <label for="addressLine1">Street address</label>
-              <input id="addressLine1" name="addressLine1" type="text" autocomplete="address-line1" maxlength="120">
-            </div>
-            <div class="field span-2">
-              <label for="addressLine2">Apartment, suite, etc. <span class="optional">(optional)</span></label>
-              <input id="addressLine2" name="addressLine2" type="text" autocomplete="address-line2" maxlength="120">
+            <div class="field">
+              <label for="firstName">First name</label>
+              <input id="firstName" name="firstName" type="text" autocomplete="given-name" required maxlength="60">
+              <p class="error" id="firstName-error"></p>
             </div>
             <div class="field">
-              <label for="city">City or town</label>
-              <input id="city" name="city" type="text" autocomplete="address-level2" maxlength="80">
+              <label for="lastName">Last name</label>
+              <input id="lastName" name="lastName" type="text" autocomplete="family-name" required maxlength="60">
+              <p class="error" id="lastName-error"></p>
             </div>
             <div class="field">
-              <label for="state">State, province or region</label>
-              <input id="state" name="state" type="text" autocomplete="address-level1" maxlength="60">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="email" required maxlength="254">
+              <p class="hint">You'll use this to sign in. Confirmations and certificates go here.</p>
+              <p class="error" id="email-error"></p>
             </div>
             <div class="field">
-              <label for="postalCode">Postal code</label>
-              <input id="postalCode" name="postalCode" type="text" autocomplete="postal-code" maxlength="12" data-postal data-country="country">
-              <p class="error" id="postalCode-error"></p>
+              <label for="phone">Mobile phone</label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="20">
+              <p class="hint">Only used for last-minute updates about events.</p>
+              <p class="error" id="phone-error"></p>
             </div>
           </div>
         </fieldset>
 
+        <!-- How you use Sevak -->
+        <fieldset class="section">
+          <legend>How you use Sevak</legend>
+          <p class="section-help">Choose one or both. You can be a volunteer and also help run events for one or more organizations.</p>
+          <div class="choices">
+            <label class="choice"><input type="checkbox" name="roles" value="volunteer" id="role-volunteer"><span><strong>Volunteer</strong><small>I sign up for shifts</small></span></label>
+            <label class="choice"><input type="checkbox" name="roles" value="host" id="role-host"><span><strong>Host team member</strong><small>I help run events for an organization</small></span></label>
+          </div>
+          <p class="error" id="roles-error"></p>
+        </fieldset>
+
+        <!-- Services -->
+        <fieldset class="section" id="services-section">
+          <legend>Services I can provide <span class="optional">(optional)</span></legend>
+          <p class="section-help">Choose from the list. Add as many as you like.</p>
+          <div class="field service-picker">
+            <label for="serviceSelect">Type of service</label>
+            <select id="serviceSelect">
+              <option value="">Choose a service…</option>
+              <option value="general">General help</option>
+              <option value="av">AV system help</option>
+              <option value="food">Food service</option>
+              <option value="website">Website maintenance</option>
+              <option value="telemarketing">Telemarketing</option>
+              <option value="fundraising">Fundraising</option>
+              <option value="accounting">Accounting</option>
+              <option value="office">Office help</option>
+            </select>
+          </div>
+          <ul class="service-list" id="service-list" aria-label="Services you've chosen"></ul>
+          <p class="hint" id="service-empty">No services chosen yet.</p>
+        </fieldset>
+
+        <!-- Host organizations -->
+        <fieldset class="section" id="host-fields" hidden>
+          <legend>My organizations</legend>
+          <p class="section-help">The organizations you help run and your role in each. <strong>Coordinators</strong> manage rosters, mark attendance and send updates. <strong>Admins</strong> can also edit the organization's profile and manage its team.</p>
+          <p class="hint" style="margin:-8px 0 16px">In the live app, an organization appears here when one of its admins invites you.</p>
+          <div class="rows" id="org-rows"></div>
+          <button type="button" class="btn btn-secondary" id="add-org">+ Add an organization</button>
+          <datalist id="known-orgs"></datalist>
+        </fieldset>
+
+        <div id="volunteer-fields" hidden>
+
+          <!-- Address -->
+          <fieldset class="section" id="address-section">
+            <legend>Address <span class="optional">(optional)</span></legend>
+            <p class="section-help">Helps us show events near you. Organizations never see your street address.</p>
+            <div class="grid">
+              <div class="field span-2">
+                <label for="country">Country or region</label>
+                <select id="country" name="country" autocomplete="country"></select>
+              </div>
+              <div class="field span-2">
+                <label for="addressLine1">Street address</label>
+                <input id="addressLine1" name="addressLine1" type="text" autocomplete="address-line1" maxlength="120">
+              </div>
+              <div class="field span-2">
+                <label for="addressLine2">Apartment, suite, etc. <span class="optional">(optional)</span></label>
+                <input id="addressLine2" name="addressLine2" type="text" autocomplete="address-line2" maxlength="120">
+              </div>
+              <div class="field">
+                <label for="city">City or town</label>
+                <input id="city" name="city" type="text" autocomplete="address-level2" maxlength="80">
+              </div>
+              <div class="field">
+                <label for="state">State, province or region</label>
+                <input id="state" name="state" type="text" autocomplete="address-level1" maxlength="60">
+              </div>
+              <div class="field">
+                <label for="postalCode">Postal code</label>
+                <input id="postalCode" name="postalCode" type="text" autocomplete="postal-code" maxlength="12" data-postal data-country="country">
+                <p class="error" id="postalCode-error"></p>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Availability -->
+          <fieldset class="section">
+            <legend>When are you usually available?</legend>
+            <p class="section-help">We'll use this to suggest shifts. You can still sign up for any shift.</p>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="availability" value="weekends" required><span><strong>Weekends only</strong><small>Saturdays and Sundays</small></span></label>
+              <label class="choice"><input type="radio" name="availability" value="weekdays"><span><strong>Weekdays</strong><small>Monday to Friday, daytime</small></span></label>
+              <label class="choice"><input type="radio" name="availability" value="evenings"><span><strong>Evenings only</strong><small>After 5 PM, any day</small></span></label>
+              <label class="choice"><input type="radio" name="availability" value="anytime"><span><strong>Anytime</strong><small>I'm flexible</small></span></label>
+            </div>
+            <p class="error" id="availability-error"></p>
+          </fieldset>
+
+        </div>
+      </div>
+
+      <div class="tab-panel is-hidden" role="tabpanel" id="panel-about" aria-labelledby="tab-about">
+        <!-- About me -->
+        <fieldset class="section" id="about-me-section">
+          <legend>Get to know me <span class="optional">(optional)</span></legend>
+          <p class="section-help">Help organizations get to know you. They see this when you sign up for their events.</p>
+          <div class="stack">
+            <div class="field">
+              <label for="aboutMe">About me</label>
+              <textarea id="aboutMe" maxlength="1000" rows="3" placeholder="e.g. Retired teacher, grandmother of three, love being outdoors" aria-describedby="aboutMe-hint"></textarea>
+              <div class="field-footer">
+                <p class="hint" id="aboutMe-hint">A few lines about who you are.</p>
+                <p class="counter" data-counter-for="aboutMe" aria-live="polite">0 / 1000</p>
+              </div>
+            </div>
+            <div class="field">
+              <label for="passion">My passion</label>
+              <textarea id="passion" maxlength="500" rows="3" placeholder="e.g. Making sure no family in our town goes hungry" aria-describedby="passion-hint"></textarea>
+              <div class="field-footer">
+                <p class="hint" id="passion-hint">What you care about most.</p>
+                <p class="counter" data-counter-for="passion" aria-live="polite">0 / 500</p>
+              </div>
+            </div>
+            <div class="field">
+              <label for="certifications">My certifications</label>
+              <textarea id="certifications" maxlength="500" rows="3" placeholder="e.g. CPR and First Aid (Red Cross, 2025), Food Handler card" aria-describedby="certifications-hint"></textarea>
+              <div class="field-footer">
+                <p class="hint" id="certifications-hint">For example first aid, food handling or a professional licence.</p>
+                <p class="counter" data-counter-for="certifications" aria-live="polite">0 / 500</p>
+              </div>
+            </div>
+            <div class="field">
+              <label for="howICanHelp">How I can help</label>
+              <textarea id="howICanHelp" maxlength="500" rows="3" placeholder="e.g. I can set up sound systems and run the mixing desk" aria-describedby="howICanHelp-hint"></textarea>
+              <div class="field-footer">
+                <p class="hint" id="howICanHelp-hint">The kind of help you'd most like to give.</p>
+                <p class="counter" data-counter-for="howICanHelp" aria-live="polite">0 / 500</p>
+              </div>
+            </div>
+          </div>
+        </fieldset>
 
         <!-- Affiliations -->
-        <fieldset class="section">
+        <fieldset class="section" id="affiliations-section">
           <legend>Affiliations <span class="optional">(optional)</span></legend>
           <p class="section-help">Groups you volunteer with or for, such as a school, a Scout troop or your workplace. Some events are just for members of a group.</p>
           <div class="rows" id="affiliation-rows"></div>
           <button type="button" class="btn btn-secondary" id="add-affiliation">+ Add an affiliation</button>
         </fieldset>
-
-        <!-- Availability -->
-        <fieldset class="section">
-          <legend>When are you usually available?</legend>
-          <p class="section-help">We'll use this to suggest shifts. You can still sign up for any shift.</p>
-          <div class="choices">
-            <label class="choice"><input type="radio" name="availability" value="weekends" required><span><strong>Weekends only</strong><small>Saturdays and Sundays</small></span></label>
-            <label class="choice"><input type="radio" name="availability" value="weekdays"><span><strong>Weekdays</strong><small>Monday to Friday, daytime</small></span></label>
-            <label class="choice"><input type="radio" name="availability" value="evenings"><span><strong>Evenings only</strong><small>After 5 PM, any day</small></span></label>
-            <label class="choice"><input type="radio" name="availability" value="anytime"><span><strong>Anytime</strong><small>I'm flexible</small></span></label>
-          </div>
-          <p class="error" id="availability-error"></p>
-        </fieldset>
-
+        <div class="section notice" id="affiliations-note" hidden>
+          <p><strong>Affiliations are for volunteers.</strong> To add the groups you volunteer with, tick <strong>Volunteer</strong> under "How you use Sevak" on the My details tab.</p>
+        </div>
       </div>
 
-      <div class="save-bar">
+      <div class="save-bar" id="save-bar">
         <p class="status" id="status" role="status" aria-live="polite"></p>
         <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap">
           <button type="button" class="btn btn-danger-link" id="delete-profile">Delete my profile</button>

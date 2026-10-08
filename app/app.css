@@ -614,6 +614,36 @@ input[type="time"], input[type="number"] {
 .event-list .list-heading { display: grid; gap: 2px; margin-top: 20px; }
 .event-list .list-heading .hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
 
+/* Profile photo */
+.photo-field { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; margin: 0 0 20px; padding: 16px; border: 1px dashed var(--input-border); border-radius: 14px; }
+.photo-field.is-dragover { border-color: var(--primary); background: var(--primary-soft); }
+.photo-frame { flex: none; width: 104px; height: 104px; border-radius: 50%; overflow: hidden; background: var(--primary-soft); color: var(--primary); display: grid; place-items: center; }
+.photo-img { width: 100%; height: 100%; object-fit: cover; }
+.photo-img[hidden], .photo-placeholder[hidden] { display: none; }
+.photo-placeholder svg { width: 56px; height: 56px; }
+.photo-body { flex: 1 1 240px; min-width: 0; display: grid; gap: 6px; }
+.photo-body .label { margin: 0; }
+.photo-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 4px; }
+.photo-status:empty { display: none; }
+.photo-drop-hint { position: absolute; inset: 0; display: none; place-items: center; border-radius: 14px; background: color-mix(in srgb, var(--primary-soft) 92%, transparent); color: var(--primary); font-weight: 700; pointer-events: none; }
+.photo-field.is-dragover .photo-drop-hint { display: grid; }
+
+.camera-dialog { width: min(440px, calc(100% - 32px)); padding: 20px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); color: var(--text); }
+.camera-dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+.camera-title { margin: 0 0 12px; font-size: 1.15rem; }
+.camera-frame { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 14px; background: #111; }
+.camera-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.camera-guide { position: absolute; inset: 12%; border: 2px solid rgba(255, 255, 255, 0.7); border-radius: 50%; pointer-events: none; }
+.camera-message { position: absolute; inset: auto 12px 12px; margin: 0; padding: 8px 12px; border-radius: 10px; background: rgba(0, 0, 0, 0.7); color: #fff; font-size: 0.9rem; }
+.camera-message[hidden] { display: none; }
+.camera-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+
+@media (max-width: 480px) {
+  .photo-field { justify-content: center; text-align: center; }
+  .photo-buttons { justify-content: center; }
+  .camera-actions .btn { flex: 1 1 auto; }
+}
+
 /* Services */
 .service-picker { max-width: 360px; }
 .service-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
