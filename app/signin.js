@@ -16,7 +16,9 @@
     var profile = F.load("sevak.profile.v1");
     var saved = profile && profile.email ? String(profile.email).trim().toLowerCase() : "";
     if (saved && saved === email.value.trim().toLowerCase()) {
-      window.location.href = "profile.html";
+      // Registered volunteers go straight to the opportunities list.
+      F.session.signIn();
+      window.location.href = "signup.html";
       return;
     }
     F.setError(email, "We couldn't find a profile with that email in this browser. Check it, or sign up.");

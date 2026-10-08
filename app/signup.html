@@ -41,9 +41,11 @@
   <main class="container">
     <p class="banner"><strong>Prototype.</strong> Nothing is sent anywhere. Sign-ups are saved only in this browser, and no emails go out.</p>
 
+    <p class="signed-in" id="signed-in" hidden>Signed in as <strong id="signed-in-name"></strong> · <a href="profile.html">My profile</a> · <button type="button" class="btn-link signed-in-out" id="sign-out">Sign out</button></p>
+
     <!-- Find events: published, upcoming events from every organization -->
     <section id="discover-view" hidden>
-      <h1 class="page-title">Volunteer opportunities</h1>
+      <h1 class="page-title">Available volunteer opportunities</h1>
       <p class="page-intro">Upcoming events looking for volunteers. Pick one to see its shifts and sign up.</p>
       <ul class="event-list" id="discover-list"></ul>
       <p class="empty" id="discover-empty" hidden>There are no published upcoming events yet. Hosts can create one on the <a href="events.html">Events</a> tab.</p>

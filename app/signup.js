@@ -97,7 +97,7 @@
 
   function renderDiscover() {
     showOnly("discover-view");
-    document.title = "Volunteer opportunities · Sevak";
+    document.title = "Available volunteer opportunities · Sevak";
     var today = todayString();
     var events = E.all().filter(function (e) {
       return e.status === "published" && E.isActive(e) && e.visibility !== "private" && e.startDate && (e.endDate || e.startDate) >= today;
@@ -452,8 +452,23 @@
     $("more-shifts").href = "signup.html?event=" + encodeURIComponent(ev.id);
   }
 
+  // ---------- Signed in ----------
+
+  function renderSignedIn() {
+    var profile = F.session.profile();
+    var on = F.session.signedIn();
+    $("signed-in").hidden = !on;
+    if (on) $("signed-in-name").textContent = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || profile.email;
+  }
+
+  $("sign-out").addEventListener("click", function () {
+    F.session.signOut();
+    window.location.href = "../";
+  });
+
   // ---------- Start ----------
 
+  renderSignedIn();
   if (params.get("registration")) {
     renderConfirmation(params.get("registration"), false);
   } else if (params.get("event")) {

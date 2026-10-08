@@ -317,6 +317,26 @@
     });
   }
 
+  // ---------- Sign-in (prototype) ----------
+  // There is no server yet. You count as registered when a profile is saved
+  // in this browser, and as signed in until you choose Sign out. The index
+  // page has its own copy of signedIn() so it can redirect before it draws.
+
+  var PROFILE_KEY = "sevak.profile.v1";
+  var SIGNED_OUT_KEY = "sevak.signedOut.v1";
+
+  var session = {
+    profile: function () {
+      var p = load(PROFILE_KEY);
+      return p && p.email ? p : null;
+    },
+    signedIn: function () {
+      return !!session.profile() && load(SIGNED_OUT_KEY) !== true;
+    },
+    signIn: function () { clear(SIGNED_OUT_KEY); },
+    signOut: function () { store(SIGNED_OUT_KEY, true); }
+  };
+
   window.SevakForms = {
     load: load,
     store: store,
@@ -333,6 +353,7 @@
     setError: setError,
     basicMessage: basicMessage,
     validate: validate,
-    clearErrorsAsYouType: clearErrorsAsYouType
+    clearErrorsAsYouType: clearErrorsAsYouType,
+    session: session
   };
 })();

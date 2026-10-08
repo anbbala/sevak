@@ -644,6 +644,12 @@ input[type="time"], input[type="number"] {
   .camera-actions .btn { flex: 1 1 auto; }
 }
 
+/* Signed-in line on the volunteer pages */
+.signed-in { margin: 0 0 12px; font-size: 0.9rem; color: var(--muted); }
+.signed-in strong { color: var(--text); }
+.signed-in a { color: var(--primary); text-underline-offset: 3px; }
+.signed-in .btn-link { font: inherit; padding: 0; border: 0; cursor: pointer; }
+
 /* Services */
 .service-picker { max-width: 360px; }
 .service-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }

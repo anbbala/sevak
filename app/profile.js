@@ -307,7 +307,10 @@
       firstInvalid.focus();
       return;
     }
-    $("status").textContent = F.store(STORAGE_KEY, readForm())
+    var stored = F.store(STORAGE_KEY, readForm());
+    // Saving your profile signs you in (see SevakForms.session).
+    if (stored) F.session.signIn();
+    $("status").textContent = stored
       ? "Profile saved on this device."
       : "Couldn't save in this browser. Check that site storage is allowed.";
   });

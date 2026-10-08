@@ -18,7 +18,7 @@ sign up in seconds.
   - [`app/main-event.html`](app/main-event.html): a main event that groups sub-events, such as a festival and its rehearsals
   - [`app/event.html`](app/event.html): create and edit an event, with its roles and shifts
   - [`app/dashboard.html`](app/dashboard.html): upcoming events and volunteers required vs enrolled
-  - [`app/signup.html`](app/signup.html): volunteer side: find events, sign up for shifts, manage or cancel a sign-up
+  - [`app/signup.html`](app/signup.html): volunteer side: available volunteer opportunities (where registered volunteers land from the home page), sign up for shifts, manage or cancel a sign-up
 
 **Demo data:** open [`app/dashboard.html?demo=1`](app/dashboard.html?demo=1) (or use **Load demo data** on the Dashboard) to add a demo organization with main events, sub-events, roles, shifts and sign-ups. It doesn't change other data, and **Remove demo data** clears it.
 

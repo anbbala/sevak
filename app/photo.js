@@ -239,16 +239,23 @@
       if (!video.videoWidth) return;
       // The preview is mirrored like a mirror; the photo matches what you saw.
       var dataUrl = toSquare(video, video.videoWidth, video.videoHeight, true);
+      stopCamera();
       dialog.close();
       changed(dataUrl, "Photo taken. Save your profile to keep it.");
       q(".photo-camera").focus();
     });
 
-    q(".camera-cancel", dialog).addEventListener("click", function () { dialog.close(); });
+    q(".camera-cancel", dialog).addEventListener("click", function () {
+      stopCamera();
+      dialog.close();
+    });
     fileInstead.addEventListener("click", function () {
+      stopCamera();
       dialog.close();
       fileInput.click();
     });
+    // Escape fires "cancel" straight away; "close" follows a moment later.
+    dialog.addEventListener("cancel", stopCamera);
     dialog.addEventListener("close", stopCamera);
 
     show("");
