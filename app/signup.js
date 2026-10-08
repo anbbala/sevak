@@ -1,11 +1,11 @@
-// Volunteer sign-up (prototype). Three views on one page:
-//   signup.html                    → upcoming events looking for volunteers
-//   signup.html?event=ID           → one event: pick shifts and sign up
+// Volunteer sign-up (prototype). Four views on one page:
+//   signup.html                    → volunteer opportunities (upcoming events)
+//   signup.html?view=mine          → my sign-ups
+//   signup.html?event=ID           → one event: pick shifts, then confirm (#confirm)
 //   signup.html?registration=ID    → "manage my sign-up": see and cancel shifts
 (function () {
   "use strict";
 
-  var PROFILE_KEY = "sevak.profile.v1";
   var F = window.SevakForms;
   var O = window.SevakOrgs;
   var E = window.SevakEvents;
@@ -64,7 +64,7 @@
   }
 
   function showOnly(id) {
-    ["discover-view", "event-view", "confirm-view"].forEach(function (v) { $(v).hidden = v !== id; });
+    ["discover-view", "mine-view", "event-view", "confirm-view"].forEach(function (v) { $(v).hidden = v !== id; });
   }
 
   function showNotice(html) {
@@ -76,24 +76,53 @@
 
   // ---------- Find events ----------
 
-  function discoverItem(event) {
-    var org = O.get(event.organizationId);
-    var li = el("li", "event-item");
-    var info = el("div");
-    var h3 = el("h3");
-    var link = el("a", null, event.title || "Untitled event");
-    link.href = "signup.html?event=" + encodeURIComponent(event.id);
-    h3.appendChild(link);
-    info.appendChild(el("p", "bar-parent", org ? org.name : ""));
-    info.appendChild(h3);
-    info.appendChild(el("p", "event-meta", [E.rangeLabel(event.startDate, event.endDate), placeText(event)].filter(Boolean).join(" · ")));
+  // A short place: the venue and city, or "Online".
+  function shortPlace(event) {
+    var loc = event.location || {};
+    if (loc.type === "online") return "Online";
+    return [loc.venue, loc.city].filter(Boolean).join(", ") || placeText(event);
+  }
+
+  // "Sun, Oct 18" or "Sun, Oct 18 – Mon, Oct 19" (no year: it's soon).
+  function rowDate(event) {
+    if (!event.endDate || event.endDate === event.startDate) return E.dayLabel(event.startDate);
+    return E.dayLabel(event.startDate) + " – " + E.dayLabel(event.endDate);
+  }
+
+  // One opportunity: the whole row is a link to the event.
+  function oppRow(event, showOrg) {
+    var li = el("li");
+    var a = el("a", "opp-row");
+    a.href = "signup.html?event=" + encodeURIComponent(event.id);
+    var text = el("div", "opp-text");
+    text.appendChild(el("h3", "opp-title", event.title || "Untitled event"));
+    text.appendChild(el("p", "opp-meta", [rowDate(event), shortPlace(event)].filter(Boolean).join(" · ")));
+    if (showOrg) {
+      var org = O.get(event.organizationId);
+      if (org) text.appendChild(el("p", "opp-org", org.name));
+    }
     var left = spotsLeft(event);
-    var side = el("div", "badges");
-    if (isRemote(event)) side.appendChild(E.badge("Remote"));
-    side.appendChild(left ? E.badge(E.plural(left, "spot") + " left", "published") : E.badge("Full"));
-    li.appendChild(info);
-    li.appendChild(side);
+    a.appendChild(text);
+    a.appendChild(el("span", "opp-spots" + (left ? "" : " is-full"), left ? E.plural(left, "spot") : "Full"));
+    li.appendChild(a);
     return li;
+  }
+
+  // "This week" runs Monday to Sunday.
+  function weekBucket(event, today) {
+    var d = new Date(today + "T00:00:00");
+    var monday = new Date(d);
+    monday.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    var iso = function (x) {
+      var pad = function (n) { return String(n).padStart(2, "0"); };
+      return x.getFullYear() + "-" + pad(x.getMonth() + 1) + "-" + pad(x.getDate());
+    };
+    var endThis = new Date(monday); endThis.setDate(monday.getDate() + 6);
+    var endNext = new Date(monday); endNext.setDate(monday.getDate() + 13);
+    var start = event.startDate < today ? today : event.startDate;
+    if (start <= iso(endThis)) return "This week";
+    if (start <= iso(endNext)) return "Next week";
+    return "Later";
   }
 
   // Published, active, public events that haven't ended.
@@ -178,21 +207,39 @@
     var events = all.filter(function (e) { return matches(e, where, near); });
     var listed = events.filter(function (e) { return isVerified(O.get(e.organizationId)); });
     var preview = events.filter(function (e) { return !isVerified(O.get(e.organizationId)); });
+    // Only name the organization when the list has events from more than one.
+    var orgIds = {};
+    events.forEach(function (e) { orgIds[e.organizationId] = true; });
+    var showOrg = Object.keys(orgIds).length > 1;
 
-    var list = $("discover-list");
-    list.innerHTML = "";
-    listed.forEach(function (e) { list.appendChild(discoverItem(e)); });
+    var box = $("discover-list");
+    box.innerHTML = "";
+    var today = todayString();
+    var groups = [["This week", []], ["Next week", []], ["Later", []]];
+    listed.forEach(function (e) {
+      var bucket = weekBucket(e, today);
+      groups.filter(function (g) { return g[0] === bucket; })[0][1].push(e);
+    });
+    groups.forEach(function (g) {
+      if (!g[1].length) return;
+      box.appendChild(el("h2", "opp-group", g[0]));
+      var ul = el("ul", "opp-list");
+      g[1].forEach(function (e) { ul.appendChild(oppRow(e, showOrg)); });
+      box.appendChild(ul);
+    });
     if (preview.length) {
-      var head = el("li", "list-heading", "Preview: not listed publicly yet");
-      head.appendChild(el("span", "hint", " These organizations aren't verified yet, so their events are only reachable by link until they are."));
-      list.appendChild(head);
-      preview.forEach(function (e) { list.appendChild(discoverItem(e)); });
+      var head = el("h2", "opp-group", "Not listed publicly yet");
+      box.appendChild(head);
+      box.appendChild(el("p", "hint opp-group-hint", "These organizations aren't verified yet, so their events can only be reached by link."));
+      var pul = el("ul", "opp-list");
+      preview.forEach(function (e) { pul.appendChild(oppRow(e, true)); });
+      box.appendChild(pul);
     }
 
     var empty = $("discover-empty");
     empty.hidden = events.length > 0;
     if (!all.length) {
-      empty.innerHTML = 'There are no published upcoming events yet. Hosts can create one on the <a href="events.html">Events</a> tab.';
+      empty.textContent = "There are no upcoming opportunities right now. Check back soon.";
     } else if (where === "near" && !norm(near)) {
       empty.textContent = "Enter your city or town, region or postal code to see in-person events near you.";
     } else if (where === "near") {
@@ -211,7 +258,7 @@
     var org = ev ? O.get(ev.organizationId) : null;
     var li = el("li", "event-item my-signup" + (kind === "cancelled" ? " is-cancelled" : ""));
     var info = el("div");
-    info.appendChild(el("p", "bar-parent", org ? org.name : ""));
+    if (org) info.appendChild(el("p", "opp-org", org.name));
     var h3 = el("h3");
     if (ev) {
       var link = el("a", null, ev.title || "Untitled event");
@@ -221,7 +268,7 @@
       h3.textContent = "An event that was removed";
     }
     info.appendChild(h3);
-    if (ev) info.appendChild(el("p", "event-meta", [E.rangeLabel(ev.startDate, ev.endDate), placeText(ev)].filter(Boolean).join(" · ")));
+    if (ev) info.appendChild(el("p", "event-meta", [rowDate(ev), shortPlace(ev)].filter(Boolean).join(" · ")));
 
     var byId = {};
     if (ev) allShifts(ev).forEach(function (s) { byId[s.id] = s; });
@@ -248,8 +295,7 @@
   }
 
   // Lists the signed-in volunteer's sign-ups (matched by email), grouped
-  // into upcoming, past and cancelled. Returns how many upcoming events are
-  // still going ahead.
+  // into upcoming, past and cancelled.
   function renderMine() {
     var profile = F.session.profile();
     var email = norm(profile && profile.email);
@@ -284,47 +330,35 @@
       box.appendChild(ul);
     });
     $("mine-empty").hidden = order.length > 0;
-    // The count is of events still going ahead (not removed or inactive).
-    var live = groups.upcoming.filter(function (r) { return r.event && E.isActive(r.event); }).length;
-    $("mine-count").textContent = live ? "(" + live + ")" : "";
-    return live;
   }
 
-  function renderDiscover() {
+  function renderOpportunities() {
     showOnly("discover-view");
-    var signedIn = F.session.signedIn();
-    $("volunteer-tabs").hidden = !signedIn;
-    $("discover-title").textContent = signedIn ? "Volunteer opportunities" : "Available volunteer opportunities";
-    $("discover-intro").textContent = signedIn
-      ? "The shifts you've signed up for, and upcoming events looking for volunteers."
-      : "Upcoming events looking for volunteers. Pick one to see its shifts and sign up.";
-    document.title = "Available volunteer opportunities · Sevak";
+    document.title = "Volunteer opportunities · Sevak";
     setupFilter();
     renderAvailable();
-    if (!signedIn) return;
-    // Open on your sign-ups when you have upcoming ones, otherwise on the
-    // opportunities. The tab you pick is kept in the address (#mine, #available).
-    var upcoming = renderMine();
-    var tabs = F.pageTabs($("volunteer-tabs"), function (key) {
-      document.title = (key === "mine" ? "My sign-ups" : "Available volunteer opportunities") + " · Sevak";
-    }, upcoming ? "mine" : "available");
-    $("browse-opportunities").addEventListener("click", function () {
-      history.replaceState(null, "", location.search + "#" + tabs.show("available", true));
-    });
   }
 
-  // ---------- One event ----------
+  function renderMineView() {
+    showOnly("mine-view");
+    document.title = "My sign-ups · Sevak";
+    var on = F.session.signedIn();
+    $("mine-signed-out").hidden = on;
+    if (on) renderMine();
+  }
+
+  // ---------- One event: step 1, pick shifts ----------
 
   var event = null;
   var shifts = [];
   var canSignUp = false;
+  var currentDay = "";
 
   function renderEventHeader() {
     var org = O.get(event.organizationId);
     var host = $("host-line");
     host.innerHTML = "";
-    host.appendChild(document.createTextNode("Hosted by "));
-    host.appendChild(el("strong", null, org ? org.name : "an organization"));
+    host.appendChild(el("span", null, org ? org.name : "An organization"));
     host.appendChild(document.createTextNode(" "));
     host.appendChild(isVerified(org) ? E.badge("Verified", "published") : E.badge("Not verified yet"));
 
@@ -333,69 +367,141 @@
     if (main) $("main-line").textContent = main.title || "Main event";
     $("event-title").textContent = event.title || "Untitled event";
     document.title = (event.title || "Event") + " · Sevak";
+    $("event-facts").textContent = [E.rangeLabel(event.startDate, event.endDate), shortPlace(event)].filter(Boolean).join(" · ");
 
-    var facts = $("event-facts");
-    facts.innerHTML = "";
-    facts.appendChild(el("li", null, E.rangeLabel(event.startDate, event.endDate)));
+    // Everything else is folded under "About this event".
+    var about = $("about-body");
+    about.innerHTML = "";
+    if (event.description) about.appendChild(el("p", null, event.description));
     var loc = event.location || {};
     if (loc.type === "online") {
-      facts.appendChild(el("li", null, "Online. The meeting link is shared with volunteers who sign up."));
-    } else if (placeText(event)) {
-      facts.appendChild(el("li", null, placeText(event)));
+      about.appendChild(el("p", null, "Online. The meeting link is shared with volunteers who sign up."));
+    } else if (placeText(event) && placeText(event) !== shortPlace(event)) {
+      about.appendChild(el("p", null, "Address: " + placeText(event)));
     }
     var local = "";
     try { local = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { /* ignore */ }
     if (event.timezone && event.timezone !== local) {
-      facts.appendChild(el("li", null, "Times are in " + event.timezone.replace(/_/g, " ") + " time"));
+      about.appendChild(el("p", null, "Times are in " + event.timezone.replace(/_/g, " ") + " time."));
     }
-    $("event-description").hidden = !event.description;
-    $("event-description").textContent = event.description || "";
+    $("about-event").hidden = !about.children.length;
+  }
+
+  function selectedIds() {
+    return Array.prototype.map.call(document.querySelectorAll('input[name="shift"]:checked'), function (b) { return b.value; });
+  }
+
+  // One shift on one line: tick, role, time, spots, and Details if the role
+  // has a description or something to bring.
+  function shiftRow(s, left, past, selected) {
+    var closed = left === 0 || past;
+    var li = el("li", "shift-line" + (closed ? " is-full" : ""));
+    var label = el("label", "shift-pick");
+    var box = el("input");
+    box.type = "checkbox";
+    box.name = "shift";
+    box.value = s.id;
+    box.disabled = !canSignUp || closed;
+    box.checked = !box.disabled && selected.indexOf(s.id) !== -1;
+    var main = el("span", "shift-main");
+    main.appendChild(el("strong", "shift-role", s.role.name || "Role"));
+    main.appendChild(el("span", "shift-time", E.timeLabel(s.start) + "–" + E.timeLabel(s.end)));
+    label.appendChild(box);
+    label.appendChild(main);
+    li.appendChild(label);
+    li.appendChild(el("span", "shift-spots" + (closed ? " is-full" : ""), past ? "Ended" : left === 0 ? "Full" : left + " left"));
+    if (s.role.description || s.role.bring) {
+      var more = el("button", "shift-more", "Details");
+      more.type = "button";
+      var info = el("div", "shift-info");
+      info.id = "info-" + s.id;
+      info.hidden = true;
+      if (s.role.description) info.appendChild(el("p", null, s.role.description));
+      if (s.role.bring) info.appendChild(el("p", null, "Bring or know: " + s.role.bring));
+      more.setAttribute("aria-expanded", "false");
+      more.setAttribute("aria-controls", info.id);
+      more.setAttribute("aria-label", "Details about " + (s.role.name || "this role"));
+      more.addEventListener("click", function () {
+        info.hidden = !info.hidden;
+        more.setAttribute("aria-expanded", String(!info.hidden));
+        more.textContent = info.hidden ? "Details" : "Hide";
+      });
+      li.appendChild(more);
+      li.appendChild(info);
+    }
+    return li;
   }
 
   function renderShifts() {
     var counts = S.countsByShift(event.id);
     var today = todayString();
     var selected = selectedIds();
-    var groups = $("shift-groups");
-    groups.innerHTML = "";
     var byDay = {};
     shifts.forEach(function (s) { (byDay[s.date] = byDay[s.date] || []).push(s); });
+    var days = Object.keys(byDay).sort();
+    var openOn = function (date) {
+      return byDay[date].some(function (s) { return s.date >= today && (counts[s.id] || 0) < s.capacity; });
+    };
+    if (days.indexOf(currentDay) === -1) currentDay = days.filter(openOn)[0] || days[0] || "";
 
-    Object.keys(byDay).sort().forEach(function (date) {
+    // Several days: show one day at a time, with a day picker.
+    var multi = days.length > 1;
+    var picker = $("day-picker");
+    picker.hidden = !multi;
+    picker.innerHTML = "";
+    days.forEach(function (date) {
+      var chip = el("button", "day-chip");
+      chip.type = "button";
+      chip.dataset.date = date;
+      chip.setAttribute("aria-pressed", String(date === currentDay));
+      chip.appendChild(el("span", null, E.dayLabel(date)));
+      chip.appendChild(el("span", "day-chip-count"));
+      chip.addEventListener("click", function () {
+        currentDay = date;
+        showDay();
+      });
+      picker.appendChild(chip);
+    });
+
+    var groups = $("shift-groups");
+    groups.innerHTML = "";
+    days.forEach(function (date) {
       var group = el("div", "day-group");
-      group.appendChild(el("h3", "day-title", E.dayLabel(date, { weekday: "long", year: "numeric" })));
-      var list = el("ul", "shift-choices");
+      group.dataset.date = date;
+      group.appendChild(el("h3", "day-title" + (multi ? " sr-only" : ""), E.dayLabel(date, { weekday: "long", year: "numeric" })));
+      var open = el("ul", "shift-lines");
+      var closed = [];
       byDay[date].forEach(function (s) {
         var left = Math.max(0, s.capacity - (counts[s.id] || 0));
         var past = s.date < today;
-        var li = el("li");
-        var label = el("label", "shift-choice" + (left === 0 || past ? " is-full" : ""));
-        var box = el("input");
-        box.type = "checkbox";
-        box.name = "shift";
-        box.value = s.id;
-        box.disabled = !canSignUp || left === 0 || past;
-        box.checked = !box.disabled && selected.indexOf(s.id) !== -1;
-        var text = el("span", "shift-choice-text");
-        text.appendChild(el("strong", null, s.role.name || "Role"));
-        text.appendChild(el("span", "shift-time", E.timeLabel(s.start) + "–" + E.timeLabel(s.end)));
-        if (s.role.description) text.appendChild(el("span", "shift-desc", s.role.description));
-        if (s.role.bring) text.appendChild(el("span", "shift-desc", "Bring or know: " + s.role.bring));
-        var spots = el("span", "spots" + (left === 0 ? " spots-full" : ""), past ? "Ended" : left === 0 ? "Full" : left + " of " + s.capacity + " left");
-        label.appendChild(box);
-        label.appendChild(text);
-        label.appendChild(spots);
-        li.appendChild(label);
-        list.appendChild(li);
+        if (left === 0 || past) closed.push(shiftRow(s, left, past, selected));
+        else open.appendChild(shiftRow(s, left, past, selected));
       });
-      group.appendChild(list);
+      if (open.children.length) group.appendChild(open);
+      else group.appendChild(el("p", "empty", "No open shifts on this day."));
+      // Full (or ended) shifts are tucked away.
+      if (closed.length) {
+        var more = el("details", "full-shifts");
+        more.appendChild(el("summary", null, closed.length === 1 ? "1 full shift" : closed.length + " full shifts"));
+        var ul = el("ul", "shift-lines");
+        closed.forEach(function (li) { ul.appendChild(li); });
+        more.appendChild(ul);
+        group.appendChild(more);
+      }
       groups.appendChild(group);
     });
+    showDay();
     updateSelection();
   }
 
-  function selectedIds() {
-    return Array.prototype.map.call(document.querySelectorAll('input[name="shift"]:checked'), function (b) { return b.value; });
+  function showDay() {
+    var multi = !$("day-picker").hidden;
+    document.querySelectorAll("#shift-groups .day-group").forEach(function (g) {
+      g.hidden = multi && g.dataset.date !== currentDay;
+    });
+    document.querySelectorAll("#day-picker .day-chip").forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c.dataset.date === currentDay));
+    });
   }
 
   // Shifts on the same day whose times overlap.
@@ -414,8 +520,14 @@
   function updateSelection() {
     var ids = selectedIds();
     var n = ids.length;
-    $("submit").textContent = n > 1 ? "Sign up for " + n + " shifts" : "Sign up";
+    $("pick-count").textContent = n ? (n === 1 ? "1 shift picked" : n + " shifts picked") : "No shifts picked yet";
     if (n) $("shifts-error").textContent = "";
+    // How many are picked on each day.
+    document.querySelectorAll("#day-picker .day-chip").forEach(function (chip) {
+      var onDay = shifts.filter(function (s) { return s.date === chip.dataset.date && ids.indexOf(s.id) !== -1; }).length;
+      chip.querySelector(".day-chip-count").textContent = onDay ? String(onDay) : "";
+      chip.classList.toggle("has-picks", onDay > 0);
+    });
     var clash = overlaps(ids);
     var warning = $("overlap-warning");
     warning.hidden = !clash.length;
@@ -426,41 +538,89 @@
     }
   }
 
-  // Fill in the form from the saved profile, so returning volunteers sign
-  // up in one click.
-  function prefillFromProfile() {
-    var profile = F.load(PROFILE_KEY);
-    if (!profile || !profile.email) {
-      $("profile-note").innerHTML = "";
-      $("profile-note").appendChild(document.createTextNode("No account needed. "));
-      var link = el("a", null, "Save a profile");
-      link.href = "profile.html";
-      $("profile-note").appendChild(link);
-      $("profile-note").appendChild(document.createTextNode(" to fill this in automatically next time."));
+  // ---------- One event: step 2, confirm ----------
+
+  function showStep(step) {
+    $("step-pick").hidden = step !== "pick";
+    $("step-confirm").hidden = step !== "confirm";
+    window.scrollTo(0, 0);
+    if (step === "confirm") {
+      renderPicked();
+      $("confirm-step-title").focus();
+    }
+  }
+
+  function renderPicked() {
+    var ids = selectedIds();
+    $("confirm-step-event").textContent = (event.title || "Event") + " · " + E.rangeLabel(event.startDate, event.endDate) + " · " + shortPlace(event);
+    var list = $("picked-list");
+    list.innerHTML = "";
+    shifts.filter(function (s) { return ids.indexOf(s.id) !== -1; }).forEach(function (s) {
+      var li = el("li");
+      li.appendChild(el("strong", null, s.role.name || "Role"));
+      li.appendChild(el("span", "event-meta", E.dayLabel(s.date) + " · " + E.timeLabel(s.start) + "–" + E.timeLabel(s.end)));
+      list.appendChild(li);
+    });
+    $("submit").textContent = ids.length > 1 ? "Confirm " + ids.length + " shifts" : "Confirm sign-up";
+    $("status").textContent = "";
+  }
+
+  // Signed in: just say who's signing up (with Change). Otherwise, the form.
+  function setupWho() {
+    var profile = F.session.signedIn() ? F.session.profile() : null;
+    if (profile) {
+      $("name").value = [profile.firstName, profile.lastName].filter(Boolean).join(" ");
+      $("email").value = profile.email;
+      F.setPhone($("phone"), profile.phone);
+      $("who-name").textContent = $("name").value || profile.email;
+      $("who-email").textContent = $("name").value ? "(" + profile.email + ")" : "";
+      $("who-summary").hidden = false;
+      $("details-section").hidden = true;
+      $("profile-note").textContent = "From your profile. Changes here are just for this sign-up.";
       return;
     }
-    $("name").value = [profile.firstName, profile.lastName].filter(Boolean).join(" ");
-    $("email").value = profile.email;
-    F.setPhone($("phone"), profile.phone);
-    $("profile-note").textContent = "Filled in from your saved profile. Change anything you need to.";
+    $("who-summary").hidden = true;
+    $("details-section").hidden = false;
+    var note = $("profile-note");
+    note.innerHTML = "";
+    note.appendChild(document.createTextNode("No account needed. "));
+    var link = el("a", null, "Sign in");
+    link.href = "signin.html";
+    note.appendChild(link);
+    note.appendChild(document.createTextNode(" to skip this next time."));
+  }
+
+  function showDetails() {
+    $("who-summary").hidden = true;
+    $("details-section").hidden = false;
   }
 
   function messageFor(input) {
     return F.basicMessage(input);
   }
 
+  function goToConfirm(e) {
+    e.preventDefault();
+    if (!selectedIds().length) {
+      $("shifts-error").textContent = "Pick at least one shift.";
+      var first = document.querySelector('#shift-groups .day-group:not([hidden]) input[name="shift"]:not(:disabled)');
+      (first || $("continue")).focus();
+      return;
+    }
+    history.pushState({ step: "confirm" }, "", location.search + "#confirm");
+    showStep("confirm");
+  }
+
   function submit(e) {
     e.preventDefault();
     var ids = selectedIds();
-    $("shifts-error").textContent = ids.length ? "" : "Choose at least one shift.";
-    var firstInvalid = F.validate([$("name"), $("email"), $("phone")], messageFor);
     if (!ids.length) {
-      $("status").textContent = "";
-      var first = document.querySelector('input[name="shift"]:not(:disabled)');
-      (first || $("shifts-title")).focus();
+      showStep("pick");
       return;
     }
+    var firstInvalid = F.validate([$("name"), $("email"), $("phone")], messageFor);
     if (firstInvalid) {
+      showDetails();
       $("status").textContent = "";
       firstInvalid.focus();
       return;
@@ -470,8 +630,10 @@
     var counts = S.countsByShift(event.id);
     var nowFull = shifts.filter(function (s) { return ids.indexOf(s.id) !== -1 && (counts[s.id] || 0) >= s.capacity; });
     if (nowFull.length) {
+      history.replaceState(null, "", location.search);
       renderShifts();
-      $("status").textContent = "Sorry, " + nowFull.map(shiftLabel).join("; ") + (nowFull.length > 1 ? " just filled up" : " just filled up") + ". Please choose again.";
+      showStep("pick");
+      $("shifts-error").textContent = "Sorry, " + nowFull.map(shiftLabel).join("; ") + " just filled up. Please choose again.";
       return;
     }
 
@@ -498,6 +660,7 @@
     }
     history.replaceState(null, "", "signup.html?registration=" + encodeURIComponent(registrationId));
     renderConfirmation(registrationId, true, already.length);
+    window.SevakNav.render();
     window.scrollTo(0, 0);
   }
 
@@ -534,14 +697,31 @@
 
     renderEventHeader();
     renderShifts();
-    $("details-section").hidden = !canSignUp;
-    $("submit").hidden = !canSignUp;
-    $("shifts-help").hidden = !canSignUp;
+    $("pick-bar").hidden = !canSignUp;
     F.enhancePhone($("phone"));
-    prefillFromProfile();
+    setupWho();
     F.clearErrorsAsYouType($("signup-form"), messageFor);
     $("shift-groups").addEventListener("change", updateSelection);
+    $("pick-form").addEventListener("submit", goToConfirm);
     $("signup-form").addEventListener("submit", submit);
+    $("who-change").addEventListener("click", function () {
+      showDetails();
+      $("name").focus();
+    });
+    $("back-to-shifts").addEventListener("click", function () {
+      if (history.state && history.state.step === "confirm") history.back();
+      else showStep("pick");
+    });
+    // The browser's Back and Forward buttons move between the two steps.
+    window.addEventListener("popstate", function () {
+      // Back from the confirmation page: start this event afresh.
+      if (!$("confirm-view").hidden || params.get("event") !== new URLSearchParams(location.search).get("event")) {
+        location.reload();
+        return;
+      }
+      showStep(location.hash === "#confirm" && selectedIds().length ? "confirm" : "pick");
+    });
+    if (location.hash === "#confirm") history.replaceState(null, "", location.search);
   }
 
   // ---------- Confirmation and "manage my sign-up" ----------
@@ -649,28 +829,21 @@
     $("all-signups").hidden = !F.session.signedIn();
   }
 
-  // ---------- Signed in ----------
-
-  function renderSignedIn() {
-    var profile = F.session.profile();
-    var on = F.session.signedIn();
-    $("signed-in").hidden = !on;
-    if (on) $("signed-in-name").textContent = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || profile.email;
-  }
-
-  $("sign-out").addEventListener("click", function () {
-    F.session.signOut();
-    window.location.href = "../";
-  });
-
   // ---------- Start ----------
 
-  renderSignedIn();
+  // Old links to the "My sign-ups" tab.
+  if (location.hash === "#mine") {
+    history.replaceState(null, "", "signup.html?view=mine");
+    params = new URLSearchParams(location.search);
+    window.SevakNav.render();
+  }
   if (params.get("registration")) {
     renderConfirmation(params.get("registration"), false);
   } else if (params.get("event")) {
     renderEvent(params.get("event"));
+  } else if (params.get("view") === "mine") {
+    renderMineView();
   } else {
-    renderDiscover();
+    renderOpportunities();
   }
 })();

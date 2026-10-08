@@ -113,6 +113,18 @@
     }
   }
 
+  // Signed in as … · Sign out (Sign out lives here, on Profile).
+  function renderAccount() {
+    var on = F.session.signedIn();
+    $("account-line").hidden = !on;
+    if (on) $("account-email").textContent = F.session.profile().email;
+  }
+
+  $("sign-out").addEventListener("click", function () {
+    F.session.signOut();
+    window.location.href = "../";
+  });
+
   function leaveTeam(org) {
     var name = org.name || "this organization";
     if (!window.confirm("Leave the team of " + name + "? You won't be able to manage its events until an Admin adds you again.")) return;
@@ -321,6 +333,7 @@
       ? "Profile saved on this device."
       : "Couldn't save in this browser. Check that site storage is allowed.";
     renderTeams();
+    renderAccount();
     window.SevakNav.render();
   });
 
@@ -342,6 +355,7 @@
     updateAffiliationButton();
     applyRoles();
     renderTeams();
+    renderAccount();
     window.SevakNav.render();
     $("status").textContent = "Profile deleted.";
   });
@@ -360,6 +374,7 @@
   updateAffiliationButton();
   applyRoles();
   renderTeams();
+  renderAccount();
 
   var docs = window.SevakDocs.mount($("panel-documents"), {
     owner: "profile",

@@ -35,102 +35,125 @@
   </header>
 
   <main class="container">
-    <p class="banner"><strong>Prototype.</strong> Nothing is sent anywhere. Sign-ups are saved only in this browser, and no emails go out.</p>
-
-    <p class="signed-in" id="signed-in" hidden>Signed in as <strong id="signed-in-name"></strong> · <a href="profile.html">My profile</a> · <button type="button" class="btn-link signed-in-out" id="sign-out">Sign out</button></p>
+    <p class="banner"><strong>Prototype.</strong> Sign-ups stay in this browser, and no emails go out.</p>
 
     <!-- Find events: published, upcoming events from every organization -->
     <section id="discover-view" hidden>
-      <h1 class="page-title" id="discover-title">Available volunteer opportunities</h1>
-      <p class="page-intro" id="discover-intro">Upcoming events looking for volunteers. Pick one to see its shifts and sign up.</p>
-
-      <!-- Signed in: your sign-ups and the opportunities, as two tabs -->
-      <div class="tabs" role="tablist" aria-label="Volunteering" id="volunteer-tabs" hidden>
-        <button type="button" class="tab" role="tab" id="tab-mine" aria-controls="panel-mine" aria-selected="false" tabindex="-1">My sign-ups <span class="tab-count" id="mine-count"></span></button>
-        <button type="button" class="tab" role="tab" id="tab-available" aria-controls="panel-available" aria-selected="true">Available opportunities</button>
+      <h1 class="page-title">Volunteer opportunities</h1>
+      <fieldset class="opp-filter" id="opp-filter">
+        <legend class="sr-only">Show</legend>
+        <label class="filter-chip"><input type="radio" name="where" value="all" checked><span>All <span class="chip-count" data-count="all"></span></span></label>
+        <label class="filter-chip"><input type="radio" name="where" value="near"><span>In person near me <span class="chip-count" data-count="near"></span></span></label>
+        <label class="filter-chip"><input type="radio" name="where" value="in-person"><span>All in person <span class="chip-count" data-count="in-person"></span></span></label>
+        <label class="filter-chip"><input type="radio" name="where" value="remote"><span>Remote <span class="chip-count" data-count="remote"></span></span></label>
+      </fieldset>
+      <div class="near-row" id="near-row" hidden>
+        <label for="near">Near</label>
+        <input id="near" type="text" autocomplete="address-level2" maxlength="80" placeholder="City, region or postal code" aria-describedby="near-hint">
+        <p class="hint" id="near-hint">Same city or town, state or region, or postal area. <span id="near-source"></span></p>
       </div>
+      <div id="discover-list"></div>
+      <p class="empty" id="discover-empty" hidden></p>
+    </section>
 
-      <div class="tab-panel is-hidden" role="tabpanel" id="panel-mine" aria-labelledby="tab-mine">
-        <div id="mine-groups"></div>
-        <div class="section empty-state" id="mine-empty" hidden>
-          <p><strong>You haven't signed up for anything yet.</strong></p>
-          <p>Find an event that needs help and pick a shift.</p>
-          <p><button type="button" class="btn btn-primary btn-small" id="browse-opportunities">Browse available opportunities</button></p>
-        </div>
+    <!-- Your sign-ups -->
+    <section id="mine-view" hidden>
+      <h1 class="page-title">My sign-ups</h1>
+      <div id="mine-groups"></div>
+      <div class="section empty-state" id="mine-empty" hidden>
+        <p><strong>You haven't signed up for anything yet.</strong></p>
+        <p>Find an event that needs help and pick a shift.</p>
+        <p><a class="btn btn-primary btn-small" href="signup.html">Browse opportunities</a></p>
       </div>
-
-      <div class="tab-panel" role="tabpanel" id="panel-available" aria-labelledby="tab-available">
-        <fieldset class="opp-filter" id="opp-filter">
-          <legend class="sr-only">Show</legend>
-          <label class="filter-chip"><input type="radio" name="where" value="all" checked><span>All <span class="chip-count" data-count="all"></span></span></label>
-          <label class="filter-chip"><input type="radio" name="where" value="near"><span>In person near me <span class="chip-count" data-count="near"></span></span></label>
-          <label class="filter-chip"><input type="radio" name="where" value="in-person"><span>All in person <span class="chip-count" data-count="in-person"></span></span></label>
-          <label class="filter-chip"><input type="radio" name="where" value="remote"><span>Remote <span class="chip-count" data-count="remote"></span></span></label>
-        </fieldset>
-        <div class="near-row" id="near-row" hidden>
-          <label for="near">Near</label>
-          <input id="near" type="text" autocomplete="address-level2" maxlength="80" placeholder="City, region or postal code" aria-describedby="near-hint">
-          <p class="hint" id="near-hint">Shows in-person events in the same city or town, state or region, or postal area. <span id="near-source"></span></p>
-        </div>
-        <ul class="event-list" id="discover-list"></ul>
-        <p class="empty" id="discover-empty" hidden>There are no published upcoming events yet. Hosts can create one on the <a href="events.html">Events</a> tab.</p>
+      <div class="section empty-state" id="mine-signed-out" hidden>
+        <p><strong>Sign in to see your sign-ups.</strong></p>
+        <p><a class="btn btn-primary btn-small" href="signin.html">Sign in</a></p>
       </div>
     </section>
 
     <!-- Message when the event can't be signed up for -->
     <div class="section notice notice-warn" id="notice" hidden></div>
 
-    <!-- One event: details, shifts and the sign-up form -->
+    <!-- One event, in two steps: pick shifts, then confirm -->
     <section id="event-view" hidden>
-      <p class="breadcrumb"><a href="signup.html">← All opportunities</a></p>
-      <p class="host-line" id="host-line"></p>
-      <p class="bar-parent" id="main-line" hidden></p>
-      <h1 class="page-title" id="event-title"></h1>
-      <ul class="event-facts" id="event-facts"></ul>
-      <p class="event-description" id="event-description" hidden></p>
+      <div id="step-pick">
+        <a class="back-link" href="signup.html">‹ Opportunities</a>
+        <header class="event-head">
+          <p class="event-host" id="host-line"></p>
+          <p class="bar-parent" id="main-line" hidden></p>
+          <h1 class="page-title" id="event-title"></h1>
+          <p class="event-when" id="event-facts"></p>
+        </header>
+        <details class="about-event" id="about-event" hidden>
+          <summary>About this event</summary>
+          <div class="about-body" id="about-body"></div>
+        </details>
 
-      <form id="signup-form" novalidate>
-        <section class="section" aria-labelledby="shifts-title">
-          <h2 class="section-title" id="shifts-title">Choose your shifts</h2>
-          <p class="section-help" id="shifts-help">Tick one or more. You can sign up for several at once.</p>
+        <form id="pick-form" novalidate>
+          <h2 class="step-title" id="shifts-title">Choose your shifts</h2>
+          <div class="day-picker" id="day-picker" role="group" aria-label="Day" hidden></div>
           <div id="shift-groups"></div>
-          <p class="error" id="shifts-error"></p>
           <p class="notice notice-warn" id="overlap-warning" hidden></p>
-        </section>
-
-        <fieldset class="section" id="details-section">
-          <legend>Your details</legend>
-          <p class="section-help" id="profile-note"></p>
-          <div class="grid">
-            <div class="field span-2">
-              <label for="name">Full name</label>
-              <input id="name" type="text" autocomplete="name" required maxlength="120">
-              <p class="error" id="name-error"></p>
+          <div class="action-bar" id="pick-bar">
+            <div>
+              <p class="action-count" id="pick-count" aria-live="polite">No shifts picked yet</p>
+              <p class="error" id="shifts-error" role="alert"></p>
             </div>
-            <div class="field">
-              <label for="email">Email</label>
-              <input id="email" type="email" autocomplete="email" required maxlength="254">
-              <p class="hint">Your confirmation goes here.</p>
-              <p class="error" id="email-error"></p>
-            </div>
-            <div class="field">
-              <label for="phone">Mobile phone <span class="optional">(optional)</span></label>
-              <input id="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20">
-              <p class="hint">Only for last-minute changes to your shifts.</p>
-              <p class="error" id="phone-error"></p>
-            </div>
+            <button type="submit" class="btn btn-primary" id="continue">Continue</button>
           </div>
-        </fieldset>
+        </form>
+      </div>
 
-        <div class="save-bar">
-          <p class="status" id="status" role="status" aria-live="polite"></p>
-          <button type="submit" class="btn btn-primary" id="submit">Sign up</button>
-        </div>
-      </form>
+      <div id="step-confirm" hidden>
+        <button type="button" class="back-link" id="back-to-shifts">‹ Shifts</button>
+        <h1 class="page-title" id="confirm-step-title" tabindex="-1">Confirm your sign-up</h1>
+        <p class="page-intro" id="confirm-step-event"></p>
+        <form id="signup-form" novalidate>
+          <section class="section" aria-labelledby="picked-title">
+            <h2 class="section-title" id="picked-title">Your shifts</h2>
+            <ul class="picked-list" id="picked-list"></ul>
+          </section>
+
+          <section class="section who-summary" id="who-summary" hidden>
+            <p>Signing up as <strong id="who-name"></strong> <span class="who-email" id="who-email"></span></p>
+            <button type="button" class="btn btn-link" id="who-change">Change</button>
+          </section>
+
+          <fieldset class="section" id="details-section">
+            <legend>Your details</legend>
+            <p class="section-help" id="profile-note"></p>
+            <div class="grid">
+              <div class="field span-2">
+                <label for="name">Full name</label>
+                <input id="name" type="text" autocomplete="name" required maxlength="120">
+                <p class="error" id="name-error"></p>
+              </div>
+              <div class="field">
+                <label for="email">Email</label>
+                <input id="email" type="email" autocomplete="email" required maxlength="254">
+                <p class="hint">Your confirmation goes here.</p>
+                <p class="error" id="email-error"></p>
+              </div>
+              <div class="field">
+                <label for="phone">Mobile phone <span class="optional">(optional)</span></label>
+                <input id="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20">
+                <p class="hint">Only for last-minute changes to your shifts.</p>
+                <p class="error" id="phone-error"></p>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="action-bar">
+            <p class="status" id="status" role="status" aria-live="polite"></p>
+            <button type="submit" class="btn btn-primary" id="submit">Confirm sign-up</button>
+          </div>
+        </form>
+      </div>
     </section>
 
     <!-- After signing up, and the "manage my sign-up" page -->
     <section id="confirm-view" hidden>
+      <a class="back-link" href="signup.html">‹ Opportunities</a>
       <div class="confirm-head">
         <span class="confirm-icon" aria-hidden="true">✓</span>
         <div>
@@ -146,7 +169,7 @@
           <button type="button" class="btn btn-secondary btn-small" id="add-calendar">Add to calendar (.ics)</button>
           <a class="btn btn-secondary btn-small" id="manage-link" href="#">Manage my sign-up</a>
           <a class="btn btn-secondary btn-small" id="more-shifts" href="#">Sign up for more shifts</a>
-          <a class="btn btn-secondary btn-small" id="all-signups" href="signup.html#mine" hidden>All my sign-ups</a>
+          <a class="btn btn-secondary btn-small" id="all-signups" href="signup.html?view=mine" hidden>All my sign-ups</a>
         </div>
         <p class="hint" id="manage-hint" style="margin-top:12px">In the live app, your confirmation email includes this "Manage my sign-up" link.</p>
         <p class="status" id="confirm-status" role="status" aria-live="polite"></p>
