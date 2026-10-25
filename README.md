@@ -9,6 +9,7 @@ sign up in seconds.
 
 - MVP requirements: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
 - Architecture, back end and hosting plan: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- UML diagrams for discussion (use cases, data model, event and sign-up lifecycles, key flows, system): [`docs/DIAGRAMS.md`](docs/DIAGRAMS.md)
 - Landing page: [`index.html`](index.html) (static, no build step)
 - Front-end prototype: [`app/`](app/). It uses mock data stored in your browser, with no backend yet.
   - [`app/signin.html`](app/signin.html): prototype sign-in (matches the email on the profile saved in this browser)
