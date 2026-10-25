@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.23 (volunteers log their hours) · **Updated:** 2026-10-07 · **Status:** Draft for review
+**Version:** 2.24 (Google Calendar links, demo Admin sign-in) · **Updated:** 2026-10-26 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -186,7 +186,7 @@ allows, or right after launch. **Later** means post-MVP.
 | SGN-6 | The volunteer sees an instant confirmation screen and gets a confirmation email (COM-1) with a secure **"Manage my sign-up"** link for viewing, adding or cancelling shifts. | Must |
 | SGN-7 | A volunteer can cancel a shift through that link, and the cancellation shows up on the host's roster. | Must |
 | SGN-8 | The sign-up form has bot and spam protection (an invisible challenge plus rate limits). | Must |
-| SGN-9 | The confirmation screen and email include **Add to calendar** (an .ics file and a Google Calendar link). | Should |
+| SGN-9 | The confirmation screen and email include **Add to calendar**: an **Add to Google Calendar** link on each shift, and one .ics file with all the shifts for Apple Calendar, Outlook and others. Times use the event's time zone. *(Prototype: both are on the confirmation and manage page.)* | Must |
 | SGN-10 | The form has an opt-in checkbox: *"Keep me posted about future opportunities from {Organization}."* | Should |
 | SGN-14 | **Prototype of the volunteer sign-up page** (`app/signup.html`), covering SGN-1 to SGN-9 and DSC-1:
 
@@ -258,6 +258,7 @@ Sign-ups appear on the host dashboard right away. | Must |
 | COM-6 | An automatic **reminder email** goes out before each shift (24 hours before by default). This is strongly recommended because it cuts no-shows. | Should |
 | COM-7 | Every email carries the organization's branding (name, logo, colour). It is sent as *"{Organization} via Sevak"*, and replies go to the organization's contact email. | Must |
 | COM-8 | Emails meet deliverability and legal basics: SPF, DKIM and DMARC; a plain-text version; the organization's contact details; and an unsubscribe link on anything that isn't transactional. | Must |
+| COM-10 | **Calendar-ready emails.** Every email about a volunteer's shifts (confirmation, change, cancellation, reminder) carries a standard calendar invite (.ics) that Gmail and Google Calendar recognise, so the shift appears in their calendar in one tap. Each shift keeps the same calendar ID, so a time or place change **updates** the calendar entry and a cancellation **removes** it, instead of adding duplicates. Emails also include a plain **Add to Google Calendar** link. No calendar account connection is needed. | Must |
 | COM-9 | Scheduled sends, SMS or WhatsApp delivery, and a custom sending domain for each organization. | Later |
 
 ### 4.8 Attendance and certificates

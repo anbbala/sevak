@@ -8,7 +8,10 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230f766e'/%3E%3Cg fill='%23fff' transform='translate(12 12) scale(.78) translate(-12 -12.4)'%3E%3Crect x='8' y='9' width='8' height='8' transform='rotate(45 12 13)'/%3E%3Ccircle cx='9.17' cy='10.17' r='4'/%3E%3Ccircle cx='14.83' cy='10.17' r='4'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="stylesheet" href="app.css">
+  <script src="countries.js" defer></script>
   <script src="forms.js" defer></script>
+  <script src="orgs-store.js" defer></script>
+  <script src="demo-data.js" defer></script>
   <script src="signin.js" defer></script>
   <style>
     .signin { width: min(480px, 100%); margin: 24px auto 0; }
@@ -49,6 +52,12 @@
         </div>
       </form>
 
+      <section class="section" aria-labelledby="demo-admin-title">
+        <h2 class="section-title" id="demo-admin-title">Try it as an Admin</h2>
+        <p class="section-help">Opens the demo organization as one of its Admins, so you can see the Manage pages: Events, Dashboard and Organization. If you have a profile in this browser, you're added to the demo team; if not, a "Demo Admin" profile is made for you.</p>
+        <button class="btn btn-secondary" type="button" id="demo-admin">Sign in as an Admin (demo)</button>
+        <p class="error" id="demo-admin-error" role="alert"></p>
+      </section>
       <p class="banner"><strong>Prototype.</strong> There are no passwords yet. Sign-in with an emailed link comes later; for now this finds the profile saved in this browser.</p>
     </div>
   </main>

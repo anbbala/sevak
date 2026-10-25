@@ -617,6 +617,8 @@ input[type="time"], input[type="number"] {
 .my-shifts { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .my-shift { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; }
 .my-shift div { display: grid; gap: 2px; }
+.my-shift-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px 16px; }
+.calendar-link { padding: 4px 0; text-underline-offset: 3px; white-space: nowrap; }
 .my-shift.is-cancelled strong { text-decoration: line-through; color: var(--muted); }
 .event-list .list-heading { display: grid; gap: 2px; margin-top: 20px; }
 .event-list .list-heading .hint { text-transform: none; letter-spacing: 0; font-weight: 400; }

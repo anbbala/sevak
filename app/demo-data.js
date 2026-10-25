@@ -187,5 +187,34 @@
     return { mainEvents: mains.length, events: events.length, signups: signups.length };
   }
 
-  window.SevakDemo = { load: load, remove: remove, isLoaded: isLoaded, orgId: ORG_ID };
+  // "Sign in as an Admin (demo)": signs you in as an Admin of the demo
+  // organization, loading it first if needed. Uses the profile saved in this
+  // browser; with none, it saves a "Demo Admin" profile so there is someone
+  // to sign in as. Existing demo data and edits to it are kept.
+  function signInAsAdmin() {
+    var p = F.session.profile();
+    if (!p) {
+      p = {
+        firstName: "Demo", lastName: "Admin", email: "admin@example.org",
+        roles: { volunteer: true, host: true }, updatedAt: new Date().toISOString()
+      };
+      if (!F.store("sevak.profile.v1", p)) return false;
+    }
+    F.session.signIn();
+    if (!isLoaded()) {
+      load();
+      return true;
+    }
+    var org = O.get(ORG_ID);
+    if (!O.isAdmin(org)) {
+      var email = String(p.email).trim().toLowerCase();
+      var others = (org.team || []).filter(function (m) { return String(m.email || "").trim().toLowerCase() !== email; });
+      org.team = others.concat(demoTeam());
+      if (!O.save(org)) return false;
+    }
+    O.setCurrent(ORG_ID);
+    return true;
+  }
+
+  window.SevakDemo = { load: load, remove: remove, isLoaded: isLoaded, signInAsAdmin: signInAsAdmin, orgId: ORG_ID };
 })();

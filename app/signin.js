@@ -25,3 +25,18 @@
     email.focus();
   });
 })();
+
+// "Sign in as an Admin (demo)" opens the demo organization's Dashboard as
+// one of its Admins (see SevakDemo.signInAsAdmin).
+(function () {
+  "use strict";
+
+  var button = document.getElementById("demo-admin");
+  button.addEventListener("click", function () {
+    if (window.SevakDemo.signInAsAdmin()) {
+      window.location.href = "dashboard.html";
+      return;
+    }
+    document.getElementById("demo-admin-error").textContent = "This browser wouldn't save the demo. Check that it isn't in private mode, then try again.";
+  });
+})();

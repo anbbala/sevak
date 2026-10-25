@@ -12,7 +12,7 @@ sign up in seconds.
 - UML diagrams for discussion (use cases, data model, event and sign-up lifecycles, key flows, system): [`docs/DIAGRAMS.md`](docs/DIAGRAMS.md)
 - Landing page: [`index.html`](index.html) (static, no build step)
 - Front-end prototype: [`app/`](app/). It uses mock data stored in your browser, with no backend yet.
-  - [`app/signin.html`](app/signin.html): prototype sign-in (matches the email on the profile saved in this browser)
+  - [`app/signin.html`](app/signin.html): prototype sign-in (matches the email on the profile saved in this browser). **Sign in as an Admin (demo)** opens the demo organization's Dashboard as one of its Admins.
   - [`app/profile.html`](app/profile.html): user profile for volunteers and host team members
   - [`app/organization.html`](app/organization.html): host organization profile, with a Documents tab (events and profiles have one too)
   - [`app/events.html`](app/events.html): the organization's events, with main events and their sub-events

@@ -1016,6 +1016,21 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
   }
 
+  // One shift as a Google Calendar "add event" link. Times are the event's
+  // local times, with its time zone (ctz) so Google places them correctly.
+  function googleCalendarUrl(ev, shift) {
+    var org = O.get(ev.organizationId);
+    var params = new URLSearchParams({
+      action: "TEMPLATE",
+      text: (ev.title || "Volunteer shift") + " – " + (shift.role.name || "Shift"),
+      dates: icsDate(shift.date, shift.start) + "/" + icsDate(shift.date, shift.end),
+      location: placeText(ev),
+      details: "Volunteer shift with " + ((org && org.name) || "the host organization") + "."
+    });
+    if (ev.timezone) params.set("ctz", ev.timezone);
+    return "https://calendar.google.com/calendar/render?" + params.toString();
+  }
+
   function renderConfirmation(registrationId, justSignedUp, skipped) {
     var signups = S.forRegistration(registrationId);
     if (!signups.length) {
@@ -1063,6 +1078,13 @@
       if (item.signup.status === "cancelled") {
         li.appendChild(E.badge("Cancelled"));
       } else {
+        var actions = el("span", "my-shift-actions");
+        var google = el("a", "calendar-link", "Google Calendar");
+        google.href = googleCalendarUrl(ev, item.shift);
+        google.target = "_blank";
+        google.rel = "noopener";
+        google.setAttribute("aria-label", "Add " + shiftLabel(item.shift) + " to Google Calendar (opens in a new tab)");
+        actions.appendChild(google);
         var cancel = el("button", "btn btn-danger-link", "Cancel");
         cancel.type = "button";
         cancel.setAttribute("aria-label", "Cancel " + shiftLabel(item.shift));
@@ -1072,7 +1094,8 @@
           renderConfirmation(registrationId, false);
           $("confirm-status").textContent = "Shift cancelled. The organizers will see the spot is open again.";
         });
-        li.appendChild(cancel);
+        actions.appendChild(cancel);
+        li.appendChild(actions);
       }
       list.appendChild(li);
     });
