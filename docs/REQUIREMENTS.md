@@ -1,6 +1,6 @@
 # Sevak: MVP Requirements
 
-**Version:** 2.22 (cleaner volunteer pages) · **Updated:** 2026-10-07 · **Status:** Draft for review
+**Version:** 2.23 (volunteers log their hours) · **Updated:** 2026-10-07 · **Status:** Draft for review
 
 This replaces the original SRS outline, which is about six months old. That outline covered a full
 volunteer management system: background checks, GPS clock-in, CRM integrations and so on. This
@@ -274,7 +274,8 @@ Sign-ups appear on the host dashboard right away. | Must |
 | ATT-8 | A host can **export the roster as CSV**, including sign-ups and attendance. | Must |
 | ATT-9 | Each event has a summary showing shifts filled against capacity, the attendance rate and total hours. | Should |
 | ATT-11 | **Host dashboard** for the current organization. Filters (date range: next 7, 30 or 90 days or all upcoming; status: published, drafts or both) scope everything on the page. It shows headline numbers (upcoming events, volunteers required, enrolled, spots still open) and an overall fill meter. A required-vs-enrolled bar for each event is labeled "enrolled / required · %", with a tooltip on hover or keyboard focus and a breakdown by shift. A **table view** shows the same numbers. Events that are under half full and start within 14 days are flagged **Needs volunteers** (icon and label, never color alone). Past events, cancelled sign-ups and other organizations' events are excluded. *(Prototype: `app/dashboard.html`. Until volunteer sign-up exists, a clearly marked "Add sample sign-ups" button fills in made-up numbers.)* | Must |
-| ATT-10 | QR code self check-in and GPS check-in. | Later |
+| ATT-12 | **Volunteers record their hours on My sign-ups.** Each shift shows what to do next. **On the day**, from an hour before the shift starts: **Check in**, then **Check out** when the task is done; Sevak works out the hours from the two times. **After the shift** (or instead of checking in): **Log hours**, either as **From and to** times (defaulting to the check-in time or the shift's times) or as **How long** (hours and minutes). The end must be after the start, and a shift can't be more than 24 hours (a shift past midnight is logged as a duration). Logged hours show on the shift (*✓ 3 h 15 min · 9:00 AM–12:15 PM*) with **Edit**. A **Today** group comes first, and a summary shows the total **hours volunteered** and how many shifts are still waiting for hours; cards with missing hours say *Hours to log*. These are the volunteer's **reported** hours: the host still confirms attendance and the hours credited (ATT-2, ATT-3) before certificates (ATT-5). *(Prototype: times use the device's clock. Loading the demo while signed in signs you up for a shift today and one in the past, to try this.)* | Must |
+| ATT-10 | QR code self check-in at the venue, and GPS check-in. (Volunteers can already check in and out from My sign-ups, ATT-12.) | Later |
 
 ### 4.9 Platform administration
 
@@ -400,7 +401,7 @@ This is the list of screens to build in Phase 1 with mock data.
 | **Role** | id, event_id, name, description, requirements | Belongs to an Event. Has many Shifts |
 | **Shift** | id, event_id, role_id, starts_at, ends_at (stored in UTC), capacity | Belongs to a Role. Has many Signups |
 | **Registration** | id, event_id, user_id, manage_token, opted_in_updates, answers (JSON), created_at | One form submission. Has many Signups |
-| **Signup** | id, registration_id, shift_id, status (`confirmed`/`cancelled`), attendance (`unmarked`/`attended`/`no_show`), hours_credited | One volunteer on one Shift |
+| **Signup** | id, registration_id, shift_id, status (`confirmed`/`cancelled`), check_in_at, check_out_at, reported_minutes, reported_from, reported_to, report_method (`check-in`/`times`/`duration`), reported_at, attendance (`unmarked`/`attended`/`no_show`), hours_credited | One volunteer on one Shift. *Reported* hours come from the volunteer (ATT-12); hours *credited* are confirmed by the host (ATT-3). |
 | **Invite** | id, event_id, email, sent_at, registration_id (set once they sign up) | Belongs to an Event |
 | **Message** | id, org_id, event_id (optional), audience_filter, subject, body, sent_by, sent_at | Has many MessageDeliveries (recipient, status) |
 | **Certificate** | id, registration_id, verification_code, hours, pdf_url, issued_by, issued_at | One per volunteer per event |

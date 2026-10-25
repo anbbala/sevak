@@ -673,8 +673,35 @@ input[type="time"], input[type="number"] {
 .empty-state p + p { margin-top: 8px; }
 .mine-heading { margin: 20px 0 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 #mine-groups > .mine-heading:first-child { margin-top: 4px; }
-.signup-shifts { margin: 6px 0 0; padding-left: 18px; font-size: 0.92rem; }
-.signup-shifts li + li { margin-top: 2px; }
+.signup-shifts { display: grid; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 0.92rem; }
+.my-signup.is-cancelled .signup-shifts { display: block; padding-left: 18px; list-style: disc; }
+
+/* Hours on My sign-ups */
+.signup-shift { padding-top: 8px; border-top: 1px dashed var(--border); }
+.signup-shift:first-child { padding-top: 0; border-top: 0; }
+.signup-shift:focus { outline: none; }
+.signup-shift:focus-visible { box-shadow: 0 0 0 3px var(--focus); border-radius: 6px; }
+.signup-shift-label { display: block; }
+.hours-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 6px; }
+.hours-row[hidden] { display: none; }
+.hours-row .btn-link { min-height: 32px; padding: 4px 0; font-size: 0.9rem; }
+.hours-ask { color: var(--accent); font-weight: 600; }
+.hours-done strong { color: var(--primary); }
+.hours-form { display: grid; gap: 10px; margin-top: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+.hours-mode { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.hours-mode legend { margin: 0 0 6px; padding: 0; font-size: 0.9rem; font-weight: 600; }
+.hours-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 150px)); gap: 10px; }
+.hours-fields[hidden] { display: none; }
+.hours-error:empty { display: none; }
+.hours-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.hours-summary { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin: 4px 0 8px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+.hours-summary[hidden] { display: none; }
+.hours-total { display: flex; align-items: baseline; gap: 10px; margin: 0; }
+.hours-total-label { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.hours-total-value { font-size: 1.5rem; color: var(--primary); }
+.hours-sub { margin: 0; font-size: 0.9rem; color: var(--muted); }
+#mine-status:empty { display: none; }
+#mine-status { margin: 8px 0 0; }
 .signup-manage { display: inline-block; margin-top: 8px; font-size: 0.9rem; font-weight: 600; color: var(--primary); text-underline-offset: 3px; }
 .my-signup.is-cancelled h3, .my-signup.is-cancelled .signup-shifts { color: var(--muted); }
 .my-signup.is-cancelled .signup-shifts { text-decoration: line-through; }

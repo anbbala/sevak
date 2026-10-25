@@ -66,6 +66,9 @@
           { name: "Distribution line", shifts: [[17, "10:00", "14:00", 15, 7]] },
           { name: "Check-in desk", bring: "Smartphone", shifts: [[17, "09:30", "14:00", 3, 3]] },
           { name: "Carry-out helpers", description: "Help families carry boxes to their cars", shifts: [[17, "10:00", "14:00", 6, 2]] }] },
+      { id: "demo-ev-garden", title: "Community Garden Workday", days: [0, 0], status: "published", venue: "Eastside Community Garden",
+        description: "Weeding, watering and planting winter vegetables. Tools provided.",
+        roles: [{ name: "Garden helpers", description: "Weed, water and plant", bring: "Gloves and a water bottle", shifts: [[0, "08:00", "11:00", 8, 3], [0, "13:00", "16:00", 8, 2]] }] },
       { id: "demo-ev-park", title: "Riverside Park Clean-up", days: [4, 4], status: "published", venue: "Riverside Park",
         description: "Help us clear litter along the river trail. Gloves and bags provided.",
         roles: [
@@ -92,6 +95,19 @@
     var p = F.session.signedIn() ? F.session.profile() : null;
     if (!p) return [];
     return [{ name: [p.firstName, p.lastName].filter(Boolean).join(" ") || p.email, email: p.email, role: "admin" }];
+  }
+
+  // If you're signed in, the demo also signs you up for today's garden
+  // morning shift and the (past) Summer Fair, so you can try checking in
+  // and logging your hours on My sign-ups.
+  function yourSignups() {
+    var p = F.session.signedIn() ? F.session.profile() : null;
+    if (!p) return [];
+    var name = [p.firstName, p.lastName].filter(Boolean).join(" ") || p.email;
+    var now = new Date().toISOString();
+    return [["demo-ev-garden", "demo-ev-garden-shift-0-0"], ["demo-ev-fair", "demo-ev-fair-shift-0-0"]].map(function (x, i) {
+      return { id: "demo-you-" + i, demo: true, registrationId: "demo-reg-you-" + i, eventId: x[0], shiftId: x[1], name: name, email: p.email, phone: p.phone, status: "confirmed", createdAt: now };
+    });
   }
 
   function isLoaded() {
@@ -164,6 +180,7 @@
         roles: roles, visibility: p.visibility || "public", status: p.status, createdAt: now, updatedAt: now
       });
     });
+    signups = signups.concat(yourSignups());
     F.store(MAIN_KEY, (F.load(MAIN_KEY) || []).concat(mains));
     F.store(EVENTS_KEY, (F.load(EVENTS_KEY) || []).concat(events));
     F.store(SIGNUPS_KEY, (F.load(SIGNUPS_KEY) || []).concat(signups));

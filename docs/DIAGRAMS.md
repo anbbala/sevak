@@ -37,7 +37,7 @@ flowchart LR
         UC1["Find opportunities<br/>(location filter)"]
         UC2["Sign up for shifts"]
         UC3["Manage or cancel a sign-up"]
-        UC4["View My sign-ups"]
+        UC4["View My sign-ups,<br/>check in and log hours"]
         UC5["Keep a profile, photo<br/>and personal documents"]
     end
 
@@ -156,6 +156,10 @@ classDiagram
     }
     class Signup {
         status : confirmed | cancelled
+        check_in_at
+        check_out_at
+        reported_minutes
+        report_method : check-in | times | duration
         attendance : unmarked | attended | no_show
         hours_credited
     }
@@ -252,8 +256,9 @@ stateDiagram-v2
 
 ## 4. Life of a sign-up
 
-*Proposed back end.* One `Signup` is one volunteer on one shift. Attendance is only marked for
-confirmed sign-ups, after the shift (ATT-2, ATT-3, ATT-5).
+*Proposed back end.* One `Signup` is one volunteer on one shift. On the day the volunteer can
+check in and out, or log their hours afterwards (ATT-12); those are *reported* hours. Attendance
+and the hours *credited* are then confirmed by the host, after the shift (ATT-2, ATT-3, ATT-5).
 
 ```mermaid
 stateDiagram-v2
@@ -264,8 +269,14 @@ stateDiagram-v2
 
     state Confirmed {
         direction LR
-        [*] --> Unmarked
-        Unmarked --> Attended : Host marks attended<br/>(hours = shift length)
+        [*] --> Booked
+        Booked --> CheckedIn : Volunteer checks in<br/>(from 1 hour before)
+        CheckedIn --> HoursReported : Volunteer checks out
+        Booked --> HoursReported : Volunteer logs hours<br/>(from–to or duration)
+        HoursReported --> HoursReported : Volunteer edits hours
+        Booked --> Unmarked : Shift ends
+        HoursReported --> Unmarked : Waiting for the host
+        Unmarked --> Attended : Host marks attended<br/>(hours = reported hours,<br/>or the shift length)
         Unmarked --> NoShow : Host marks no-show
         Attended --> NoShow : Correction
         NoShow --> Attended : Correction

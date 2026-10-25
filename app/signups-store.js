@@ -40,6 +40,13 @@
     });
   }
 
+  // Merges fields into one sign-up, for example check-in times and hours.
+  function update(id, patch) {
+    return F.store(KEY, all().map(function (s) {
+      return s.id === id ? Object.assign({}, s, patch, { updatedAt: new Date().toISOString() }) : s;
+    }));
+  }
+
   function cancel(id) {
     return F.store(KEY, all().map(function (s) {
       return s.id === id ? Object.assign({}, s, { status: "cancelled", cancelledAt: new Date().toISOString() }) : s;
@@ -61,6 +68,7 @@
   window.SevakSignups = {
     all: all,
     countsByShift: countsByShift,
+    update: update,
     forEvent: forEvent,
     forRegistration: forRegistration,
     isSignedUp: isSignedUp,

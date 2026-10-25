@@ -253,6 +253,228 @@
 
   // ---------- My sign-ups ----------
 
+  // ---------- Hours: check in, check out, or log them ----------
+  // On the day of a shift a volunteer can check in (from an hour before it
+  // starts) and check out when done; Sevak works out the hours. Or they log
+  // their hours afterwards, as from–to times or as a duration. Hours are
+  // kept on the sign-up as { minutes, from, to, method, loggedAt }.
+
+  var CHECK_IN_EARLY = 60;   // minutes before a shift starts
+
+  function pad2(n) { return String(n).padStart(2, "0"); }
+  function toMin(hm) { var p = String(hm || "").split(":").map(Number); return p[0] * 60 + (p[1] || 0); }
+  function fromMin(m) { return pad2(Math.floor(m / 60) % 24) + ":" + pad2(m % 60); }
+  function localHM(iso) { var d = new Date(iso); return pad2(d.getHours()) + ":" + pad2(d.getMinutes()); }
+  function nowHM() { return localHM(new Date().toISOString()); }
+
+  function durationLabel(min) {
+    var h = Math.floor(min / 60), m = min % 60;
+    if (h && m) return h + " h " + m + " min";
+    return h ? h + " h" : m + " min";
+  }
+
+  // future | soon (check-in not open yet) | now (can check in) | checked-in | to-log | logged
+  function hoursState(su, sh) {
+    if (su.hours && su.hours.minutes) return "logged";
+    if (su.checkInAt) return "checked-in";
+    var today = todayString();
+    if (sh.date > today) return "future";
+    if (sh.date === today) {
+      var now = toMin(nowHM());
+      if (now < toMin(sh.start) - CHECK_IN_EARLY) return "soon";
+      if (now < toMin(sh.end)) return "now";
+    }
+    return "to-log";
+  }
+
+  function saveHours(su, sh, patch, message) {
+    if (!S.update(su.id, patch)) {
+      $("mine-status").textContent = "Couldn't save in this browser. Check that site storage is allowed.";
+      return;
+    }
+    renderMine();
+    $("mine-status").textContent = message;
+    var again = document.getElementById("mine-shift-" + su.id);
+    if (again) again.focus();
+  }
+
+  function checkIn(su, sh) {
+    saveHours(su, sh, { checkInAt: new Date().toISOString() },
+      "Checked in for " + (sh.role.name || "your shift") + ". Check out when you're done.");
+  }
+
+  function checkOut(su, sh) {
+    var out = new Date();
+    var minutes = Math.max(1, Math.round((out - new Date(su.checkInAt)) / 60000));
+    saveHours(su, sh, {
+      checkOutAt: out.toISOString(),
+      hours: { minutes: minutes, from: localHM(su.checkInAt), to: localHM(out.toISOString()), method: "check-in", loggedAt: out.toISOString() }
+    }, "Checked out. " + durationLabel(minutes) + " logged for " + (sh.role.name || "your shift") + ". Thank you!");
+  }
+
+  function field(label, input) {
+    var f = el("div", "field");
+    var l = el("label", null, label);
+    l.htmlFor = input.id;
+    f.appendChild(l);
+    f.appendChild(input);
+    return f;
+  }
+
+  function input(type, id, value, attrs) {
+    var i = el("input");
+    i.type = type;
+    i.id = id;
+    if (value != null) i.value = value;
+    Object.keys(attrs || {}).forEach(function (k) { i.setAttribute(k, attrs[k]); });
+    return i;
+  }
+
+  // The "Log hours" form: from–to times, or how long.
+  function hoursForm(su, sh, li) {
+    var id = "h-" + su.id;
+    var h = su.hours || {};
+    var from = h.from || (su.checkInAt ? localHM(su.checkInAt) : sh.start);
+    var to = h.to || sh.end;
+    var length = h.minutes || Math.max(0, toMin(sh.end) - toMin(sh.start));
+
+    var form = el("form", "hours-form");
+    form.noValidate = true;
+    var mode = el("fieldset", "hours-mode");
+    mode.appendChild(el("legend", null, "How do you want to enter your hours?"));
+    [["times", "From and to"], ["duration", "How long"]].forEach(function (m) {
+      var chip = el("label", "filter-chip");
+      var r = input("radio", id + "-" + m[0], m[0], { name: id + "-mode" });
+      r.checked = (h.method === "duration") === (m[0] === "duration");
+      chip.appendChild(r);
+      chip.appendChild(el("span", null, m[1]));
+      mode.appendChild(chip);
+    });
+    form.appendChild(mode);
+
+    var times = el("div", "hours-fields hours-times");
+    var fromIn = input("time", id + "-from", from);
+    var toIn = input("time", id + "-to", to);
+    times.appendChild(field("From", fromIn));
+    times.appendChild(field("To", toIn));
+    form.appendChild(times);
+
+    var dur = el("div", "hours-fields hours-duration");
+    var hIn = input("number", id + "-hours", Math.floor(length / 60), { min: "0", max: "24", step: "1", inputmode: "numeric" });
+    var mIn = input("number", id + "-minutes", length % 60, { min: "0", max: "59", step: "5", inputmode: "numeric" });
+    dur.appendChild(field("Hours", hIn));
+    dur.appendChild(field("Minutes", mIn));
+    form.appendChild(dur);
+
+    var error = el("p", "error hours-error");
+    error.setAttribute("role", "alert");
+    form.appendChild(error);
+    var actions = el("div", "hours-actions");
+    var cancel = el("button", "btn btn-secondary btn-small", "Cancel");
+    cancel.type = "button";
+    var save = el("button", "btn btn-primary btn-small", "Save hours");
+    save.type = "submit";
+    actions.appendChild(cancel);
+    actions.appendChild(save);
+    form.appendChild(actions);
+
+    var useDuration = function () { return form.querySelector('input[value="duration"]').checked; };
+    var applyMode = function () {
+      times.hidden = useDuration();
+      dur.hidden = !useDuration();
+      error.textContent = "";
+    };
+    mode.addEventListener("change", applyMode);
+    applyMode();
+
+    cancel.addEventListener("click", function () {
+      form.remove();
+      li.querySelector(".hours-row").hidden = false;
+      var b = li.querySelector(".hours-row button");
+      if (b) b.focus();
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var minutes, record;
+      if (useDuration()) {
+        var hh = Number(hIn.value || 0), mm = Number(mIn.value || 0);
+        if (!Number.isInteger(hh) || hh < 0 || !Number.isInteger(mm) || mm < 0 || mm > 59) {
+          error.textContent = "Enter whole hours, and minutes from 0 to 59.";
+          (mm > 59 || mm < 0 ? mIn : hIn).focus();
+          return;
+        }
+        minutes = hh * 60 + mm;
+        if (!minutes) { error.textContent = "Enter how long you volunteered."; hIn.focus(); return; }
+        if (minutes > 24 * 60) { error.textContent = "That's more than 24 hours. Log each day's shift on its own."; hIn.focus(); return; }
+        record = { minutes: minutes, method: "duration" };
+      } else {
+        if (!fromIn.value || !toIn.value) { error.textContent = "Enter both times."; (fromIn.value ? toIn : fromIn).focus(); return; }
+        minutes = toMin(toIn.value) - toMin(fromIn.value);
+        if (minutes <= 0) { error.textContent = "The end time must be after the start time. For a shift past midnight, use How long."; toIn.focus(); return; }
+        record = { minutes: minutes, from: fromIn.value, to: toIn.value, method: "times" };
+      }
+      record.loggedAt = new Date().toISOString();
+      saveHours(su, sh, { hours: record }, durationLabel(minutes) + " logged for " + (sh.role.name || "your shift") + " on " + E.dayLabel(sh.date) + ".");
+    });
+    return form;
+  }
+
+  function openForm(su, sh, li) {
+    var old = document.querySelector(".hours-form");
+    if (old) {
+      old.parentNode.querySelector(".hours-row").hidden = false;
+      old.remove();
+    }
+    var form = hoursForm(su, sh, li);
+    li.querySelector(".hours-row").hidden = true;
+    li.appendChild(form);
+    var first = form.querySelector(".hours-fields:not([hidden]) input");
+    if (first) first.focus();
+  }
+
+  function actionButton(text, cls, onClick) {
+    var b = el("button", "btn " + cls, text);
+    b.type = "button";
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  // One shift on a My sign-ups card, with its hours.
+  function shiftItem(su, sh) {
+    var li = el("li", "signup-shift");
+    li.id = "mine-shift-" + su.id;
+    li.tabIndex = -1;
+    li.appendChild(el("span", "signup-shift-label", shiftLabel(sh)));
+    var state = hoursState(su, sh);
+    if (state === "future") return li;
+    var row = el("div", "hours-row hours-" + state);
+    if (state === "soon") {
+      row.appendChild(el("span", "hint", "Check-in opens at " + E.timeLabel(fromMin(Math.max(0, toMin(sh.start) - CHECK_IN_EARLY))) + "."));
+    } else if (state === "now") {
+      row.appendChild(actionButton("Check in", "btn-primary btn-small", function () { checkIn(su, sh); }));
+      row.appendChild(actionButton("Log hours", "btn-link", function () { openForm(su, sh, li); }));
+    } else if (state === "checked-in") {
+      row.appendChild(el("span", "hours-note", "Checked in at " + E.timeLabel(localHM(su.checkInAt))));
+      row.appendChild(actionButton("Check out", "btn-primary btn-small", function () { checkOut(su, sh); }));
+      row.appendChild(actionButton("Log hours instead", "btn-link", function () { openForm(su, sh, li); }));
+    } else if (state === "to-log") {
+      row.appendChild(el("span", "hours-note hours-ask", "How long did you volunteer?"));
+      row.appendChild(actionButton("Log hours", "btn-primary btn-small", function () { openForm(su, sh, li); }));
+    } else {
+      var h = su.hours;
+      var text = el("span", "hours-note hours-done");
+      text.appendChild(el("strong", null, "✓ " + durationLabel(h.minutes)));
+      text.appendChild(document.createTextNode(h.from && h.to ? " · " + E.timeLabel(h.from) + "–" + E.timeLabel(h.to) : " · logged as a duration"));
+      row.appendChild(text);
+      var edit = actionButton("Edit", "btn-link", function () { openForm(su, sh, li); });
+      edit.setAttribute("aria-label", "Edit hours for " + shiftLabel(sh));
+      row.appendChild(edit);
+    }
+    li.appendChild(row);
+    return li;
+  }
+
   function signupCard(reg, kind) {
     var ev = reg.event;
     var org = ev ? O.get(ev.organizationId) : null;
@@ -272,14 +494,20 @@
 
     var byId = {};
     if (ev) allShifts(ev).forEach(function (s) { byId[s.id] = s; });
+    var items = (kind === "cancelled" ? reg.signups : reg.confirmed)
+      .map(function (su) { return { su: su, sh: byId[su.shiftId] }; })
+      .filter(function (x) { return x.sh; })
+      .sort(function (a, b) { return (a.sh.date + a.sh.start).localeCompare(b.sh.date + b.sh.start); });
     var shiftsList = el("ul", "signup-shifts");
-    (kind === "cancelled" ? reg.signups : reg.confirmed).map(function (s) { return byId[s.shiftId]; })
-      .filter(Boolean)
-      .sort(function (a, b) { return (a.date + a.start).localeCompare(b.date + b.start); })
-      .forEach(function (s) { shiftsList.appendChild(el("li", null, shiftLabel(s))); });
+    var toLog = 0;
+    items.forEach(function (x) {
+      if (kind === "cancelled") { shiftsList.appendChild(el("li", null, shiftLabel(x.sh))); return; }
+      if (hoursState(x.su, x.sh) === "to-log") toLog++;
+      shiftsList.appendChild(shiftItem(x.su, x.sh));
+    });
     if (shiftsList.children.length) info.appendChild(shiftsList);
 
-    var manage = el("a", "signup-manage", kind === "upcoming" && ev ? "Manage or cancel" : "View sign-up");
+    var manage = el("a", "signup-manage", (kind === "upcoming" || kind === "today") && ev ? "Manage or cancel" : "View sign-up");
     manage.href = "signup.html?registration=" + encodeURIComponent(reg.id);
     info.appendChild(manage);
 
@@ -287,6 +515,8 @@
     if (kind === "cancelled") side.appendChild(E.badge("Cancelled"));
     else if (!ev) side.appendChild(E.badge("Removed"));
     else if (!E.isActive(ev)) side.appendChild(E.badge("No longer active", "inactive"));
+    else if (toLog) side.appendChild(E.badge("Hours to log", "draft"));
+    else if (kind === "today") side.appendChild(E.badge("Today", "published"));
     else if (kind === "past") side.appendChild(E.badge("Done"));
     else side.appendChild(E.badge(E.plural(reg.confirmed.length, "shift"), "published"));
     li.appendChild(info);
@@ -295,7 +525,7 @@
   }
 
   // Lists the signed-in volunteer's sign-ups (matched by email), grouped
-  // into upcoming, past and cancelled.
+  // into today, upcoming, past and cancelled, with their hours.
   function renderMine() {
     var profile = F.session.profile();
     var email = norm(profile && profile.email);
@@ -308,11 +538,23 @@
       regs[key].signups.push(s);
     });
     var today = todayString();
-    var groups = { upcoming: [], past: [], cancelled: [] };
+    var groups = { today: [], upcoming: [], past: [], cancelled: [] };
+    var logged = 0, loggedShifts = 0, toLog = 0;
     order.forEach(function (key) {
       var r = regs[key];
       r.confirmed = r.signups.filter(function (s) { return s.status !== "cancelled"; });
+      var byId = {};
+      if (r.event) allShifts(r.event).forEach(function (s) { byId[s.id] = s; });
+      r.confirmed.forEach(function (su) {
+        var sh = byId[su.shiftId];
+        if (!sh) return;
+        var state = hoursState(su, sh);
+        if (state === "logged") { logged += su.hours.minutes; loggedShifts++; }
+        if (state === "to-log") toLog++;
+      });
+      var onToday = r.confirmed.some(function (su) { return byId[su.shiftId] && byId[su.shiftId].date === today; });
       if (!r.confirmed.length) groups.cancelled.push(r);
+      else if (onToday) groups.today.push(r);
       else if (r.event && (r.event.endDate || r.event.startDate || "") < today) groups.past.push(r);
       else groups.upcoming.push(r);
     });
@@ -320,9 +562,24 @@
     groups.upcoming.sort(function (a, b) { return start(a).localeCompare(start(b)); });
     groups.past.sort(function (a, b) { return start(b).localeCompare(start(a)); });
 
+    // Your hours so far.
+    var summary = $("hours-summary");
+    summary.innerHTML = "";
+    summary.hidden = !logged && !toLog;
+    if (!summary.hidden) {
+      var total = el("p", "hours-total");
+      total.appendChild(el("span", "hours-total-label", "Hours volunteered"));
+      total.appendChild(el("strong", "hours-total-value", logged ? durationLabel(logged) : "None yet"));
+      summary.appendChild(total);
+      var parts = [];
+      if (loggedShifts) parts.push(E.plural(loggedShifts, "shift") + " logged");
+      if (toLog) parts.push(E.plural(toLog, "shift") + " waiting for hours");
+      summary.appendChild(el("p", "hours-sub", parts.join(" · ")));
+    }
+
     var box = $("mine-groups");
     box.innerHTML = "";
-    [["upcoming", "Upcoming"], ["past", "Past"], ["cancelled", "Cancelled"]].forEach(function (g) {
+    [["today", "Today"], ["upcoming", "Upcoming"], ["past", "Past"], ["cancelled", "Cancelled"]].forEach(function (g) {
       if (!groups[g[0]].length) return;
       box.appendChild(el("h2", "list-heading mine-heading", g[1]));
       var ul = el("ul", "event-list");
