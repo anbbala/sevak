@@ -10,6 +10,7 @@
   <style>
     :root {
       --bg: #faf8f4;
+      --page-bg: #f87171;
       --text: #17201e;
       --muted: #56625e;
       --border: #e5e0d6;
@@ -18,6 +19,7 @@
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
         --bg: #0e1412;
+        --page-bg: #7f1d1d;
         --text: #e8eeec;
         --muted: #9fb0ab;
         --border: #26322f;
@@ -26,6 +28,7 @@
     }
     :root[data-theme="dark"] {
       --bg: #0e1412;
+      --page-bg: #7f1d1d;
       --text: #e8eeec;
       --muted: #9fb0ab;
       --border: #26322f;
@@ -39,7 +42,7 @@
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       line-height: 1.6;
       color: var(--text);
-      background: var(--bg);
+      background: var(--page-bg);
       -webkit-font-smoothing: antialiased;
     }
 
