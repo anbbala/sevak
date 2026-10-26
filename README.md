@@ -41,5 +41,5 @@ they are (no build step). One-time setup:
 
 To redeploy without a new commit, open **Actions → Deploy to GitHub Pages → Run workflow**.
 
-The site is published at `https://anbbala.github.io/vms-app/`. If the repository is renamed, this
+The site is published at <https://anbbala.github.io/sevak/>. If the repository is renamed, this
 address changes to match the new name, and the old address does not redirect.
