@@ -244,6 +244,7 @@
       lastName: v("lastName"),
       email: v("email"),
       phone: F.phoneValue($("phone")),
+      gender: $("gender").value,
       roles: { volunteer: isVolunteer(), host: window.SevakOrgs.myTeams().length > 0 },
       photo: photo.get(),
       aboutMe: v("aboutMe"),
@@ -275,6 +276,7 @@
     set("lastName", data.lastName);
     set("email", data.email);
     F.setPhone($("phone"), data.phone);
+    set("gender", data.gender);
     photo.set(data.photo || "");
     ABOUT_FIELDS.forEach(function (id) { set(id, data[id]); });
     (data.services || []).forEach(addService);
