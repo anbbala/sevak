@@ -12,6 +12,7 @@
   <script src="orgs-store.js" defer></script>
   <script src="events-store.js" defer></script>
   <script src="members-store.js" defer></script>
+  <script src="demo-data.js" defer></script>
   <script src="nav.js" defer></script>
   <script src="join.js" defer></script>
 </head>
@@ -39,6 +40,12 @@
     <div class="narrow">
       <h1 class="page-title" id="join-title">Join Sevak</h1>
       <p class="page-intro" id="join-intro">To volunteer on Sevak you need an invitation from an organization, or to ask one to have you. Choose how you're joining.</p>
+
+      <div class="section notice demo-offer" id="demo-offer" hidden>
+        <p><strong>This browser has no organizations yet.</strong> The prototype keeps everything in the browser it was entered in, so a new or private window starts empty.</p>
+        <button type="button" class="btn btn-secondary btn-small" id="load-demo">Load the demo organizations</button>
+      </div>
+      <p class="section notice" id="demo-loaded" tabindex="-1" hidden>Loaded two demo organizations: <strong>Riverside Community Arts</strong> (invite code RIVER7) and <strong>Eastside Food Pantry</strong> (invite code PANTRY).</p>
 
       <form id="join-form" novalidate>
         <fieldset class="section join-ways">

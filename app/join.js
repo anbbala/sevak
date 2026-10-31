@@ -178,6 +178,23 @@
     location.href = "profile.html?join=1";
   });
 
+  // ---------- An empty browser (a new or private window) ----------
+
+  function hasOrgs() {
+    return O.all().some(function (o) { return o.name; });
+  }
+
+  $("demo-offer").hidden = hasOrgs() || !window.SevakDemo;
+  $("load-demo").addEventListener("click", function () {
+    window.SevakDemo.load();
+    window.SevakNav.render();
+    $("demo-offer").hidden = true;
+    $("demo-loaded").hidden = false;
+    $("demo-loaded").focus();
+    renderOrgs();
+    if ($("code").value.trim()) checkCode();
+  });
+
   // ---------- Start ----------
 
   if (signedIn) {
