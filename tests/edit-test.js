@@ -1,0 +1,66 @@
+// Editing an event: from the Events list, from the volunteer view (team
+// only), and the way in when you're not on the team.
+const { chromium } = require('playwright');
+const B = 'http://localhost:8765/app/'; const SP = process.argv[2];
+(async () => {
+  const b = await chromium.launch(); const errs = []; let n = 0; const check = (c, m) => c ? n++ : errs.push(m);
+  const p = await b.newPage({ viewport: { width: 1000, height: 900 } });
+  p.on('pageerror', e => errs.push('pageerror ' + e.message)); p.on('dialog', d => d.accept());
+
+  await p.goto(B + 'signup.html'); await p.evaluate(() => localStorage.clear());
+  await p.evaluate(() => localStorage.setItem('sevak.profile.v1', JSON.stringify({ firstName: 'Bala', lastName: 'A', email: 'bala@example.com', roles: { volunteer: true } })));
+  await p.goto(B + 'dashboard.html?demo=1');   // signed in: Admin of Riverside
+
+  // From Manage → Events
+  await p.goto(B + 'events.html');
+  await p.click('#events a:has-text("Riverside Park Clean-up")');
+  await p.waitForURL(/event\.html\?id=demo-ev-park/);
+  check(await p.isVisible('#event-form') && await p.isEditable('#title'), 'events list opens the editor');
+  await p.fill('#title', 'Riverside Park Clean-up (edited)');
+  await p.click('#publish');
+  check(/saved|updated|published/i.test(await p.textContent('#status')), 'saved: ' + await p.textContent('#status'));
+  await p.goto(B + 'events.html');
+  check((await p.textContent('#events')).includes('Riverside Park Clean-up (edited)'), 'edit shows in the list');
+
+  // From the volunteer view: an Edit link for the team
+  await p.goto(B + 'signup.html?event=demo-ev-park');
+  check(await p.isVisible('#team-edit-hint') && (await p.textContent('#team-edit-hint')).includes("You're an Admin here"), 'admin: edit hint on the volunteer view');
+  await p.screenshot({ path: SP + '/edit-hint.png', clip: { x: 0, y: 0, width: 1000, height: 420 } });
+  await p.click('#team-edit-hint a');
+  await p.waitForURL(/event\.html\?id=demo-ev-park/);
+  check(await p.isVisible('#event-form'), 'hint link opens the editor');
+
+  // Not on the pantry's team: no hint, and the way in explains
+  await p.goto(B + 'signup.html?event=demo-ev-restock');
+  check(await p.isHidden('#team-edit-hint'), 'not on the team: no edit hint');
+  await p.goto(B + 'event.html?id=demo-ev-restock');
+  check((await p.textContent('#way-in-title')) === "You're not on this team" && (await p.textContent('.way-in .page-intro')).includes('Only the Admins and Coordinators of Eastside Food Pantry (demo)'), 'way in says who can edit');
+  await p.screenshot({ path: SP + '/edit-way-in.png', fullPage: true });
+  await p.click('.way-in-demo button');
+  await p.waitForSelector('#event-form:not([hidden])');
+  check(await p.isEditable('#title') && (await p.inputValue('#title')) === 'Pantry Restock Night', 'demo: add me as Admin, then edit');
+  const team = await p.evaluate(() => JSON.parse(localStorage.getItem('sevak.organizations.v1')).find(o => o.id === 'demo-org-2').team);
+  check(team.length === 1 && team[0].role === 'admin' && team[0].email === 'bala@example.com', 'added to the pantry team once');
+
+  // A real (non-demo) organization: no demo button
+  await p.evaluate(() => { const l = JSON.parse(localStorage.getItem('sevak.organizations.v1')); l.push({ id: 'org-x', name: 'Other Org', team: [] }); localStorage.setItem('sevak.organizations.v1', JSON.stringify(l));
+    const ev = JSON.parse(localStorage.getItem('sevak.events.v1')); ev.push({ id: 'ev-x', organizationId: 'org-x', title: 'X', status: 'published', startDate: '2030-01-01', endDate: '2030-01-01', roles: [] }); localStorage.setItem('sevak.events.v1', JSON.stringify(ev)); });
+  await p.goto(B + 'event.html?id=ev-x');
+  check(await p.isVisible('.way-in') && !(await p.$('.way-in-demo')), 'real org: no demo shortcut');
+
+  // Coordinator sees the hint too; someone off the team doesn't (the pantry:
+  // Riverside's creator is always its Admin)
+  const setPantryTeam = t => p.evaluate(t => { const l = JSON.parse(localStorage.getItem('sevak.organizations.v1')); l.find(o => o.id === 'demo-org-2').team = t; localStorage.setItem('sevak.organizations.v1', JSON.stringify(l)); }, t);
+  await setPantryTeam([{ name: 'Bala A', email: 'bala@example.com', role: 'coordinator' }]);
+  await p.goto(B + 'signup.html?event=demo-ev-restock');
+  check((await p.textContent('#team-edit-hint')).includes("You're a Coordinator here"), 'coordinator hint');
+  await setPantryTeam([]);
+  await p.goto(B + 'signup.html?event=demo-ev-restock');
+  check(await p.isHidden('#team-edit-hint'), 'off the team: no hint');
+
+  // Phone fit
+  await p.setViewportSize({ width: 360, height: 800 });
+  await p.goto(B + 'signup.html?event=demo-ev-park');
+  check(await p.isVisible('#team-edit-hint') && !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth)), 'phone: hint fits');
+  console.log(n + ' ok'); console.log(errs.length ? 'FAIL\n' + errs.join('\n') : 'ALL PASS'); await b.close();
+})();

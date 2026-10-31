@@ -363,8 +363,25 @@
     h1.id = "way-in-title";
     box.appendChild(h1);
     box.appendChild(el("p", "page-intro", org
-      ? "You're not on the team of " + (org.name || "this organization") + ", so you can't manage its events."
+      ? "Only the Admins and Coordinators of " + (org.name || "this organization") + " can edit its events, and you're not on its team. Volunteering with an organization doesn't include editing its events."
       : "You're not on an organization's team yet. There are two ways to start."));
+    // The demo organizations: let people try the Manage pages straight away.
+    var me = F.session.profile() || {};
+    if (org && /^demo-/.test(org.id) && me.email) {
+      var demo = el("p", "way-in-demo");
+      demo.appendChild(document.createTextNode("This is a demo organization. "));
+      var add = el("button", "btn btn-primary btn-small", "Add me to its team as an Admin");
+      add.type = "button";
+      add.addEventListener("click", function () {
+        var fresh = O.get(org.id) || org;
+        var team = (fresh.team || []).filter(function (m) { return String(m.email).toLowerCase() !== String(me.email).toLowerCase(); });
+        team.push({ name: [me.firstName, me.lastName].filter(Boolean).join(" ") || me.email, email: me.email, role: "admin" });
+        O.save(Object.assign({}, fresh, { team: team }));
+        location.reload();
+      });
+      demo.appendChild(add);
+      box.appendChild(demo);
+    }
 
     var doors = el("div", "way-in-doors");
     var create = el("div", "section way-in-door");
@@ -380,7 +397,7 @@
     var p = el("p", "section-help");
     p.appendChild(document.createTextNode("Ask one of its Admins to add "));
     p.appendChild(el("strong", null, (F.session.profile() || {}).email || "your email"));
-    p.appendChild(document.createTextNode(" on their Team tab. Manage then appears at the top of the page."));
+    p.appendChild(document.createTextNode(" on their Team tab. The Manage links then appear (under ⋯ on the volunteer pages)."));
     join.appendChild(p);
     doors.appendChild(join);
     box.appendChild(doors);

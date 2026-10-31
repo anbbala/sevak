@@ -725,6 +725,19 @@
     document.title = (event.title || "Event") + " · Sevak";
     $("event-facts").textContent = [E.rangeLabel(event.startDate, event.endDate), shortPlace(event)].filter(Boolean).join(" · ");
 
+    // This is the page volunteers see. If you help run the organization,
+    // say where to edit the event (drafts already say so in their notice).
+    var role = F.session.signedIn() && org ? O.roleFor(org) : null;
+    var hint = $("team-edit-hint");
+    hint.hidden = !role || event.status !== "published";
+    hint.innerHTML = "";
+    if (!hint.hidden) {
+      hint.appendChild(document.createTextNode("This is what volunteers see. You're " + (role === "admin" ? "an Admin" : "a Coordinator") + " here: "));
+      var edit = el("a", null, "Edit this event");
+      edit.href = "event.html?id=" + encodeURIComponent(event.id);
+      hint.appendChild(edit);
+    }
+
     // Everything else is folded under "About this event".
     var about = $("about-body");
     about.innerHTML = "";

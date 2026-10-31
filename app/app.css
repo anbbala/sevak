@@ -825,6 +825,9 @@ input[type="time"], input[type="number"] {
 .opp-join { margin: 2px 0 0; font-size: 0.8rem; font-weight: 700; color: var(--accent); }
 .opp-join.is-pending { color: var(--muted); }
 #discover-empty p { margin: 0 0 10px; }
+.team-edit-hint { margin: 8px 0 0; padding: 8px 12px; border-radius: 8px; background: var(--primary-soft); color: var(--text); font-size: 0.92rem; }
+.team-edit-hint a { font-weight: 600; }
+.way-in-demo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 20px; }
 .member-hint { margin: 6px 0 0; color: var(--accent); font-weight: 600; }
 .join-gate .section-title { float: none; margin-bottom: 6px; }
 .join-gate p { margin: 0 0 10px; }

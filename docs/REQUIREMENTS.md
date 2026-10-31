@@ -194,7 +194,7 @@ allows, or right after launch. **Later** means post-MVP.
 - **Event page:** shows the host and its verification, dates, place, time zone (when it differs from the visitor's) and description. Shifts are grouped by day with spots left, and full or past shifts can't be picked.
 - **Signing up:** a volunteer ticks several shifts, gets an overlap warning when times clash, and fills in their details (pre-filled from their saved profile, with the phone in international form). Capacity is re-checked on submit. The same email can't take the same shift twice.
 - **Confirmation:** lists the shifts and offers **Add to calendar** (.ics in the event's time zone) and a **Manage my sign-up** link, where shifts can be cancelled and the spots open up again.
-- **Drafts and the editor:** drafts show a host preview with sign-up closed. The event editor links to the volunteer page.
+- **Drafts and the editor:** drafts show a host preview with sign-up closed. The event editor links to the volunteer page, and the volunteer page links back: Admins and Coordinators of the organization see *"This is what volunteers see. You're an Admin here: Edit this event"*. Events are edited at **Manage → Events → the event**. Someone not on the team who opens the editor is told only the organization's Admins and Coordinators can edit its events (volunteering doesn't include editing); for the demo organizations there's a one-click *Add me to its team as an Admin*.
 
 Sign-ups appear on the host dashboard right away. | Must |
 | SGN-11 | Waitlists for full shifts, and a host-approval sign-up mode. In the MVP every sign-up is **confirmed automatically** (decision Q3). | Later |
