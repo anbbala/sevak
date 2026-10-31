@@ -23,6 +23,7 @@
   var O = window.SevakOrgs;
   var SEEN_KEY = "sevak.seenTeams.v1";
   var SEEN_MEMBERSHIPS_KEY = "sevak.seenMemberships.v1";
+  var SEEN_VERIFICATION_KEY = "sevak.seenVerification.v1";
   var M = window.SevakMembers;
   var BANNER_KEY = "sevak.bannerDismissed.v1";
   var MANAGE = { "events.html": "events", "event.html": "events", "main-event.html": "events", "volunteers.html": "volunteers", "dashboard.html": "dashboard", "organization.html": "organization" };
@@ -330,6 +331,42 @@
     if (banner) banner.insertAdjacentElement("afterend", box);
   }
 
+  // When Sevak decides on a verification request, the organization's team
+  // sees it once (in the live app they also get the email).
+  function announceVerification() {
+    if (!F.session.signedIn() || page() === "review.html") return;
+    var seen = F.load(SEEN_VERIFICATION_KEY);
+    seen = seen && typeof seen === "object" ? seen : {};
+    var news = O.myTeams().map(function (t) { return t.org; }).filter(function (o) {
+      var v = o.verification;
+      return v && v.decidedAt && seen[o.id] !== v.decidedAt;
+    });
+    if (!news.length) return;
+    news.forEach(function (o) { seen[o.id] = o.verification.decidedAt; });
+    F.store(SEEN_VERIFICATION_KEY, seen);
+    var box = el("div", "section notice team-notice");
+    box.setAttribute("role", "status");
+    news.forEach(function (o) {
+      var p = el("p");
+      if (o.verificationStatus === "verified") {
+        p.appendChild(document.createTextNode("Good news: Sevak verified "));
+        p.appendChild(el("strong", null, o.name));
+        p.appendChild(document.createTextNode(". Its public events are now listed. "));
+        p.appendChild(link("events.html", "See your events", false));
+      } else {
+        p.appendChild(document.createTextNode("Sevak couldn't verify " + o.name + (o.verification.reason ? ": " + o.verification.reason : ".") + " "));
+        p.appendChild(link("organization.html", "Update and ask again", false));
+      }
+      box.appendChild(p);
+    });
+    var close = el("button", "btn btn-link", "Dismiss");
+    close.type = "button";
+    close.addEventListener("click", function () { box.remove(); });
+    box.appendChild(close);
+    var banner = document.querySelector("main .banner");
+    if (banner) banner.insertAdjacentElement("afterend", box);
+  }
+
   // ---------- Access to the Manage pages ----------
 
   // opts.org: the organization the page is about (for one event), if any.
@@ -417,6 +454,7 @@
   setupBanner();
   announceTeams();
   announceMemberships();
+  announceVerification();
   if (M) render();   // invitations accepted just now change the counts
 
   window.SevakNav = { render: render, guard: guard };

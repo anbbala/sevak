@@ -13,6 +13,7 @@ GitHub draws these diagrams automatically. To edit one, change its text and the 
 2. [Data model](#2-data-model) (class diagram)
 3. [Life of an event](#3-life-of-an-event) (state diagram)
 4. [Life of a sign-up](#4-life-of-a-sign-up) (state diagram)
+   - [Verifying an organization](#4a-verifying-an-organization) (state diagram)
 5. [A volunteer signs up](#5-a-volunteer-signs-up) (sequence diagram)
 6. [Signing in by email](#6-signing-in-by-email) (sequence diagram)
 7. [Joining an organization's team](#7-joining-an-organizations-team) (activity diagram)
@@ -292,6 +293,26 @@ stateDiagram-v2
         NoShow --> Attended : Correction
         Attended --> CertificateIssued : Issue certificates
     }
+```
+
+---
+
+## 4a. Verifying an organization
+
+*Today (prototype) and planned.* An Admin asks; Sevak's staff decide (ORG-3, ADM-1). In the
+prototype the review queue is `app/review.html` and emails go to the outbox.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Unverified : organization saved
+    Unverified --> Pending : Admin requests<br/>(registration number or website)
+    Pending --> Unverified : Admin withdraws
+    Pending --> Verified : Sevak verifies
+    Pending --> Rejected : Sevak rejects, with a reason
+    Rejected --> Pending : Admin asks again
+    Verified --> [*]
+    note right of Verified : Verified badge.<br/>Public events are listed.
+    note right of Unverified : Public events stay private,<br/>reachable by link.
 ```
 
 ---

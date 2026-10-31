@@ -276,6 +276,7 @@
       '<div class="badges" id="org-context-badges"></div>' +
       '<div class="org-links">' +
       '<a id="org-context-website" target="_blank" rel="noopener noreferrer" hidden>Website ↗</a>' +
+      '<a id="org-context-verify" href="organization.html" hidden>Get verified</a>' +
       '<a href="organization.html">Edit profile</a>' +
       '</div>' +
       '</div>';
@@ -289,11 +290,14 @@
     $("org-context-details").hidden = !$("org-context-details").textContent;
 
     var verified = org.verificationStatus === "verified";
+    var pending = org.verificationStatus === "pending";
     var badge = document.createElement("span");
     badge.className = "badge " + (verified ? "badge-published" : "badge-draft");
-    badge.textContent = verified ? "Verified" : "Not verified yet";
+    badge.textContent = verified ? "Verified" : pending ? "Verification pending" : "Not verified yet";
     if (!verified) badge.title = "Public events stay private until your organization is verified.";
     $("org-context-badges").appendChild(badge);
+    // Admins: a way to ask for verification (on the Organization page).
+    $("org-context-verify").hidden = verified || pending || (F.session.signedIn() && !isAdmin(org));
 
     var site = $("org-context-website");
     site.hidden = !org.website;

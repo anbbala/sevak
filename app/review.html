@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verification requests · Sevak</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230f766e'/%3E%3Cg fill='%23fff' transform='translate(12 12) scale(.78) translate(-12 -12.4)'%3E%3Crect x='8' y='9' width='8' height='8' transform='rotate(45 12 13)'/%3E%3Ccircle cx='9.17' cy='10.17' r='4'/%3E%3Ccircle cx='14.83' cy='10.17' r='4'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="app.css">
+  <script src="forms.js" defer></script>
+  <script src="orgs-store.js" defer></script>
+  <script src="events-store.js" defer></script>
+  <script src="members-store.js" defer></script>
+  <script src="verify-store.js" defer></script>
+  <script src="nav.js" defer></script>
+  <script src="review.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="brand" href="../">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect width="24" height="24" rx="6" fill="#0f766e"/>
+          <g fill="#fff" transform="translate(12 12) scale(.78) translate(-12 -12.4)">
+            <rect x="8" y="9" width="8" height="8" transform="rotate(45 12 13)"/>
+            <circle cx="9.17" cy="10.17" r="4"/>
+            <circle cx="14.83" cy="10.17" r="4"/>
+          </g>
+        </svg>
+        <span class="brand-text"><span class="brand-name">Sevak</span><span class="brand-subtitle">Volunteer Management System</span><span class="brand-tagline">A Service of The ANB Group</span></span>
+      </a>
+      <nav class="app-nav" id="app-nav" aria-label="Main"></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="banner"><strong>Prototype.</strong> In the live app only Sevak's staff see this page. Here anyone can, so you can try both sides. Emails go to the <a href="outbox.html">outbox</a>.</p>
+
+    <h1 class="page-title">Verification requests</h1>
+    <p class="page-intro">Check each organization is who it says it is: look up the registration number on the charity register, open the website, and see whether the contact email is on the website's domain. Verified organizations can list public events.</p>
+
+    <section aria-labelledby="queue-title">
+      <h2 class="section-title" id="queue-title" tabindex="-1">Waiting for review</h2>
+      <ul class="review-list" id="queue-list"></ul>
+      <p class="empty" id="queue-empty" hidden>No requests waiting. An organization's Admin asks for verification on its Organization page.</p>
+    </section>
+
+    <section aria-labelledby="decided-title" id="decided-section" style="margin-top:32px" hidden>
+      <h2 class="section-title" id="decided-title">Decided</h2>
+      <ul class="review-list" id="decided-list"></ul>
+    </section>
+    <p class="status" id="review-status" role="status" aria-live="polite"></p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© 2026 The ANB Group. All rights reserved.</span>
+      <span><a href="../terms.html">Terms of Service</a> · <a href="../privacy.html">Privacy Policy</a></span>
+    </div>
+  </footer>
+</body>
+</html>

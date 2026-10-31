@@ -463,7 +463,9 @@
       return;
     }
     var existingOrg = orgId ? O.get(orgId) : null;
-    var data = readForm();
+    // Keep what this form doesn't hold: the invite code, approving
+    // automatically, the verification request and so on.
+    var data = Object.assign({}, existingOrg || {}, readForm());
     data.id = orgId || undefined;
     data.createdAt = existingOrg && existingOrg.createdAt ? existingOrg.createdAt : data.updatedAt;
     if (existingOrg && existingOrg.verificationStatus) data.verificationStatus = existingOrg.verificationStatus;
@@ -486,6 +488,7 @@
     window.SevakNav.render();
     $("status").textContent = (wasNew ? "Organization created and saved on this device." : "Organization profile saved on this device.") +
       " You can now create events on the Events tab.";
+    renderVerify();
   });
 
   $("delete-org").addEventListener("click", function () {
@@ -524,6 +527,163 @@
     O.renderSwitcher($("org-switcher"), { creating: creating, confirmLeave: confirmLeave });
   }
 
+  // ---------- Verification (ORG-3) ----------
+  // An Admin asks Sevak to verify the organization, with evidence from the
+  // saved profile; Sevak's staff decide (review.html in the prototype).
+
+  var V = window.SevakVerify;
+  var verifyOpen = false;
+  var verifyNote = "";   // kept while the profile is saved or redrawn
+
+  function vEl(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  function day(iso) {
+    try { return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }); } catch (e) { return ""; }
+  }
+
+  function tabLink(key, text) {
+    var a = vEl("a", null, text);
+    a.href = "#" + key;
+    return a;
+  }
+
+  // The details a request sends, as a short list.
+  function evidenceList(ev) {
+    var ul = vEl("ul", "verify-evidence");
+    var item = function (label, value, missingTab) {
+      var li = vEl("li");
+      li.appendChild(vEl("span", "verify-label", label));
+      if (value) li.appendChild(vEl("span", null, value));
+      else {
+        li.appendChild(vEl("span", "hint", "None added · "));
+        li.appendChild(tabLink(missingTab, "add it"));
+      }
+      ul.appendChild(li);
+    };
+    item("Registration number", ev.registrationNumber ? ev.registrationNumber + " (never shown publicly)" : "", "status");
+    item("Website", ev.website.replace(/^https?:\/\//, ""), "about");
+    item("Contact email", ev.contactEmail ? ev.contactEmail + (ev.emailMatchesWebsite ? " · on your website's domain ✓" : ev.website ? " · not on your website's domain" : "") : "", "contact");
+    return ul;
+  }
+
+  function button(text, cls, onClick) {
+    var b = vEl("button", "btn " + cls, text);
+    b.type = "button";
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function renderVerify(message) {
+    var box = $("verify-box");
+    var org = orgId ? O.get(orgId) : null;
+    box.hidden = !org || !V;
+    if (box.hidden) return;
+    var st = V.status(org);
+    var v = org.verification || {};
+    var canAct = !F.session.signedIn() || O.isAdmin(org);
+    var badge = $("verify-badge");
+    badge.className = "badge " + (st === "verified" ? "badge-published" : st === "rejected" ? "badge-danger" : "badge-draft");
+    badge.textContent = { verified: "Verified", pending: "Pending review", rejected: "Not approved", unverified: "Not verified yet" }[st];
+    var text = $("verify-text");
+    var body = $("verify-body");
+    body.innerHTML = "";
+    $("verify-status").textContent = message || "";
+
+    if (st === "verified") {
+      text.textContent = (v.decidedAt ? "Sevak verified " + (org.name || "this organization") + " on " + day(v.decidedAt) + ". " : "") +
+        "Volunteers see the Verified badge, and your public events are listed for them to find.";
+      return;
+    }
+    if (st === "pending") {
+      text.textContent = "You asked on " + day(v.requestedAt) + (v.requestedByName ? " (" + v.requestedByName + ")" : "") +
+        ". Sevak usually replies within two working days; you'll get an email. Until then, public events stay private.";
+      if (v.evidence) body.appendChild(evidenceList(v.evidence));
+      if (v.note) body.appendChild(vEl("p", "verify-note", "Your note: “" + v.note + "”"));
+      var proto = vEl("p", "hint verify-proto");
+      proto.appendChild(document.createTextNode("Prototype: there are no Sevak staff here, so you can "));
+      var r = vEl("a", null, "review the request yourself");
+      r.href = "review.html";
+      proto.appendChild(r);
+      proto.appendChild(document.createTextNode("."));
+      body.appendChild(proto);
+      if (canAct) {
+        var row = vEl("div", "fill-row");
+        row.appendChild(button("Withdraw request", "btn-secondary btn-small", function () {
+          if (!window.confirm("Withdraw your verification request?")) return;
+          V.withdraw(orgId);
+          verifyOpen = false;
+          renderVerify("Request withdrawn.");
+          $("verify-title").focus();
+        }));
+        body.appendChild(row);
+      }
+      return;
+    }
+
+    // Not verified yet, or not approved
+    text.textContent = st === "rejected"
+      ? "Sevak couldn't verify " + (org.name || "this organization") + " on " + day(v.decidedAt) + (v.reason ? ": " + v.reason : ".") + " Update your profile and ask again."
+      : "Only verified organizations list public events; until then they stay private, though you can share their links. Ask Sevak to check who you are.";
+    if (!canAct) {
+      body.appendChild(vEl("p", "hint", "Only Admins can ask for verification."));
+      return;
+    }
+    if (!verifyOpen) {
+      body.appendChild(button(st === "rejected" ? "Ask again" : "Request verification", "btn-primary btn-small", function () {
+        verifyOpen = true;
+        renderVerify();
+        var first = $("verify-body").querySelector("textarea, button");
+        if (first) first.focus();
+      }));
+      return;
+    }
+    var check = V.canRequest(org);
+    body.appendChild(vEl("p", null, "We'll send these details from your saved profile:"));
+    body.appendChild(evidenceList(V.evidence(org)));
+    if (!check.ok) {
+      body.appendChild(vEl("p", "notice notice-warn", check.reason));
+      body.appendChild(button("Cancel", "btn-secondary btn-small", function () { verifyOpen = false; renderVerify(); }));
+      return;
+    }
+    var field = vEl("div", "field");
+    var label = vEl("label", null, "Anything else that helps? ");
+    label.htmlFor = "verify-note";
+    label.appendChild(vEl("span", "optional", "(optional)"));
+    var note = vEl("textarea");
+    note.id = "verify-note";
+    note.maxLength = 500;
+    note.rows = 3;
+    note.placeholder = "For example a link to your entry on the charity register";
+    note.value = verifyNote;
+    note.addEventListener("input", function () { verifyNote = note.value; });
+    field.appendChild(label);
+    field.appendChild(note);
+    body.appendChild(field);
+    var actions = vEl("div", "fill-row");
+    actions.appendChild(button("Send request", "btn-primary btn-small", function () {
+      if (dirty) {
+        $("verify-status").textContent = "You have unsaved changes. Save the profile first, so Sevak gets the latest details.";
+        return;
+      }
+      if (!V.request(orgId, note.value)) {
+        $("verify-status").textContent = "Couldn't send the request. Check the details above.";
+        return;
+      }
+      verifyOpen = false;
+      verifyNote = "";
+      renderVerify("Request sent. Sevak will email you when it's decided. (See the outbox.)");
+      window.SevakNav.render();
+      $("verify-title").focus();
+    }));
+    actions.appendChild(button("Cancel", "btn-secondary btn-small", function () { verifyOpen = false; verifyNote = ""; renderVerify(); }));
+    body.appendChild(actions);
+  }
+
   // ---------- Start ----------
 
   F.fillCountrySelect($("country"));
@@ -556,6 +716,8 @@
     });
     $("readonly-note").hidden = false;
   }
+  $("verify-title").tabIndex = -1;
+  renderVerify();
   showTab(location.hash.replace("#", ""), { updateUrl: false });
   window.addEventListener("hashchange", function () { showTab(location.hash.replace("#", ""), { updateUrl: false }); });
 })();

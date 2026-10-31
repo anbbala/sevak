@@ -282,7 +282,12 @@
 
   function applyVisibility() {
     var verified = org && org.verificationStatus === "verified";
+    var pending = org && org.verificationStatus === "pending";
     $("unverified-note").hidden = visibility() !== "public" || verified;
+    $("unverified-text").textContent = pending
+      ? "Your organization's verification is waiting for Sevak's review, so this event stays private until then. You can still share its link."
+      : "Your organization isn't verified yet, so this event will stay private until it is. You can still share its link.";
+    $("unverified-link").textContent = pending ? "See the request" : "Get verified";
   }
   form.querySelectorAll('input[name="visibility"]').forEach(function (r) { r.addEventListener("change", applyVisibility); });
 
