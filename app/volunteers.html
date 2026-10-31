@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Volunteers · Sevak</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230f766e'/%3E%3Cg fill='%23fff' transform='translate(12 12) scale(.78) translate(-12 -12.4)'%3E%3Crect x='8' y='9' width='8' height='8' transform='rotate(45 12 13)'/%3E%3Ccircle cx='9.17' cy='10.17' r='4'/%3E%3Ccircle cx='14.83' cy='10.17' r='4'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="app.css">
+  <script src="countries.js" defer></script>
+  <script src="forms.js" defer></script>
+  <script src="orgs-store.js" defer></script>
+  <script src="events-store.js" defer></script>
+  <script src="members-store.js" defer></script>
+  <script src="nav.js" defer></script>
+  <script src="volunteers.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="brand" href="../">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect width="24" height="24" rx="6" fill="#0f766e"/>
+          <g fill="#fff" transform="translate(12 12) scale(.78) translate(-12 -12.4)">
+            <rect x="8" y="9" width="8" height="8" transform="rotate(45 12 13)"/>
+            <circle cx="9.17" cy="10.17" r="4"/>
+            <circle cx="14.83" cy="10.17" r="4"/>
+          </g>
+        </svg>
+        <span class="brand-text"><span class="brand-name">Sevak</span><span class="brand-subtitle">Volunteer Management System</span><span class="brand-tagline">A Service of The ANB Group</span></span>
+      </a>
+      <nav class="app-nav" id="app-nav" aria-label="Main"></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="banner"><strong>Prototype.</strong> Everything you enter stays in this browser.</p>
+
+    <div id="org-switcher"></div>
+    <section class="org-context" id="org-context" aria-label="Organization" hidden></section>
+
+    <h1 class="page-title">Volunteers</h1>
+    <p class="page-intro">People join as volunteers by invitation, or by asking to. Approve requests here, invite people, and see who's on board.</p>
+    <p class="status" id="vol-status" role="status" aria-live="polite"></p>
+
+    <section class="section" aria-labelledby="requests-title">
+      <h2 class="section-title" id="requests-title">Requests to join</h2>
+      <ul class="person-list" id="request-list"></ul>
+      <p class="empty" id="requests-empty">No requests waiting.</p>
+      <label class="check-row" id="auto-row"><input type="checkbox" id="auto-approve"> <span><strong>Approve requests automatically</strong><br><span class="hint">Anyone who asks becomes a volunteer straight away.</span></span></label>
+      <p class="hint" id="auto-hint" hidden></p>
+    </section>
+
+    <section class="section" aria-labelledby="invite-title">
+      <h2 class="section-title" id="invite-title">Invite volunteers</h2>
+      <p class="section-help">People who join with your link or an emailed invitation don't need approving.</p>
+      <div class="field">
+        <label for="invite-link">Invite link</label>
+        <div class="copy-row">
+          <input id="invite-link" type="text" readonly>
+          <button type="button" class="btn btn-secondary btn-small" id="copy-link">Copy</button>
+        </div>
+        <p class="hint">Code <strong id="invite-code"></strong> · <button type="button" class="btn-link" id="reset-link">Make a new link</button> (the old one stops working)</p>
+      </div>
+      <div class="field" style="margin-top:16px">
+        <label for="invite-emails">Invite by email</label>
+        <textarea id="invite-emails" rows="3" placeholder="One or more emails, separated by commas or new lines"></textarea>
+        <p class="error" id="invite-emails-error"></p>
+      </div>
+      <div class="fill-row" style="margin-top:10px">
+        <button type="button" class="btn btn-primary btn-small" id="send-invites">Send invitations</button>
+        <a href="outbox.html" class="hint">See sent emails (prototype outbox)</a>
+      </div>
+      <h3 class="subhead" id="invited-title" hidden>Invited, not joined yet</h3>
+      <ul class="person-list" id="invited-list"></ul>
+    </section>
+
+    <section class="section" aria-labelledby="members-title">
+      <h2 class="section-title" id="members-title">Volunteers</h2>
+      <ul class="person-list" id="member-list"></ul>
+      <p class="empty" id="members-empty">No volunteers yet.</p>
+      <p class="hint">Your Admins and Coordinators are on the Organization page's Team tab.</p>
+      <details class="full-shifts" id="declined-box" hidden>
+        <summary id="declined-summary"></summary>
+        <ul class="person-list" id="declined-list"></ul>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© 2026 The ANB Group. All rights reserved.</span>
+      <span><a href="../terms.html">Terms of Service</a> · <a href="../privacy.html">Privacy Policy</a></span>
+    </div>
+  </footer>
+</body>
+</html>

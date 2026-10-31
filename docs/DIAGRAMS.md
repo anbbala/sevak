@@ -1,6 +1,6 @@
 # Sevak: UML Diagrams
 
-**For discussion** · **Updated:** 2026-10-25 · Based on [`REQUIREMENTS.md`](REQUIREMENTS.md) and the
+**For discussion** · **Updated:** 2026-10-31 · Based on [`REQUIREMENTS.md`](REQUIREMENTS.md) and the
 prototype in [`app/`](../app/)
 
 These diagrams are a starting point for discussion, not a final design. Each one says whether it
@@ -16,6 +16,7 @@ GitHub draws these diagrams automatically. To edit one, change its text and the 
 5. [A volunteer signs up](#5-a-volunteer-signs-up) (sequence diagram)
 6. [Signing in by email](#6-signing-in-by-email) (sequence diagram)
 7. [Joining an organization's team](#7-joining-an-organizations-team) (activity diagram)
+   - [Joining as a volunteer](#7a-joining-as-a-volunteer) (activity diagram)
 8. [How the system fits together](#8-how-the-system-fits-together) (component and deployment diagram)
 
 ---
@@ -34,7 +35,8 @@ flowchart LR
     P(["👤 Platform admin"])
 
     subgraph Volunteer side
-        UC1["Find opportunities<br/>(location filter)"]
+        UC0["Join an organization<br/>(invitation or request)"]
+        UC1["Find opportunities<br/>(My organizations / All)"]
         UC2["Sign up for shifts"]
         UC3["Manage or cancel a sign-up"]
         UC4["View My sign-ups,<br/>check in and log hours"]
@@ -54,6 +56,7 @@ flowchart LR
     subgraph Organization admin
         UC13["Edit the organization profile"]
         UC14["Add team members"]
+        UC19["Approve requests, invite<br/>and remove volunteers"]
         UC15["Delete events or<br/>the organization"]
         UC16["Request verification (planned)"]
     end
@@ -63,8 +66,8 @@ flowchart LR
         UC18["Moderate content (planned)"]
     end
 
-    V --- UC1 & UC2 & UC3 & UC4 & UC5
-    C --- UC6 & UC7 & UC8 & UC9 & UC10 & UC11 & UC12
+    V --- UC0 & UC1 & UC2 & UC3 & UC4 & UC5
+    C --- UC6 & UC7 & UC8 & UC9 & UC10 & UC11 & UC12 & UC19
     A -. "can also do everything<br/>a Coordinator can" .-> C
     A --- UC13 & UC14 & UC15 & UC16
     UC17 & UC18 --- P
@@ -117,11 +120,18 @@ classDiagram
         registration_number «private»
         visibility
         verification_status
+        invite_code «unique»
+        auto_approve
     }
     class OrgMember {
-        role : owner | admin | coordinator
+        role : owner | admin | coordinator | volunteer
+        status : invited | requested | active | declined
+        how : invitation | request | auto-approved
+        note
         invited_at
-        accepted_at
+        requested_at
+        decided_at
+        decided_by
     }
     class MainEvent {
         title
@@ -390,6 +400,34 @@ flowchart TD
     EM --> ACC[Accept]
     ACC --> R
     AD --> R
+```
+
+---
+
+## 7a. Joining as a volunteer
+
+*Today (prototype) and planned.* A volunteer can sign up for an organization's shifts only once
+they're one of its volunteers: by invitation, or by asking to join and being approved (MEM-1 to
+MEM-8). In the prototype, emails go to the outbox page instead of being sent.
+
+```mermaid
+flowchart TD
+    S([Person wants to volunteer]) --> H{How?}
+    H -- "Invite link or code" --> I[Join page: enter link or code]
+    H -- "Emailed invitation" --> E[Sign in or make a profile<br/>with the invited email]
+    H -- "Ask to join" --> Q[Join page: pick the organization,<br/>add a note]
+    I --> P{Has a profile?}
+    Q --> P
+    P -- No --> NP[Make a profile;<br/>the choice is kept]
+    P -- Yes --> J
+    NP --> J{Invitation or<br/>auto-approve?}
+    E --> ACT
+    J -- Yes --> ACT[Active volunteer<br/>+ welcome email]
+    J -- No --> REQ[Request waiting]
+    REQ --> D{Admin or Coordinator<br/>on the Volunteers page}
+    D -- Approve --> ACT
+    D -- Decline --> DEC[Declined + email;<br/>can be approved later]
+    ACT --> SU[Sign up for its shifts]
 ```
 
 ---

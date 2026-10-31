@@ -6,6 +6,9 @@
   "use strict";
 
   var ORG_ID = "demo-org";
+  var ORG2_ID = "demo-org-2";
+  var MEMBERS_KEY = "sevak.memberships.v1";
+  var NAMES_BY_ORG = { "demo-org": "Riverside Community Arts (demo)", "demo-org-2": "Eastside Food Pantry (demo)" };
   var EVENTS_KEY = "sevak.events.v1";
   var MAIN_KEY = "sevak.mainEvents.v1";
   var SIGNUPS_KEY = "sevak.signups.v1";
@@ -80,6 +83,12 @@
       { id: "demo-ev-books", title: "San Antonio Book Drive", days: [15, 15], status: "published", venue: "Central Library Annex",
         line1: "600 Soledad Street", city: "San Antonio", postal: "78205",
         roles: [{ name: "Book sorters", description: "Sort donated books by age group", shifts: [[15, "10:00", "13:00", 8, 3]] }] },
+      { id: "demo-ev-restock", org: "demo-org-2", title: "Pantry Restock Night", days: [9, 9], status: "published", venue: "Eastside Food Pantry",
+        line1: "48 Cesar Chavez Street", postal: "78702",
+        roles: [{ name: "Shelf stockers", description: "Unpack deliveries and fill the shelves", shifts: [[9, "18:00", "20:00", 6, 1]] }] },
+      { id: "demo-ev-packing", org: "demo-org-2", title: "Holiday Meal Packing", days: [24, 24], status: "published", venue: "Eastside Food Pantry",
+        line1: "48 Cesar Chavez Street", postal: "78702",
+        roles: [{ name: "Packers", description: "Pack holiday meal boxes for families", shifts: [[24, "09:00", "12:00", 12, 4]] }] },
       { id: "demo-ev-reading", title: "Library Reading Hour", days: [40, 40], status: "draft", venue: "Central Library",
         roles: [{ name: "Readers", description: "Read picture books to children", shifts: [[40, "10:00", "11:00", 4, 0]] }] },
       { id: "demo-ev-dinner", title: "Volunteer Appreciation Dinner", days: [35, 35], status: "published", visibility: "private", venue: "Natya Center Hall",
@@ -110,6 +119,31 @@
     });
   }
 
+  // Everyone who signed up is a volunteer with that organization. Riverside
+  // also has two requests waiting and an invitation not yet taken up.
+  function memberships(signups, events, now) {
+    var orgOf = {};
+    events.forEach(function (e) { orgOf[e.id] = e.organizationId; });
+    var you = F.session.signedIn() ? String(F.session.profile().email).toLowerCase() : "";
+    var seen = {};
+    var list = [];
+    signups.forEach(function (s) {
+      var orgId = orgOf[s.eventId];
+      var key = orgId + "|" + s.email;
+      if (!orgId || seen[key] || String(s.email).toLowerCase() === you) return;
+      seen[key] = true;
+      list.push({ id: "demo-mem-" + list.length, orgId: orgId, email: s.email, name: s.name, status: "active", how: "request", createdAt: now, decidedAt: now });
+    });
+    list.push(
+      { id: "demo-mem-req-1", orgId: ORG_ID, email: "priya.nair@example.com", name: "Priya Nair", status: "requested", how: "request",
+        note: "I'm a sound engineer and would love to help with the festival's AV.", services: ["av", "general"], requestedAt: now, createdAt: now },
+      { id: "demo-mem-req-2", orgId: ORG_ID, email: "tom.becker@example.com", name: "Tom Becker", status: "requested", how: "request",
+        note: "Retired accountant, happy to help with the books or the ticket desk.", services: ["accounting", "office"], requestedAt: now, createdAt: now },
+      { id: "demo-mem-inv-1", orgId: ORG_ID, email: "jordan.lee@example.com", name: "", status: "invited", invitedAt: now, createdAt: now }
+    );
+    return list;
+  }
+
   function isLoaded() {
     return !!O.get(ORG_ID);
   }
@@ -119,7 +153,9 @@
     F.store(EVENTS_KEY, (F.load(EVENTS_KEY) || []).filter(isDemo));
     F.store(MAIN_KEY, (F.load(MAIN_KEY) || []).filter(isDemo));
     F.store(SIGNUPS_KEY, (F.load(SIGNUPS_KEY) || []).filter(function (s) { return String(s.eventId || "").indexOf("demo-") !== 0; }));
+    F.store(MEMBERS_KEY, (F.load(MEMBERS_KEY) || []).filter(function (m) { return String(m.orgId || "").indexOf("demo-") !== 0; }));
     if (O.get(ORG_ID)) O.remove(ORG_ID);
+    if (O.get(ORG2_ID)) O.remove(ORG2_ID);
   }
 
   // Loads (or reloads) the demo and makes it the current organization.
@@ -137,6 +173,22 @@
       primaryContact: { name: "Demo Coordinator", title: "Volunteer Coordinator", email: "coordinator@example.org", phone: { country: "US", number: "+15125550100" } },
       team: demoTeam(),
       verificationStatus: "verified",
+      inviteCode: "RIVER7",
+      createdAt: now,
+      updatedAt: now
+    });
+    // A second organization you're not part of, to try joining.
+    O.save({
+      id: ORG2_ID,
+      name: "Eastside Food Pantry (demo)",
+      description: "A second demo organization. Join it with the code PANTRY, or ask to join.",
+      address: { country: "US", line1: "48 Cesar Chavez Street", city: "Austin", state: "TX", postalCode: "78702" },
+      taxStatus: "charity",
+      primaryContact: { name: "Pantry Lead", title: "Volunteer Lead", email: "lead@pantry.example.org", phone: { country: "US", number: "+15125550142" } },
+      team: [],
+      createdBy: "lead@pantry.example.org",
+      verificationStatus: "verified",
+      inviteCode: "PANTRY",
       createdAt: now,
       updatedAt: now
     });
@@ -170,8 +222,9 @@
           })
         };
       });
+      var orgId = p.org || ORG_ID;
       events.push({
-        id: p.id, organizationId: ORG_ID, organizationName: "Riverside Community Arts (demo)", mainEventId: p.main,
+        id: p.id, organizationId: orgId, organizationName: NAMES_BY_ORG[orgId], mainEventId: p.main,
         title: p.title, description: p.description || "",
         startDate: day(p.days[0]), endDate: day(p.days[1]), timezone: timezone(),
         location: p.online
@@ -181,6 +234,7 @@
       });
     });
     signups = signups.concat(yourSignups());
+    F.store(MEMBERS_KEY, (F.load(MEMBERS_KEY) || []).concat(memberships(signups, events, now)));
     F.store(MAIN_KEY, (F.load(MAIN_KEY) || []).concat(mains));
     F.store(EVENTS_KEY, (F.load(EVENTS_KEY) || []).concat(events));
     F.store(SIGNUPS_KEY, (F.load(SIGNUPS_KEY) || []).concat(signups));

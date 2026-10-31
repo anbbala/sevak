@@ -10,6 +10,7 @@
   var O = window.SevakOrgs;
   var E = window.SevakEvents;
   var S = window.SevakSignups;
+  var M = window.SevakMembers;
   var $ = function (id) { return document.getElementById(id); };
   var params = new URLSearchParams(location.search);
 
@@ -90,6 +91,14 @@
   }
 
   // One opportunity: the whole row is a link to the event.
+  // On "All organizations": what joining looks like for this event's organization.
+  function joinTag(event) {
+    if (!F.session.signedIn()) return "";
+    var st = M.myStatus(event.organizationId);
+    if (st === "team" || st === "active") return "";
+    return st === "requested" ? "Request sent" : "Join to sign up";
+  }
+
   function oppRow(event, showOrg) {
     var li = el("li");
     var a = el("a", "opp-row");
@@ -101,6 +110,8 @@
       var org = O.get(event.organizationId);
       if (org) text.appendChild(el("p", "opp-org", org.name));
     }
+    var tag = joinTag(event);
+    if (tag) text.appendChild(el("p", "opp-join" + (tag === "Request sent" ? " is-pending" : ""), tag));
     var left = spotsLeft(event);
     a.appendChild(text);
     a.appendChild(el("span", "opp-spots" + (left ? "" : " is-full"), left ? E.plural(left, "spot") : "Full"));
@@ -193,10 +204,91 @@
     });
   }
 
+  // ---------- My organizations / All organizations ----------
+
+  var orgTab = "all";
+
+  function selectOrgTab(key, focus) {
+    orgTab = key;
+    [["my", "tab-my-orgs"], ["all", "tab-all-orgs"]].forEach(function (t) {
+      var on = t[0] === key;
+      $(t[1]).setAttribute("aria-selected", String(on));
+      $(t[1]).tabIndex = on ? 0 : -1;
+      if (on) {
+        $("discover-panel").setAttribute("aria-labelledby", t[1]);
+        if (focus) $(t[1]).focus();
+      }
+    });
+    history.replaceState(null, "", location.search + "#" + (key === "my" ? "my-orgs" : "all-orgs"));
+    renderAvailable();
+  }
+
+  function setupOrgTabs() {
+    var on = F.session.signedIn();
+    $("org-tabs").hidden = !on;
+    $("browse-hint").hidden = on;
+    if (!on) { orgTab = "all"; return; }
+    $("discover-panel").setAttribute("role", "tabpanel");
+    var h = location.hash.replace("#", "");
+    var key = h === "all-orgs" ? "all" : h === "my-orgs" ? "my" : (M.myOrgIds().length ? "my" : "all");
+    var keys = ["my", "all"];
+    keys.forEach(function (k, i) {
+      var tab = $(k === "my" ? "tab-my-orgs" : "tab-all-orgs");
+      tab.addEventListener("click", function () { selectOrgTab(k); });
+      tab.addEventListener("keydown", function (e) {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft" && e.key !== "Home" && e.key !== "End") return;
+        e.preventDefault();
+        selectOrgTab(keys[e.key === "Home" ? 0 : e.key === "End" ? 1 : 1 - i], true);
+      });
+    });
+    selectOrgTab(key);
+  }
+
+  // On "My organizations": who you volunteer with, and requests waiting.
+  function renderMemberStrip() {
+    var strip = $("member-strip");
+    strip.innerHTML = "";
+    strip.hidden = orgTab !== "my";
+    if (strip.hidden) return;
+    var mineIds = M.myOrgIds();
+    var waiting = M.mine().filter(function (m) { return m.status === "requested"; });
+    var p = el("p");
+    if (mineIds.length) {
+      p.appendChild(document.createTextNode("You volunteer with "));
+      p.appendChild(el("strong", null, mineIds.map(function (id) { return O.get(id).name; }).join(", ")));
+      p.appendChild(document.createTextNode(". "));
+    }
+    if (waiting.length) {
+      p.appendChild(document.createTextNode("Waiting for approval: " + waiting.map(function (m) { return (O.get(m.orgId) || {}).name; }).filter(Boolean).join(", ") + ". "));
+    }
+    var join = el("a", null, "Join an organization");
+    join.href = "join.html";
+    p.appendChild(join);
+    strip.appendChild(p);
+  }
+
+  function emptyState(parts) {
+    var box = $("discover-empty");
+    box.innerHTML = "";
+    parts.forEach(function (x) { box.appendChild(typeof x === "string" ? el("p", null, x) : x); });
+  }
+
+  function buttonsRow(items) {
+    var p = el("p", "fill-row");
+    items.forEach(function (it) {
+      var b = el(it.href ? "a" : "button", "btn btn-small " + (it.primary ? "btn-primary" : "btn-secondary"), it.text);
+      if (it.href) b.href = it.href; else { b.type = "button"; b.addEventListener("click", it.onClick); }
+      p.appendChild(b);
+    });
+    return p;
+  }
+
   function renderAvailable() {
     var where = currentWhere();
     var near = $("near").value;
-    var all = upcomingEvents();
+    var everything = upcomingEvents();
+    var all = orgTab === "my" ? everything.filter(function (e) { return M.isMember(e.organizationId); }) : everything;
+    renderMemberStrip();
     ["all", "near", "in-person", "remote"].forEach(function (w) {
       var count = all.filter(function (e) { return matches(e, w, near); }).length;
       var badge = document.querySelector('[data-count="' + w + '"]');
@@ -238,16 +330,22 @@
 
     var empty = $("discover-empty");
     empty.hidden = events.length > 0;
-    if (!all.length) {
-      empty.textContent = "There are no upcoming opportunities right now. Check back soon.";
+    var browse = { text: "Browse all organizations", onClick: function () { selectOrgTab("all", true); } };
+    if (orgTab === "my" && !M.myOrgIds().length) {
+      emptyState(["You're not a volunteer with any organization yet. Join one with an invitation, or ask to join.",
+        buttonsRow([{ text: "Join an organization", href: "join.html", primary: true }, browse])]);
+    } else if (!all.length) {
+      emptyState(orgTab === "my"
+        ? ["Your organizations have no upcoming opportunities right now.", buttonsRow([browse])]
+        : ["There are no upcoming opportunities right now. Check back soon."]);
     } else if (where === "near" && !norm(near)) {
-      empty.textContent = "Enter your city or town, region or postal code to see in-person events near you.";
+      emptyState(["Enter your city or town, region or postal code to see in-person events near you."]);
     } else if (where === "near") {
-      empty.textContent = "No in-person opportunities near " + near.trim() + " right now. Try All in person.";
+      emptyState(["No in-person opportunities near " + near.trim() + " right now. Try All in person."]);
     } else if (where === "remote") {
-      empty.textContent = "No remote opportunities right now.";
+      emptyState(["No remote opportunities right now."]);
     } else if (where === "in-person") {
-      empty.textContent = "No in-person opportunities right now.";
+      emptyState(["No in-person opportunities right now."]);
     }
   }
 
@@ -593,6 +691,7 @@
     showOnly("discover-view");
     document.title = "Volunteer opportunities · Sevak";
     setupFilter();
+    setupOrgTabs();
     renderAvailable();
   }
 
@@ -803,6 +902,7 @@
     window.scrollTo(0, 0);
     if (step === "confirm") {
       renderPicked();
+      renderGate();
       $("confirm-step-title").focus();
     }
   }
@@ -847,6 +947,97 @@
     note.appendChild(document.createTextNode(" to skip this next time."));
   }
 
+  // ---------- Membership: only volunteers with the organization sign up ----------
+
+  // "member" | "signed-out" | "requested" | "declined" | "none"
+  function membership() {
+    if (!F.session.signedIn()) return "signed-out";
+    var st = M.myStatus(event.organizationId);
+    return st === "team" || st === "active" ? "member" : st || "none";
+  }
+
+  function orgName() {
+    var org = O.get(event.organizationId);
+    return org ? org.name : "this organization";
+  }
+
+  function renderMemberHint() {
+    var st = membership();
+    var hint = $("member-hint");
+    hint.hidden = st === "member" || !canSignUp;
+    hint.textContent = st === "signed-out" ? "To sign up, join Sevak with " + orgName() + "."
+      : st === "requested" ? "Your request to join " + orgName() + " is waiting for approval."
+      : st === "declined" ? orgName() + " didn't approve your request to join."
+      : "You're not a volunteer with " + orgName() + " yet. You can ask to join after picking shifts.";
+  }
+
+  var whoReady = false;
+
+  function renderGate(message) {
+    var st = membership();
+    var gate = $("join-gate");
+    var member = st === "member";
+    gate.hidden = member;
+    $("submit").hidden = !member;
+    $("submit").parentNode.hidden = !member;
+    renderMemberHint();
+    if (member) {
+      if (!whoReady) { setupWho(); whoReady = true; }
+      $("status").textContent = message || "";
+      return;
+    }
+    $("who-summary").hidden = true;
+    $("details-section").hidden = true;
+    gate.innerHTML = "";
+    var name = orgName();
+    var add = function (node) { gate.appendChild(node); return node; };
+    if (st === "signed-out") {
+      add(el("h2", "section-title", "Join Sevak to sign up"));
+      add(el("p", null, "Sevak is for volunteers invited by an organization or approved by one. Join with an invitation from " + name + ", or ask them to have you."));
+      var row = add(el("p", "fill-row"));
+      var join = el("a", "btn btn-primary", "Join " + name);
+      join.href = "join.html?org=" + encodeURIComponent(event.organizationId) + "&return=" + encodeURIComponent("signup.html?event=" + event.id);
+      var signin = el("a", "btn btn-secondary", "Sign in");
+      signin.href = "signin.html";
+      row.appendChild(join);
+      row.appendChild(signin);
+    } else if (st === "requested") {
+      add(el("h2", "section-title", "Waiting for approval"));
+      add(el("p", null, message || "Your request to join " + name + " is waiting for approval. You can sign up for its shifts once they approve you; you'll see a note on Sevak when they do."));
+      var more = el("a", null, "Browse other opportunities");
+      more.href = "signup.html#all-orgs";
+      add(el("p")).appendChild(more);
+    } else {
+      add(el("h2", "section-title", "Ask to join " + name));
+      add(el("p", null, st === "declined"
+        ? name + " didn't approve your earlier request. You can ask again."
+        : "You're not a volunteer with " + name + " yet. Ask to join: once they approve you, you can sign up."));
+      var f = add(el("div", "field"));
+      var label = el("label", null, "A note for them");
+      label.htmlFor = "join-note";
+      label.appendChild(el("span", "optional", " (optional)"));
+      var note = el("textarea");
+      note.id = "join-note";
+      note.maxLength = 300;
+      note.rows = 2;
+      f.appendChild(label);
+      f.appendChild(note);
+      var ask = el("button", "btn btn-primary", "Request to join " + name);
+      ask.type = "button";
+      ask.addEventListener("click", function () {
+        var rec = M.request(event.organizationId, note.value);
+        window.SevakNav.render();
+        if (rec && rec.status === "active") {
+          renderGate("You're in! You're now a volunteer with " + name + ". Confirm your shifts below.");
+          $("submit").focus();
+        } else {
+          renderGate("Request sent to " + name + ". You can sign up for its shifts once they approve you.");
+        }
+      });
+      add(el("p")).appendChild(ask);
+    }
+  }
+
   function showDetails() {
     $("who-summary").hidden = true;
     $("details-section").hidden = false;
@@ -870,6 +1061,7 @@
 
   function submit(e) {
     e.preventDefault();
+    if (membership() !== "member") { renderGate(); return; }
     var ids = selectedIds();
     if (!ids.length) {
       showStep("pick");
@@ -915,6 +1107,10 @@
       $("status").textContent = "Couldn't save in this browser. Check that site storage is allowed.";
       return;
     }
+    // The confirmation email (prototype: to the outbox).
+    M.email(email, "You're signed up: " + (event.title || "Volunteer shift"),
+      "Thanks for signing up with " + orgName() + ". Your shifts: " + shifts.filter(function (s) { return fresh.indexOf(s.id) !== -1; }).map(shiftLabel).join("; ") + ".",
+      "signup.html?registration=" + encodeURIComponent(registrationId), "Manage my sign-up");
     history.replaceState(null, "", "signup.html?registration=" + encodeURIComponent(registrationId));
     renderConfirmation(registrationId, true, already.length);
     window.SevakNav.render();
@@ -956,7 +1152,7 @@
     renderShifts();
     $("pick-bar").hidden = !canSignUp;
     F.enhancePhone($("phone"));
-    setupWho();
+    renderMemberHint();
     F.clearErrorsAsYouType($("signup-form"), messageFor);
     $("shift-groups").addEventListener("change", updateSelection);
     $("pick-form").addEventListener("submit", goToConfirm);

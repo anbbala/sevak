@@ -13,6 +13,7 @@
   <script src="orgs-store.js" defer></script>
   <script src="events-store.js" defer></script>
   <script src="signups-store.js" defer></script>
+  <script src="members-store.js" defer></script>
   <script src="nav.js" defer></script>
   <script src="signup.js" defer></script>
 </head>
@@ -35,25 +36,33 @@
   </header>
 
   <main class="container">
-    <p class="banner"><strong>Prototype.</strong> Sign-ups stay in this browser, and no emails go out.</p>
+    <p class="banner"><strong>Prototype.</strong> Sign-ups stay in this browser. Emails go to the <a href="outbox.html">outbox</a>.</p>
 
     <!-- Find events: published, upcoming events from every organization -->
     <section id="discover-view" hidden>
       <h1 class="page-title">Volunteer opportunities</h1>
-      <fieldset class="opp-filter" id="opp-filter">
-        <legend class="sr-only">Show</legend>
-        <label class="filter-chip"><input type="radio" name="where" value="all" checked><span>All <span class="chip-count" data-count="all"></span></span></label>
-        <label class="filter-chip"><input type="radio" name="where" value="near"><span>In person near me <span class="chip-count" data-count="near"></span></span></label>
-        <label class="filter-chip"><input type="radio" name="where" value="in-person"><span>All in person <span class="chip-count" data-count="in-person"></span></span></label>
-        <label class="filter-chip"><input type="radio" name="where" value="remote"><span>Remote <span class="chip-count" data-count="remote"></span></span></label>
-      </fieldset>
-      <div class="near-row" id="near-row" hidden>
-        <label for="near">Near</label>
-        <input id="near" type="text" autocomplete="address-level2" maxlength="80" placeholder="City, region or postal code" aria-describedby="near-hint">
-        <p class="hint" id="near-hint">Same city or town, state or region, or postal area. <span id="near-source"></span></p>
+      <p class="hint browse-hint" id="browse-hint" hidden>Browse freely. To sign up for a shift, <a href="join.html">join Sevak</a> with an invitation or by asking the organization.</p>
+      <div class="tabs org-tabs" role="tablist" aria-label="Whose opportunities" id="org-tabs" hidden>
+        <button type="button" class="tab" role="tab" id="tab-my-orgs" aria-controls="discover-panel" aria-selected="true">My organizations</button>
+        <button type="button" class="tab" role="tab" id="tab-all-orgs" aria-controls="discover-panel" aria-selected="false" tabindex="-1">All organizations</button>
       </div>
-      <div id="discover-list"></div>
-      <p class="empty" id="discover-empty" hidden></p>
+      <div id="discover-panel">
+        <div class="member-strip" id="member-strip" hidden></div>
+        <fieldset class="opp-filter" id="opp-filter">
+          <legend class="sr-only">Show</legend>
+          <label class="filter-chip"><input type="radio" name="where" value="all" checked><span>All <span class="chip-count" data-count="all"></span></span></label>
+          <label class="filter-chip"><input type="radio" name="where" value="near"><span>In person near me <span class="chip-count" data-count="near"></span></span></label>
+          <label class="filter-chip"><input type="radio" name="where" value="in-person"><span>All in person <span class="chip-count" data-count="in-person"></span></span></label>
+          <label class="filter-chip"><input type="radio" name="where" value="remote"><span>Remote <span class="chip-count" data-count="remote"></span></span></label>
+        </fieldset>
+        <div class="near-row" id="near-row" hidden>
+          <label for="near">Near</label>
+          <input id="near" type="text" autocomplete="address-level2" maxlength="80" placeholder="City, region or postal code" aria-describedby="near-hint">
+          <p class="hint" id="near-hint">Same city or town, state or region, or postal area. <span id="near-source"></span></p>
+        </div>
+        <div id="discover-list"></div>
+        <div class="empty" id="discover-empty" hidden></div>
+      </div>
     </section>
 
     <!-- Your sign-ups -->
@@ -85,6 +94,7 @@
           <p class="bar-parent" id="main-line" hidden></p>
           <h1 class="page-title" id="event-title"></h1>
           <p class="event-when" id="event-facts"></p>
+          <p class="hint member-hint" id="member-hint" hidden></p>
         </header>
         <details class="about-event" id="about-event" hidden>
           <summary>About this event</summary>
@@ -115,6 +125,8 @@
             <h2 class="section-title" id="picked-title">Your shifts</h2>
             <ul class="picked-list" id="picked-list"></ul>
           </section>
+
+          <section class="section join-gate" id="join-gate" hidden aria-live="polite"></section>
 
           <section class="section who-summary" id="who-summary" hidden>
             <p>Signing up as <strong id="who-name"></strong> <span class="who-email" id="who-email"></span></p>

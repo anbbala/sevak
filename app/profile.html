@@ -11,6 +11,7 @@
   <script src="countries.js" defer></script>
   <script src="forms.js" defer></script>
   <script src="orgs-store.js" defer></script>
+  <script src="members-store.js" defer></script>
   <script src="documents.js" defer></script>
   <script src="photo.js" defer></script>
   <script src="nav.js" defer></script>
@@ -39,6 +40,7 @@
 
     <h1 class="page-title">My profile</h1>
     <p class="page-intro">Your details in one place, whether you volunteer, help run events, or both.</p>
+    <div class="section notice join-notice" id="join-notice" hidden></div>
     <p class="account-line" id="account-line" hidden>Signed in as <strong id="account-email"></strong> · <button type="button" class="btn-link" id="sign-out">Sign out</button></p>
 
     <div class="tabs" role="tablist" aria-label="Profile sections" id="profile-tabs">
@@ -104,6 +106,12 @@
             <label class="choice"><input type="checkbox" name="roles" value="volunteer" id="role-volunteer"><span><strong>I volunteer</strong><small>I sign up for shifts. This adds your address, availability and affiliations.</small></span></label>
           </div>
           <p class="error" id="roles-error"></p>
+
+          <h3 class="subhead" id="volunteer-orgs-title">Organizations you volunteer with</h3>
+          <ul class="team-list" id="volunteer-list" aria-labelledby="volunteer-orgs-title"></ul>
+          <p class="hint" id="volunteer-empty">None yet.</p>
+          <p class="team-doors-line"><a href="join.html" id="join-another">Join an organization</a> with an invitation, or ask to join one.</p>
+          <p class="status" id="volunteer-status" role="status" aria-live="polite"></p>
 
           <h3 class="subhead" id="teams-title">Organization teams</h3>
           <ul class="team-list" id="team-list" aria-labelledby="teams-title"></ul>

@@ -1,8 +1,12 @@
 // The menu of the app pages, and who can open the "Manage" pages.
 //
-//   Signed out:                 Opportunities · Sign in
+//   Signed out:                 Opportunities · Join · Sign in
 //   Signed in:                  Opportunities · My sign-ups · Profile
-//   On an organization's team:  … | Manage: Events · Dashboard · Organization
+//   On an organization's team:  … plus Manage: Events · Volunteers · Dashboard · Organization
+//                               (Volunteers shows how many requests are waiting)
+//
+// The Manage links show in the menu on the Manage pages. Everywhere else
+// they're tucked under a "⋯" button, so the volunteer pages stay simple.
 //
 // On wide screens the menu is at the top. On phones the main items move to
 // a bar at the bottom of the screen (like most apps), and the Manage links
@@ -18,14 +22,18 @@
   var F = window.SevakForms;
   var O = window.SevakOrgs;
   var SEEN_KEY = "sevak.seenTeams.v1";
+  var SEEN_MEMBERSHIPS_KEY = "sevak.seenMemberships.v1";
+  var M = window.SevakMembers;
   var BANNER_KEY = "sevak.bannerDismissed.v1";
-  var MANAGE = { "events.html": "events", "event.html": "events", "main-event.html": "events", "dashboard.html": "dashboard", "organization.html": "organization" };
+  var MANAGE = { "events.html": "events", "event.html": "events", "main-event.html": "events", "volunteers.html": "volunteers", "dashboard.html": "dashboard", "organization.html": "organization" };
 
   var ICONS = {
     opportunities: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.5"/>',
     mine: '<rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4M8.5 14.5l2.5 2.5 4.5-4.5"/>',
     profile: '<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.2-3.8 4.2-5.8 7.5-5.8s6.3 2 7.5 5.8"/>',
+    join: '<circle cx="10" cy="8.5" r="4"/><path d="M3 20.5c1.1-3.6 3.9-5.6 7-5.6 1.4 0 2.7.4 3.8 1.1M18 13.5v6M15 16.5h6"/>',
     signin: '<path d="M14 4.5h3.5a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H14M10 16.5 14.5 12 10 7.5M14.5 12H4"/>',
+    more: '<circle cx="5.5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.6" fill="currentColor" stroke="none"/>',
     manage: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>'
   };
 
@@ -39,6 +47,7 @@
     if (here === "signup.html") return new URLSearchParams(location.search).get("view") === "mine" ? "mine" : "opportunities";
     if (here === "profile.html") return "profile";
     if (here === "signin.html") return "signin";
+    if (here === "join.html") return "join";
     return MANAGE[here] ? "manage" : "";
   }
 
@@ -84,7 +93,7 @@
   function mainItems(signedIn) {
     return signedIn
       ? [["opportunities", "signup.html", "Opportunities"], ["mine", "signup.html?view=mine", "My sign-ups"], ["profile", "profile.html", "Profile"]]
-      : [["opportunities", "signup.html", "Opportunities"], ["signin", "signin.html", "Sign in"]];
+      : [["opportunities", "signup.html", "Opportunities"], ["join", "join.html", "Join"], ["signin", "signin.html", "Sign in"]];
   }
 
   // ---------- Menu ----------
@@ -98,6 +107,7 @@
     var onTeam = signedIn && O.myTeams().length > 0;
     var showManage = signedIn ? onTeam : !!MANAGE[here];
     var count = upcomingCount();
+    var waiting = signedIn && M ? M.pendingForMyTeams().length : 0;
 
     nav.innerHTML = "";
     var main = el("span", "nav-group nav-main");
@@ -112,18 +122,34 @@
     });
     nav.appendChild(main);
 
-    if (showManage) {
-      var manage = el("span", "nav-group nav-manage" + (MANAGE[here] ? "" : " nav-manage-elsewhere"));
+    // The Manage links, with the number of requests waiting on Volunteers.
+    var manageLinks = function () {
+      return [["events.html", "Events", "events"], ["volunteers.html", "Volunteers", "volunteers"],
+        ["dashboard.html", "Dashboard", "dashboard"], ["organization.html", "Organization", "organization"]].map(function (x) {
+        var a = link(x[0], x[1], MANAGE[here] === x[2]);
+        if (x[2] === "volunteers" && waiting) {
+          var wb = el("span", "nav-count", String(waiting));
+          wb.setAttribute("aria-label", waiting + " waiting");
+          a.appendChild(wb);
+        }
+        return a;
+      });
+    };
+
+    if (showManage && MANAGE[here]) {
+      // On the Manage pages: the links themselves.
+      var manage = el("span", "nav-group nav-manage");
       manage.setAttribute("role", "group");
       manage.setAttribute("aria-label", "Manage");
       manage.appendChild(el("span", "nav-label", "Manage"));
-      manage.appendChild(link("events.html", "Events", MANAGE[here] === "events"));
-      manage.appendChild(link("dashboard.html", "Dashboard", MANAGE[here] === "dashboard"));
-      manage.appendChild(link("organization.html", "Organization", MANAGE[here] === "organization"));
+      manageLinks().forEach(function (a) { manage.appendChild(a); });
       nav.appendChild(manage);
+    } else if (showManage) {
+      // Elsewhere: under "⋯".
+      nav.appendChild(moreMenu("nav-more", manageLinks(), waiting, false));
     }
 
-    // Phones: the same main items in a bar at the bottom, plus Manage.
+    // Phones: the main items in a bar at the bottom, plus "More" for Manage.
     var bar = document.getElementById("tab-bar");
     if (!bar) {
       bar = el("nav", "tab-bar");
@@ -132,12 +158,10 @@
       document.body.appendChild(bar);
     }
     bar.innerHTML = "";
-    var items = mainItems(signedIn);
-    if (showManage) items.push(["manage", "events.html", "Manage"]);
-    items.forEach(function (m) {
+    mainItems(signedIn).forEach(function (m) {
       var a = link(m[1], "", item === m[0]);
       a.className = "tab-bar-item";
-      a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[m[0]] + "</svg>";
+      a.innerHTML = icon(m[0]);
       a.appendChild(el("span", "tab-bar-label", m[2]));
       if (m[0] === "mine" && count) {
         var b = el("span", "nav-count", String(count));
@@ -146,7 +170,60 @@
       }
       bar.appendChild(a);
     });
+    if (showManage) bar.appendChild(moreMenu("tab-more", manageLinks(), waiting, !!MANAGE[here]));
     document.body.classList.add("has-tab-bar");
+  }
+
+  function icon(name) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + "</svg>";
+  }
+
+  // A "⋯" button that shows the Manage links (a disclosure, not an app
+  // menu: Tab moves through the links; Escape or a click outside closes it).
+  // In the header it's a small button; in the phone bar it's "More".
+  function moreMenu(id, links, waiting, current) {
+    var wrap = el("div", id === "tab-more" ? "tab-more" : "nav-more");
+    var btn = el("button", id === "tab-more" ? "tab-bar-item tab-more-btn" + (current ? " is-current" : "") : "nav-more-btn");
+    btn.type = "button";
+    btn.id = id + "-btn";
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", id + "-menu");
+    btn.innerHTML = icon("more");
+    if (id === "tab-more") btn.appendChild(el("span", "tab-bar-label", "More"));
+    else btn.appendChild(el("span", "sr-only", "More: manage your organization"));
+    if (waiting) {
+      var b = el("span", "nav-count", String(waiting));
+      b.setAttribute("aria-label", waiting + " waiting");
+      btn.appendChild(b);
+    }
+    var menu = el("div", "more-menu");
+    menu.id = id + "-menu";
+    menu.hidden = true;
+    menu.appendChild(el("p", "more-menu-label", "Manage"));
+    links.forEach(function (a) { menu.appendChild(a); });
+    var close = function (focusButton) {
+      menu.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+      if (focusButton) btn.focus();
+    };
+    btn.addEventListener("click", function () {
+      var open = menu.hidden;
+      menu.hidden = !open;
+      btn.setAttribute("aria-expanded", String(open));
+      if (open && menu.querySelector("a")) menu.querySelector("a").focus();
+    });
+    wrap.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !menu.hidden) { e.preventDefault(); close(true); }
+    });
+    wrap.addEventListener("focusout", function (e) {
+      if (!menu.hidden && e.relatedTarget && !wrap.contains(e.relatedTarget)) close(false);
+    });
+    document.addEventListener("click", function (e) {
+      if (!menu.hidden && !wrap.contains(e.target)) close(false);
+    });
+    wrap.appendChild(btn);
+    wrap.appendChild(menu);
+    return wrap;
   }
 
   // ---------- The prototype banner: one line, and can be dismissed ----------
@@ -198,6 +275,51 @@
       var go = link("events.html", "Go to its events", false);
       go.addEventListener("click", function () { O.setCurrent(t.org.id); });
       p.appendChild(go);
+      box.appendChild(p);
+    });
+    var close = el("button", "btn btn-link", "Dismiss");
+    close.type = "button";
+    close.addEventListener("click", function () { box.remove(); });
+    box.appendChild(close);
+    var banner = document.querySelector("main .banner");
+    if (banner) banner.insertAdjacentElement("afterend", box);
+  }
+
+  // ---------- Volunteer memberships: invitations, approvals ----------
+  // Invitations to your email are accepted when you sign in. Then, once:
+  // "You're now a volunteer with X", "X approved your request", or "X
+  // didn't approve your request".
+
+  function announceMemberships() {
+    if (!M || !F.session.signedIn()) return;
+    var accepted = M.acceptInvites().map(function (m) { return m.id; });
+    var mine = M.mine();
+    var key = function (m) { return m.id + ":" + m.status; };
+    var seen = F.load(SEEN_MEMBERSHIPS_KEY);
+    var first = !Array.isArray(seen);
+    seen = first ? [] : seen;
+    var news = mine.filter(function (m) {
+      if (accepted.indexOf(m.id) !== -1) return true;
+      if (first || seen.indexOf(key(m)) !== -1) return false;
+      return (m.status === "active" && m.how === "request") || m.status === "declined";
+    });
+    F.store(SEEN_MEMBERSHIPS_KEY, seen.concat(mine.map(key).filter(function (k) { return seen.indexOf(k) === -1; })));
+    if (!news.length) return;
+    var box = el("div", "section notice team-notice");
+    box.setAttribute("role", "status");
+    news.forEach(function (m) {
+      var org = O.get(m.orgId);
+      if (!org) return;
+      var p = el("p");
+      if (m.status === "declined") {
+        p.appendChild(document.createTextNode(org.name + " didn't approve your request to join. "));
+        p.appendChild(link("signup.html#all-orgs", "Browse other opportunities", false));
+      } else {
+        p.appendChild(document.createTextNode(accepted.indexOf(m.id) !== -1 ? "You're now a volunteer with " : "Good news: you're approved to volunteer with "));
+        p.appendChild(el("strong", null, org.name));
+        p.appendChild(document.createTextNode(". "));
+        p.appendChild(link("signup.html#my-orgs", "See its opportunities", false));
+      }
       box.appendChild(p);
     });
     var close = el("button", "btn btn-link", "Dismiss");
@@ -277,6 +399,8 @@
   render();
   setupBanner();
   announceTeams();
+  announceMemberships();
+  if (M) render();   // invitations accepted just now change the counts
 
   window.SevakNav = { render: render, guard: guard };
 })();

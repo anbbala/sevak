@@ -12,22 +12,33 @@ sign up in seconds.
 - UML diagrams for discussion (use cases, data model, event and sign-up lifecycles, key flows, system): [`docs/DIAGRAMS.md`](docs/DIAGRAMS.md)
 - Landing page: [`index.html`](index.html) (static, no build step)
 - Front-end prototype: [`app/`](app/). It uses mock data stored in your browser, with no backend yet.
+  - [`app/join.html`](app/join.html): join Sevak as a volunteer, with an organization's invitation (link or code) or by asking to join one
   - [`app/signin.html`](app/signin.html): prototype sign-in (matches the email on the profile saved in this browser)
   - [`app/profile.html`](app/profile.html): user profile for volunteers and host team members
   - [`app/organization.html`](app/organization.html): host organization profile, with a Documents tab (events and profiles have one too)
   - [`app/events.html`](app/events.html): the organization's events, with main events and their sub-events
   - [`app/main-event.html`](app/main-event.html): a main event that groups sub-events, such as a festival and its rehearsals
   - [`app/event.html`](app/event.html): create and edit an event, with its roles and shifts
+  - [`app/volunteers.html`](app/volunteers.html): the organization's volunteers: approve requests to join, invite people, approve automatically
   - [`app/dashboard.html`](app/dashboard.html): upcoming events and volunteers required vs enrolled
-  - [`app/signup.html`](app/signup.html): volunteer side: available volunteer opportunities (where registered volunteers land from the home page), sign up for shifts, manage or cancel a sign-up
+  - [`app/signup.html`](app/signup.html): volunteer side: available volunteer opportunities in two tabs (My organizations, All organizations) (where registered volunteers land from the home page), sign up for shifts (volunteers of that organization only), manage or cancel a sign-up
+  - [`app/outbox.html`](app/outbox.html): prototype outbox. There's no email yet, so every email Sevak would send (invitations, approvals, welcome, sign-up confirmations) is listed here, with its links working
 
-**Demo data:** open [`app/dashboard.html?demo=1`](app/dashboard.html?demo=1) (or use **Load demo data** on the Dashboard) to add a demo organization with main events, sub-events, roles, shifts and sign-ups. It doesn't change other data, and **Remove demo data** clears it. If you're signed in when you load it, you're added to the demo organization's team as an Admin, so the **Manage** menu (Events, Dashboard, Organization) appears; leave its team from My profile to see the volunteer-only view. It also signs you up for a shift today and one in the past, so you can try checking in and logging your hours on **My sign-ups**.
+**Demo data:** open [`app/dashboard.html?demo=1`](app/dashboard.html?demo=1) (or use **Load demo data** on the Dashboard) to add two demo organizations: *Riverside Community Arts* with main events, sub-events, roles, shifts, sign-ups, volunteers, two requests to join and one invitation, and *Eastside Food Pantry* with two events. It doesn't change other data, and **Remove demo data** clears it. If you're signed in when you load it, you're added to Riverside's team as an Admin, so the **Manage** links (Events, Volunteers, Dashboard, Organization) appear: in the header on Manage pages, under **⋯** elsewhere. Leave its team from My profile to see the volunteer-only view. To try joining, use the invite codes **RIVER7** (Riverside) or **PANTRY** (the pantry) on the Join page. It also signs you up for a shift today and one in the past, so you can try checking in and logging your hours on **My sign-ups**.
 
 ## Preview locally
 
 ```sh
 python3 -m http.server 8000
 # then open http://localhost:8000
+```
+
+## Tests
+
+Browser tests (Playwright) live in [`tests/`](tests/). With Node and Playwright installed:
+
+```sh
+tests/run.sh /tmp/sevak-shots   # serves the site on :8765, runs every tests/*-test.js, saves screenshots
 ```
 
 ## Publish with GitHub Pages

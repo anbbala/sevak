@@ -113,6 +113,116 @@
     }
   }
 
+  // ---------- Joining (see join.js) ----------
+  // New people arrive from the Join page with their choice: an invitation, a
+  // request to join an organization, or setting up a new one. Saving the
+  // profile completes it.
+
+  var INTENT_KEY = "sevak.joinIntent.v1";
+  var M = window.SevakMembers;
+
+  function intent() {
+    var i = F.load(INTENT_KEY);
+    return i && i.way ? i : null;
+  }
+
+  function noticeLink(href, text) {
+    var a = document.createElement("a");
+    a.href = href;
+    a.textContent = text;
+    return a;
+  }
+
+  function showJoinNotice(parts) {
+    var box = $("join-notice");
+    box.innerHTML = "";
+    var p = document.createElement("p");
+    parts.forEach(function (x) { p.appendChild(typeof x === "string" ? document.createTextNode(x) : x); });
+    box.appendChild(p);
+    box.hidden = false;
+  }
+
+  function renderJoinNotice() {
+    var i = intent();
+    var org = i && i.orgId ? window.SevakOrgs.get(i.orgId) : null;
+    if (F.session.signedIn() && !i) { $("join-notice").hidden = true; return; }
+    if (i && i.way === "create") {
+      showJoinNotice(["Create your profile first. Then you'll set up your organization and be its Admin."]);
+    } else if (i && org) {
+      showJoinNotice([i.way === "invite" ? "You're joining " : "You're asking to join ", (function () { var b = document.createElement("strong"); b.textContent = org.name; return b; })(),
+        ". Save your profile to " + (i.way === "invite" ? "accept the invitation." : "send your request."), " ", noticeLink("join.html", "Change")]);
+    } else if (!F.load(STORAGE_KEY)) {
+      showJoinNotice(["To volunteer on Sevak you need an invitation from an organization, or to ask one to have you. ", noticeLink("join.html", "Choose how you're joining"), "."]);
+    } else {
+      $("join-notice").hidden = true;
+    }
+  }
+
+  // Returns true when it moved on to another page.
+  function completeJoin() {
+    var i = intent();
+    if (!i) return false;
+    F.clear(INTENT_KEY);
+    if (i.way === "create") {
+      location.href = "organization.html?new=1";
+      return true;
+    }
+    var org = window.SevakOrgs.get(i.orgId);
+    if (!org) return false;
+    var rec = M.isMember(org.id) ? { status: "active" } : M.request(org.id, i.note, i.way === "invite");
+    var next = i.returnTo || "signup.html#my-orgs";
+    if (rec && rec.status === "active") {
+      showJoinNotice(["Welcome! You're now a volunteer with " + org.name + ". ", noticeLink(next, i.returnTo ? "Back to the event" : "See its opportunities")]);
+    } else {
+      showJoinNotice(["Request sent to " + org.name + ". You can sign up for its events once they approve you. ", noticeLink("signup.html#all-orgs", "Browse opportunities")]);
+    }
+    renderTeams();
+    renderVolunteerOrgs();
+    renderAccount();
+    window.SevakNav.render();
+    window.scrollTo(0, 0);
+    return false;
+  }
+
+  // Organizations you volunteer with, and requests waiting.
+  function renderVolunteerOrgs() {
+    var list = $("volunteer-list");
+    list.innerHTML = "";
+    var rows = F.session.signedIn() ? M.mine().filter(function (m) { return m.status !== "invited"; }) : [];
+    var labels = { active: "Volunteer", requested: "Waiting for approval", declined: "Not approved" };
+    rows.forEach(function (m) {
+      var org = window.SevakOrgs.get(m.orgId);
+      if (!org) return;
+      var li = document.createElement("li");
+      li.className = "team-item";
+      var name = document.createElement("strong");
+      name.textContent = org.name;
+      var badge = document.createElement("span");
+      badge.className = "badge" + (m.status === "active" ? " badge-published" : m.status === "requested" ? " badge-draft" : "");
+      badge.textContent = labels[m.status] || m.status;
+      li.appendChild(name);
+      li.appendChild(badge);
+      var act = document.createElement("button");
+      act.type = "button";
+      act.className = "btn btn-danger-link";
+      act.textContent = m.status === "requested" ? "Withdraw" : m.status === "active" ? "Leave" : "Remove";
+      act.setAttribute("aria-label", act.textContent + " " + org.name);
+      act.addEventListener("click", function () {
+        var q = m.status === "active" ? "Stop volunteering with " + org.name + "? You'll need a new invitation or approval to sign up for its events again."
+          : m.status === "requested" ? "Withdraw your request to join " + org.name + "?" : "Remove " + org.name + " from this list?";
+        if (!window.confirm(q)) return;
+        M.withdraw(org.id);
+        renderVolunteerOrgs();
+        window.SevakNav.render();
+        $("volunteer-status").textContent = m.status === "active" ? "You've left " + org.name + "." : "Done.";
+      });
+      li.appendChild(act);
+      list.appendChild(li);
+    });
+    list.hidden = !list.children.length;
+    $("volunteer-empty").hidden = !!list.children.length;
+  }
+
   // Signed in as … · Sign out (Sign out lives here, on Profile).
   function renderAccount() {
     var on = F.session.signedIn();
@@ -334,7 +444,12 @@
     $("status").textContent = stored
       ? "Profile saved on this device."
       : "Couldn't save in this browser. Check that site storage is allowed.";
+    if (stored) {
+      M.acceptInvites();
+      if (completeJoin()) return;
+    }
     renderTeams();
+    renderVolunteerOrgs();
     renderAccount();
     window.SevakNav.render();
   });
@@ -357,7 +472,9 @@
     updateAffiliationButton();
     applyRoles();
     renderTeams();
+    renderVolunteerOrgs();
     renderAccount();
+    renderJoinNotice();
     window.SevakNav.render();
     $("status").textContent = "Profile deleted.";
   });
@@ -376,7 +493,9 @@
   updateAffiliationButton();
   applyRoles();
   renderTeams();
+  renderVolunteerOrgs();
   renderAccount();
+  renderJoinNotice();
 
   var docs = window.SevakDocs.mount($("panel-documents"), {
     owner: "profile",
